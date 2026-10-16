@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portal Alumno Definitivo — Sistema de Gestión Académica</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;0,6..72,700;1,6..72,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <div class="app-layout">
+    
+    <!-- LEFT SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="brand-badge">A</div>
+        <div class="brand-info">
+          <span class="brand-name">Portal Alumno</span>
+          <span class="brand-sub">SISTEMA DEFINITIVO</span>
+        </div>
+      </div>
+
+      <!-- User Card -->
+      <div class="user-sidebar-card">
+        <div class="user-avatar">ES</div>
+        <div class="user-details">
+          <span class="user-name-text" id="user-display-name">Estudiante</span>
+          <span class="user-legajo-text" id="user-display-legajo">ALU-00000</span>
+        </div>
+      </div>
+
+      <!-- Navigation Drawer -->
+      <nav class="sidebar-nav">
+        <div class="nav-section-label">Gestión Académica</div>
+
+        <button class="nav-item active" data-page="page-dashboard">
+          <span class="nav-icon">📊</span>
+          <span>Dashboard General</span>
+        </button>
+
+        <button class="nav-item" data-page="page-comisiones">
+          <span class="nav-icon">📚</span>
+          <span>Materias y Comisiones</span>
+        </button>
+
+        <button class="nav-item" data-page="page-asistencia">
+          <span class="nav-icon">📅</span>
+          <span>Control de Asistencia</span>
+        </button>
+
+        <button class="nav-item" data-page="page-calificaciones">
+          <span class="nav-icon">📝</span>
+          <span>Libreta de Notas</span>
+        </button>
+
+        <div class="nav-section-label">Inteligencia y APIs</div>
+
+        <button class="nav-item" data-page="page-ai-tutor">
+          <span class="nav-icon">🤖</span>
+          <span>Asistente IA Académico</span>
+        </button>
+
+        <button class="nav-item" data-page="page-terminal">
+          <span class="nav-icon">⚡</span>
+          <span>Consola de APIs en Vivo</span>
+        </button>
+
+        <div class="nav-section-label">Documentación</div>
+
+        <button class="nav-item" data-page="page-docs">
+          <span class="nav-icon">📄</span>
+          <span>Alcance del Proyecto</span>
+        </button>
+      </nav>
+    </aside>
+
+    <!-- MAIN WRAPPER -->
+    <div class="main-wrapper">
+      
+      <!-- TOP HEADER BAR -->
+      <header class="top-header">
+        <div class="search-box">
+          <span>🔍</span>
+          <input type="text" placeholder="Buscar materias, profesores o notas...">
+        </div>
+
+        <div class="header-actions">
+          <span class="pill-tag">rol: alumno</span>
+          <span class="ai-status-badge">
+            <span style="width:8px; height:8px; background:#a855f7; border-radius:50%; display:inline-block;"></span>
+            Gemini Academic Active
+          </span>
+        </div>
+      </header>
+
+      <!-- CONTENT AREA -->
+      <main class="content-area">
+
+        <!-- PAGE 1: DASHBOARD -->
+        <div class="page-panel active" id="page-dashboard">
+          <div class="page-header">
+            <h1 class="page-title">Panel del estudiante</h1>
+            <p class="page-desc">Resumen general de tu estado académico en el primer cuatrimestre 2026.</p>
+          </div>
+
+          <!-- Stats Grid -->
+          <div class="stats-grid">
+            <div class="stat-card">
+              <span class="stat-label">Promedio Acumulado</span>
+              <div class="stat-value" id="stat-promedio">8.42</div>
+              <div class="stat-sub">Basado en evaluaciones cargadas</div>
+            </div>
+
+            <div class="stat-card">
+              <span class="stat-label">Materias Cursando</span>
+              <div class="stat-value" id="stat-materias-count">3</div>
+              <div class="stat-sub">Comisiones activas</div>
+            </div>
+
+            <div class="stat-card">
+              <span class="stat-label">Asistencia Promedio</span>
+              <div class="stat-value" id="stat-asistencia-avg">84.7%</div>
+              <div class="stat-sub">Límite requerido: 75%</div>
+            </div>
+
+            <div class="stat-card">
+              <span class="stat-label">Créditos de Carrera</span>
+              <div class="stat-value" id="stat-creditos">48 HP</div>
+              <div class="stat-sub">Plan de Estudio 2024 - v2</div>
+            </div>
+          </div>
+
+          <!-- Table of Enrolled Subjects -->
+          <div class="card">
+            <div class="card-title-row">
+              <h2 class="card-title-text">Resumen de Cursadas Activas</h2>
+              <span class="pill-tag">2026 - 1° Cuatrimestre</span>
+            </div>
+
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Materia / Comisión</th>
+                    <th>Horario de Cursada</th>
+                    <th>Aula / Espacio</th>
+                    <th>Asistencia</th>
+                    <th>Condición Actual</th>
+                  </tr>
+                </thead>
+                <tbody id="dashboard-recent-tbody">
+                  <!-- Rendered via app.js -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- PAGE 2: MATERIAS Y COMISIONES -->
+        <div class="page-panel" id="page-comisiones">
+          <div class="page-header">
+            <h1 class="page-title">Materias y Comisiones Asignadas</h1>
+            <p class="page-desc">Consulta los detalles de cada asignatura, horarios y cuerpo docente a cargo.</p>
+          </div>
+
+          <div class="subjects-grid" id="subjects-grid-container">
+            <!-- Rendered via app.js -->
+          </div>
+        </div>
+
+        <!-- PAGE 3: CONTROL DE ASISTENCIA -->
+        <div class="page-panel" id="page-asistencia">
+          <div class="page-header">
+            <h1 class="page-title">Control de Asistencia y Presentismo</h1>
+            <p class="page-desc">Monitoreo de inasistencias registradas por los preceptores y docentes.</p>
+          </div>
+
+          <div class="card">
+            <div class="card-title-row">
+              <h2 class="card-title-text">Porcentaje de Asistencia Acumulado</h2>
+              <select id="asistencia-select-subject" style="padding:6px 12px; border-radius:6px; border:1px solid var(--border-color); font-size:13px; outline:none; font-family:'JetBrains Mono', monospace;">
+                <!-- Rendered via app.js -->
+              </select>
+            </div>
+
+            <div id="asistencia-alert-box"></div>
+
+            <div class="stats-grid" style="margin-bottom:20px;">
+              <div class="stat-card">
+                <span class="stat-label">Porcentaje Alcanzado</span>
+                <div class="stat-value" id="asistencia-pct-val">87.5%</div>
+                <div class="stat-sub">Mínimo para regularizar: 75.0%</div>
+              </div>
+            </div>
+
+            <h3 style="font-family:'Newsreader', serif; font-size:18px; margin-bottom:12px; color:var(--text-title);">Historial Clases Registradas</h3>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Clase Nº</th>
+                    <th>Fecha</th>
+                    <th>Estado de Presentismo</th>
+                  </tr>
+                </thead>
+                <tbody id="asistencia-history-tbody">
+                  <!-- Rendered via app.js -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- PAGE 4: LIBRETA DE NOTAS -->
+        <div class="page-panel" id="page-calificaciones">
+          <div class="page-header">
+            <h1 class="page-title">Libreta Digital de Calificaciones</h1>
+            <p class="page-desc">Notas oficiales cargadas por los profesores para cada evaluación.</p>
+          </div>
+
+          <div class="card">
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Asignatura / Comisión</th>
+                    <th>Primer Parcial</th>
+                    <th>Trabajo Práctico 1</th>
+                    <th>Segundo Parcial</th>
+                    <th>Condición Final</th>
+                  </tr>
+                </thead>
+                <tbody id="calificaciones-tbody">
+                  <!-- Rendered via app.js -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- PAGE 5: ASISTENTE IA ACADÉMICO -->
+        <div class="page-panel" id="page-ai-tutor">
+          <div class="page-header">
+            <h1 class="page-title">Asistente IA Académico (Gemini Academic)</h1>
+            <p class="page-desc">Consulta tus métricas, simula promedios o despeja dudas sobre tu condición académica.</p>
+          </div>
+
+          <div class="ai-chat-box">
+            <div class="ai-chat-header">
+              <div class="ai-chat-title">
+                <span>🤖</span> Gemini Tutor Académico
+              </div>
+              <span class="pill-tag">IA Conectada a tu Legajo</span>
+            </div>
+
+            <div class="ai-chat-messages" id="ai-chat-messages">
+              <!-- Rendered via app.js -->
+            </div>
+
+            <div class="ai-chat-input-row">
+              <input type="text" class="ai-input" id="ai-chat-input" placeholder="Pregunta algo sobre tus notas, faltas o materias..." onkeypress="if(event.key==='Enter') sendAiMessage()">
+              <button class="btn-send" onclick="sendAiMessage()">Enviar Pregunta</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- PAGE 6: TERMINAL DE APIS EN VIVO -->
+        <div class="page-panel" id="page-terminal">
+          <div class="page-header">
+            <h1 class="page-title">Consola de APIs e Integraciones en Vivo</h1>
+            <p class="page-desc">Monitoreo técnico de los endpoints consumidos de los módulos Auth, Admin, Asistencia y Profesor.</p>
+          </div>
+
+          <div class="terminal-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #334155; padding-bottom:12px;">
+              <span style="color:#38bdf8; font-weight:600;">⚡ LOG DE COMUNICACIÓN READ-ONLY</span>
+              <span style="font-size:11px; color:#94a3b8;">JWT VERIFICADO</span>
+            </div>
+
+            <div class="terminal-logs" id="terminal-logs-list">
+              <!-- Rendered via app.js -->
+            </div>
+          </div>
+        </div>
+
+        <!-- PAGE 7: DOCUMENTACIÓN -->
+        <div class="page-panel" id="page-docs">
+          <div class="page-header">
+            <h1 class="page-title">Documentación de Alcance y Especificación</h1>
+            <p class="page-desc">Acceso rápido a los documentos editoriales de definición del proyecto.</p>
+          </div>
+
+          <div class="subjects-grid">
+            <a href="../index.html" target="_blank" style="text-decoration:none;" class="subject-card">
+              <div>
+                <span class="subject-code-pill">DOCUMENTO 01</span>
+                <h3 class="subject-name" style="margin-top:8px;">Alcance del MVP</h3>
+                <p style="font-size:13px; color:var(--text-body); margin-top:4px;">
+                  Definición funcional y delimitación de responsabilidades.
+                </p>
+              </div>
+              <div style="margin-top:16px; font-size:13px; color:var(--primary); font-weight:600;">Abrir Documento →</div>
+            </a>
+
+            <a href="../index_detalle.html" target="_blank" style="text-decoration:none;" class="subject-card">
+              <div>
+                <span class="subject-code-pill">DOCUMENTO 02</span>
+                <h3 class="subject-name" style="margin-top:8px;">Especificación Técnica</h3>
+                <p style="font-size:13px; color:var(--text-body); margin-top:4px;">
+                  Detalle por sección, componentes UI y campos de BD consumidos.
+                </p>
+              </div>
+              <div style="margin-top:16px; font-size:13px; color:var(--primary); font-weight:600;">Abrir Documento →</div>
+            </a>
+
+            <a href="../index_conexiones.html" target="_blank" style="text-decoration:none;" class="subject-card">
+              <div>
+                <span class="subject-code-pill">DOCUMENTO 03</span>
+                <h3 class="subject-name" style="margin-top:8px;">Mapa de Conexiones API</h3>
+                <p style="font-size:13px; color:var(--text-body); margin-top:4px;">
+                  Contratos de servicio con Auth, Admin, Asistencia y Profesor.
+                </p>
+              </div>
+              <div style="margin-top:16px; font-size:13px; color:var(--primary); font-weight:600;">Abrir Documento →</div>
+            </a>
+          </div>
+        </div>
+
+      </main>
+    </div>
+
+  </div>
+
+  <!-- Modal Component -->
+  <div class="modal-backdrop" id="app-modal">
+    <div class="modal-box">
+      <button class="modal-close-btn" onclick="closeModal()">✕</button>
+      <div id="modal-subject-content"></div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

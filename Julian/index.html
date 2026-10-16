@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Módulo Alumno · Alcance de Entrega - MVP</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;0,6..72,700;1,6..72,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-main: #f8fafc;
+      --card-bg: #ffffff;
+      --text-title: #0f172a;
+      --text-sub: #1e293b;
+      --text-body: #475569;
+      --text-muted: #64748b;
+      --border-color: #e2e8f0;
+      --border-accent: #cbd5e1;
+      
+      --pill-bg: #ffffff;
+      --tag-bg: #f1f5f9;
+      
+      --badge-check-bg: #ecfdf5;
+      --badge-check-border: #a7f3d0;
+      --badge-check-text: #059669;
+      
+      --badge-out-bg: #f8fafc;
+      --badge-out-border: #cbd5e1;
+      --badge-out-text: #94a3b8;
+
+      --flow-purple-bg: #f3e8ff;
+      --flow-purple-border: #e9d5ff;
+      --flow-purple-text: #6b21a8;
+
+      --flow-green-bg: #f0fdf4;
+      --flow-green-border: #bbf7d0;
+      --flow-green-text: #166534;
+
+      --flow-blue-bg: #eff6ff;
+      --flow-blue-border: #bfdbfe;
+      --flow-blue-text: #1e40af;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-body);
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      line-height: 1.6;
+      padding: 48px 20px 96px 20px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .container {
+      max-width: 860px;
+      margin: 0 auto;
+    }
+
+    /* Subheader label */
+    .top-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+    }
+
+    /* Main Title */
+    h1.doc-title {
+      font-family: 'Newsreader', Georgia, serif;
+      font-size: 38px;
+      font-weight: 700;
+      color: var(--text-title);
+      line-height: 1.25;
+      margin-bottom: 18px;
+      letter-spacing: -0.01em;
+    }
+
+    /* Description */
+    p.doc-intro {
+      font-size: 15.5px;
+      color: var(--text-body);
+      line-height: 1.65;
+      margin-bottom: 24px;
+      max-width: 780px;
+    }
+
+    /* Top Tags Row */
+    .pills-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 48px;
+    }
+
+    .pill {
+      background: var(--pill-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 9999px;
+      padding: 5px 14px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--text-body);
+      font-weight: 500;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+    }
+
+    /* Sections */
+    .section-block {
+      margin-bottom: 44px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .section-num {
+      font-family: 'Newsreader', serif;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    .section-title {
+      font-family: 'Newsreader', Georgia, serif;
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text-title);
+      letter-spacing: -0.01em;
+    }
+
+    .section-divider {
+      height: 1px;
+      background-color: var(--border-color);
+      border: none;
+      margin-bottom: 16px;
+    }
+
+    .section-subtitle {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 18px;
+    }
+
+    /* Cards */
+    .card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 18px 22px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.02);
+    }
+
+    .card-left {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+    }
+
+    .badge-check {
+      width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      background: var(--badge-check-bg);
+      border: 1px solid var(--badge-check-border);
+      color: var(--badge-check-text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .badge-out {
+      width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      background: var(--badge-out-bg);
+      border: 1px solid var(--badge-out-border);
+      color: var(--badge-out-text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .card-content {
+      flex: 1;
+    }
+
+    .card-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-title);
+      margin-bottom: 4px;
+    }
+
+    .card-desc {
+      font-size: 13.5px;
+      color: var(--text-body);
+      line-height: 1.55;
+    }
+
+    .tech-tag {
+      background: var(--tag-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 3px 9px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--text-body);
+      white-space: nowrap;
+      align-self: flex-start;
+      margin-top: 2px;
+    }
+
+    /* Highlighted Connection Box */
+    .connection-box {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 24px 28px;
+      margin: 40px 0;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.02);
+    }
+
+    .connection-title {
+      font-family: 'Newsreader', Georgia, serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text-title);
+      margin-bottom: 12px;
+    }
+
+    .connection-desc {
+      font-size: 14px;
+      color: var(--text-body);
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+
+    .flow-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .flow-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      padding: 10px 14px;
+      background: #f8fafc;
+      border: 1px solid #f1f5f9;
+      border-radius: 8px;
+      font-size: 12px;
+    }
+
+    .flow-mod-source {
+      background: var(--flow-purple-bg);
+      border: 1px solid var(--flow-purple-border);
+      color: var(--flow-purple-text);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600;
+    }
+
+    .flow-mod-target {
+      background: var(--flow-blue-bg);
+      border: 1px solid var(--flow-blue-border);
+      color: var(--flow-blue-text);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600;
+    }
+
+    .flow-mod-auth {
+      background: var(--flow-green-bg);
+      border: 1px solid var(--flow-green-border);
+      color: var(--flow-green-text);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600;
+    }
+
+    .flow-arrow {
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+    }
+
+    .flow-endpoint {
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--text-body);
+      font-weight: 500;
+    }
+
+    /* Style Guide Technical Report Container */
+    .report-box {
+      margin-top: 64px;
+      background: #ffffff;
+      border: 1px dashed var(--border-accent);
+      border-radius: 12px;
+      padding: 32px;
+    }
+
+    .report-title {
+      font-family: 'Newsreader', Georgia, serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text-title);
+      margin-bottom: 8px;
+    }
+
+    .report-sub {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .report-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+
+    .report-item {
+      background: #f8fafc;
+      padding: 16px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+    }
+
+    .report-item h4 {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-title);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .report-item p {
+      font-size: 13px;
+      color: var(--text-body);
+      line-height: 1.5;
+    }
+
+    .color-swatch {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+      margin-right: 6px;
+      vertical-align: middle;
+      border: 1px solid rgba(0,0,0,0.1);
+    }
+
+    /* Print styles */
+    @media print {
+      body {
+        background: #ffffff;
+        padding: 0;
+      }
+      .card, .connection-box, .report-box {
+        box-shadow: none;
+        break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    
+    <!-- Top Subheader -->
+    <div class="top-label">MÓDULO ALUMNO · ALCANCE DE ENTREGA</div>
+
+    <!-- Main Title -->
+    <h1 class="doc-title">MVP del módulo Alumno</h1>
+
+    <!-- Overview Text -->
+    <p class="doc-intro">
+      Definición del panel de consulta autocontenido para el estudiante: autenticación de usuario, consulta de perfil académico, materias/comisiones asignadas, historial detallado de asistencia y libreta digital de calificaciones. El módulo opera estrictamente en modalidad de consulta individual (read-only), consumiendo datos estructurados garantizados por los módulos centrales.
+    </p>
+
+    <!-- Top Pills -->
+    <div class="pills-row">
+      <div class="pill">rol: alumno</div>
+      <div class="pill">depende de: auth, asistencia, profesor</div>
+      <div class="pill">7 features en MVP</div>
+    </div>
+
+    <!-- 01 Acceso y contexto -->
+    <div class="section-block">
+      <div class="section-header">
+        <span class="section-num">01</span>
+        <h2 class="section-title">Acceso y contexto</h2>
+      </div>
+      <hr class="section-divider">
+      <p class="section-subtitle">Funcionalidades relacionadas con la autenticación del estudiante y la visualización de su ficha académica personal.</p>
+
+      <!-- Feature 1 -->
+      <div class="card">
+        <div class="card-left">
+          <div class="badge-check">✓</div>
+          <div class="card-content">
+            <div class="card-title">Iniciar sesión con rol alumno</div>
+            <div class="card-desc">Reutiliza el sistema de autenticación centralizado. Al identificar las credenciales válidas con el rol correspondiente, efectúa la redirección directa al portal del estudiante.</div>
+          </div>
+        </div>
+        <div class="tech-tag">usuarios</div>
+      </div>
+
+      <!-- Feature 2 -->
+      <div class="card">
+        <div class="card-left">
+          <div class="badge-check">✓</div>
+          <div class="card-content">
+            <div class="card-title">Ver mi perfil académico</div>
+            <div class="card-desc">Ficha con la información del alumno logueado: legajo, DNI, correo institucional, carrera, plan de estudio vigente y condición de regularidad.</div>
+          </div>
+        </div>
+        <div class="tech-tag">alumnos</div>
+      </div>
+    </div>
+
+    <!-- 02 Materias y comisiones -->
+    <div class="section-block">
+      <div class="section-header">
+        <span class="section-num">02</span>
+        <h2 class="section-title">Materias y comisiones</h2>
+      </div>
+      <hr class="section-divider">
+      <p class="section-subtitle">Visualización de la oferta horaria e inscripciones activas del cuatrimestre o ciclo lectivo en curso.</p>
+
+      <!-- Feature 3 -->
+      <div class="card">
+        <div class="card-left">
+          <div class="badge-check">✓</div>
+          <div class="card-content">
+            <div class="card-title">Ver mis materias y comisiones</div>
+            <div class="card-desc">Panel principal con el listado de asignaturas en las que el alumno figura inscripto durante el período lectivo actual.</div>
+          </div>
+        </div>
+        <div class="tech-tag">alumno_comision</div>
+      </div>
+
+      <!-- Feature 4 -->
+      <div class="card">
+        <div class="card-left">
+          <div class="badge-check">✓</div>
+          <div class="card-content">
+            <div class="card-title">Detalle de comisión y cuerpo docente</div>
+            <div class="card-desc">Consulta de información específica por materia: días, horarios de cursada, aula asignada y docentes a cargo de la comisión.</div>
+          </div>
+        </div>
+        <div class="tech-tag">comisiones</div>
+      </div>
+    </div>
+
+    <!-- 03 Asistencia -->
+    <div class="section-block">
+      <div class="section-header">
+        <span class="section-num">03</span>
+        <h2 class="section-title">Asistencia</h2>
+      </div>
+      <hr class="section-divider">
+      <p class="section-subtitle">Consulta transparente del registro diario de clases y seguimiento del margen de inasistencias.</p>
+
+      <!-- Feature 5 -->
+      <div class="card">
+        <div class="card-left">
+          <div class="badge-check">✓</div>
+          <div class="card-content">
+            <div class="card-title">Consultar historial de asistencia por materia</div>
+            <div class="card-desc">Desglose detallado por fecha con los estados registrados (presente, ausente, tardanza) cargados por el preceptor o profesor.</div>
+          </div>
+        </div>
+        <div class="tech-tag">asistencias</div>
+      </div>
+
+      <!-- Feature 6 -->
+      <div class="card">
+        <div class="card-left">
+          <div class="badge-check">✓</div>
+          <div class="card-content">
+            <div class="card-title">Ver porcentaje de asistencia acumulado</div>
+            <div class="card-desc">Cálculo de métricas en tiempo real sobre el porcentaje de asistencia alcanzado vs. el mínimo requerido para mantener la regularidad.</div>
+          </div>
+        </div>
+        <div class="tech-tag">asistencias</div>
+      </div>
+    </div>
+
+    <!-- 04 Calificaciones -->
+    <div class="section-block">
+      <div class="section-header">
+        <span class="section-num">04</span>
+        <h2 class="section-title">Calificaciones</h2>
+      </div>
+      <hr class="section-divider">
+      <p class="section-subtitle">Acceso a las notas evaluativas y condición final de cursada por materia.</p>
+
+      <!-- Feature 7 -->
+      <div class="card">
+        <div class="card-left">
+          <div class="badge-check">✓</div>
+          <div class="card-content">
+            <div class="card-title">Consultar mi libreta de notas</div>
+            <div class="card-desc">Visualización de calificaciones de parciales, recuperatorios, trabajos prácticos y condición final (Promocionado, Regular, Libre) oficializada por los docentes.</div>
+          </div>
+        </div>
+        <div class="tech-tag">calificaciones</div>
+      </div>
+    </div>
+
+    <!-- Bloque destacado: Cómo se conecta con los demás módulos -->
+    <div class="connection-box">
+      <h3 class="connection-title">Cómo se conecta con los demás módulos</h3>
+      <p class="connection-desc">
+        El módulo Alumno no posee lógica de escritura ni administra tablas maestras. Opera consumiendo los endpoints expuestos por los módulos especializados mediante consultas de solo lectura filtradas por el identificador del alumno logueado.
+      </p>
+
+      <div class="flow-list">
+        <div class="flow-row">
+          <span class="flow-mod-source">Módulo Alumno</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-endpoint">GET /auth/me</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-mod-auth">Módulo Autenticación</span>
+        </div>
+
+        <div class="flow-row">
+          <span class="flow-mod-source">Módulo Alumno</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-endpoint">GET /alumnos/{id}/comisiones</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-mod-target">Módulo Administrador / Cursadas</span>
+        </div>
+
+        <div class="flow-row">
+          <span class="flow-mod-source">Módulo Alumno</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-endpoint">GET /alumnos/{id}/asistencias</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-mod-target">Módulo Asistencia</span>
+        </div>
+
+        <div class="flow-row">
+          <span class="flow-mod-source">Módulo Alumno</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-endpoint">GET /alumnos/{id}/notas</span>
+          <span class="flow-arrow">→</span>
+          <span class="flow-mod-target">Módulo Profesor</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 05 Qué queda fuera del MVP -->
+    <div class="section-block">
+      <div class="section-header">
+        <span class="section-num">05</span>
+        <h2 class="section-title">Qué queda fuera del MVP</h2>
+      </div>
+      <hr class="section-divider">
+      <p class="section-subtitle">Funcionalidades pospuestas para etapas avanzadas para no sobrecargar el alcance inicial.</p>
+
+      <div class="card">
+        <div class="card-left">
+          <div class="badge-out">✕</div>
+          <div class="card-content">
+            <div class="card-title">Inscripción y cambio de comisiones online</div>
+            <div class="card-desc">Las inscripciones iniciales serán administradas de manera centralizada por el Administrador.</div>
+          </div>
+        </div>
+        <div class="tech-tag">cursadas</div>
+      </div>
+
+      <div class="card">
+        <div class="card-left">
+          <div class="badge-out">✕</div>
+          <div class="card-content">
+            <div class="card-title">Carga de certificados de inasistencia</div>
+            <div class="card-desc">La recepción y validación de justificantes médicos/laborales corresponde al rol de Preceptores.</div>
+          </div>
+        </div>
+        <div class="tech-tag">justificativos</div>
+      </div>
+
+      <div class="card">
+        <div class="card-left">
+          <div class="badge-out">✕</div>
+          <div class="card-content">
+            <div class="card-title">Generación de certificado de alumno regular (PDF)</div>
+            <div class="card-desc">La emisión de documentación oficial firmada digitalmente se posterga para la versión 2.0.</div>
+          </div>
+        </div>
+        <div class="tech-tag">certificados</div>
+      </div>
+
+      <div class="card">
+        <div class="card-left">
+          <div class="badge-out">✕</div>
+          <div class="card-content">
+            <div class="card-title">Reclamos y solicitudes de revisión de notas</div>
+            <div class="card-desc">Cualquier canal formal de revisión de exámen continuará realizándose de manera presencial o vía bedelía.</div>
+          </div>
+        </div>
+        <div class="tech-tag">revisiones</div>
+      </div>
+    </div>
+
+    <!-- 06 Reglas del módulo Alumno -->
+    <div class="section-block">
+      <div class="section-header">
+        <span class="section-num">06</span>
+        <h2 class="section-title">Reglas del módulo Alumno</h2>
+      </div>
+      <hr class="section-divider">
+      <p class="section-subtitle">Límites funcionales y directivas de seguridad para garantizar la integridad del módulo.</p>
+
+      <div class="card">
+        <div class="card-left">
+          <div class="badge-check">✓</div>
+          <div class="card-content">
+            <div class="card-title">Aislamiento estricto de datos (Data Scope)</div>
+            <div class="card-desc">El alumno solo puede visualizar información vinculada estrictamente a su propio legajo ID. Bajo ningún concepto puede acceder a datos, promedios o asistencias de pares.</div>
+          </div>
+        </div>
+        <div class="tech-tag">seguridad</div>
+      </div>
+
+      <div class="card">
+        <div class="card-left">
+          <div class="badge-check">✓</div>
+          <div class="card-content">
+            <div class="card-title">Privilegios exclusivos de Solo Lectura (Read-Only)</div>
+            <div class="card-desc">El rol Alumno no posee endpoints ni vistas con capacidad de inserción, edición o borrado sobre calificaciones, asistencias o materias.</div>
+          </div>
+        </div>
+        <div class="tech-tag">permisos</div>
+      </div>
+
+      <div class="card">
+        <div class="card-left">
+          <div class="badge-check">✓</div>
+          <div class="card-content">
+            <div class="card-title">Reutilización de esquema existente</div>
+            <div class="card-desc">No se crean tablas duplicadas. El módulo consulta las tablas maestras <code>usuarios</code>, <code>alumnos</code>, <code>comisiones</code>, <code>asistencias</code> y <code>calificaciones</code> ya proyectadas en la BD central.</div>
+          </div>
+        </div>
+        <div class="tech-tag">base_de_datos</div>
+      </div>
+    </div>
+
+    <!-- INFORME TÉCNICO DE ESTILOS -->
+    <div class="report-box">
+      <h3 class="report-title">Informe Técnico de Estilos (Design System Documental)</h3>
+      <div class="report-sub">Especificaciones de diseño editorial y tokens visuales aplicados al documento</div>
+
+      <div class="report-grid">
+        <div class="report-item">
+          <h4><span class="color-swatch" style="background:#0f172a;"></span>Tipografía de Títulos</h4>
+          <p><strong>Newsreader / Serif Editorial</strong><br>Aporta jerarquía institucional y estética de documento formal. Pesos: 600 (semi-bold) y 700 (bold).</p>
+        </div>
+
+        <div class="report-item">
+          <h4><span class="color-swatch" style="background:#475569;"></span>Tipografía de Cuerpo</h4>
+          <p><strong>Inter / Sans-serif</strong><br>Garantiza alta legibilidad técnica en párrafos explicativos y descripciones de tarjetas. Tamaños de 13.5px a 15.5px.</p>
+        </div>
+
+        <div class="report-item">
+          <h4><span class="color-swatch" style="background:#64748b;"></span>Tipografía Monoespacio</h4>
+          <p><strong>JetBrains Mono</strong><br>Utilizada en etiquetas pill, identificadores de tablas de BD y endpoints de la API para mantener rigor técnico.</p>
+        </div>
+
+        <div class="report-item">
+          <h4><span class="color-swatch" style="background:#f8fafc;"></span>Fondo y Espaciado</h4>
+          <p><strong>Slate-50 (#f8fafc) & Clean Layout</strong><br>Contenedor centralizado de max-width 860px con amplio espacio negativo (whitespace) de 48px a 64px entre secciones.</p>
+        </div>
+
+        <div class="report-item">
+          <h4><span class="color-swatch" style="background:#ffffff; border: 1px solid #cbd5e1;"></span>Tarjetas y Bordes</h4>
+          <p><strong>Card Component Architecture</strong><br>Fondo blanco (#ffffff), borde fino (#e2e8f0), border-radius de 12px y sombra sutil (box-shadow: 0 1px 3px rgba(0,0,0,0.02)).</p>
+        </div>
+
+        <div class="report-item">
+          <h4><span class="color-swatch" style="background:#ecfdf5;"></span>Indicadores de MVP</h4>
+          <p><strong>Soft Green Badge (#ecfdf5)</strong><br>Iconografía discreta mediante checkmark (✓) verde y cruz tenue (✕) gris para demarcar el alcance del MVP sin sobrecargar la vista.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</body>
+</html>

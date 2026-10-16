@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Módulo Alumno · Especificación Detallada de Secciones y Tecnologías</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;0,6..72,700;1,6..72,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-main: #f8fafc;
+      --card-bg: #ffffff;
+      --text-title: #0f172a;
+      --text-sub: #1e293b;
+      --text-body: #475569;
+      --text-muted: #64748b;
+      --border-color: #e2e8f0;
+      --border-accent: #cbd5e1;
+      
+      --pill-bg: #ffffff;
+      --tag-bg: #f1f5f9;
+      
+      --badge-check-bg: #ecfdf5;
+      --badge-check-border: #a7f3d0;
+      --badge-check-text: #059669;
+
+      --tech-blue-bg: #eff6ff;
+      --tech-blue-border: #bfdbfe;
+      --tech-blue-text: #1e40af;
+
+      --tech-purple-bg: #f3e8ff;
+      --tech-purple-border: #e9d5ff;
+      --tech-purple-text: #6b21a8;
+
+      --tech-amber-bg: #fffbeb;
+      --tech-amber-border: #fde68a;
+      --tech-amber-text: #92400e;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-body);
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      line-height: 1.6;
+      padding: 48px 20px 96px 20px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .container {
+      max-width: 880px;
+      margin: 0 auto;
+    }
+
+    /* Subheader label */
+    .top-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+    }
+
+    /* Main Title */
+    h1.doc-title {
+      font-family: 'Newsreader', Georgia, serif;
+      font-size: 36px;
+      font-weight: 700;
+      color: var(--text-title);
+      line-height: 1.25;
+      margin-bottom: 18px;
+      letter-spacing: -0.01em;
+    }
+
+    /* Description */
+    p.doc-intro {
+      font-size: 15.5px;
+      color: var(--text-body);
+      line-height: 1.65;
+      margin-bottom: 24px;
+      max-width: 820px;
+    }
+
+    /* Top Tags Row */
+    .pills-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 48px;
+    }
+
+    .pill {
+      background: var(--pill-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 9999px;
+      padding: 5px 14px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--text-body);
+      font-weight: 500;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+    }
+
+    /* Navigation Link */
+    .nav-link {
+      display: inline-block;
+      margin-bottom: 24px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: #2563eb;
+      text-decoration: none;
+    }
+    .nav-link:hover {
+      text-decoration: underline;
+    }
+
+    /* Section Cards */
+    .section-detail-card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 26px 30px;
+      margin-bottom: 32px;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.02);
+    }
+
+    .section-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 14px;
+      margin-bottom: 20px;
+    }
+
+    .section-card-title-group {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+    }
+
+    .section-card-num {
+      font-family: 'Newsreader', serif;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    .section-card-title {
+      font-family: 'Newsreader', Georgia, serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text-title);
+    }
+
+    .tech-pill-large {
+      background: var(--tag-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 4px 12px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11.5px;
+      color: var(--text-body);
+      font-weight: 600;
+    }
+
+    /* Subsections inside Card */
+    .detail-sub-block {
+      margin-bottom: 20px;
+    }
+
+    .detail-sub-block:last-child {
+      margin-bottom: 0;
+    }
+
+    .sub-title {
+      font-size: 14px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-title);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .sub-title-icon {
+      font-size: 13px;
+    }
+
+    .sub-content-text {
+      font-size: 14px;
+      color: var(--text-body);
+      line-height: 1.6;
+      margin-bottom: 12px;
+    }
+
+    /* Grid for Technical Details */
+    .tech-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 12px;
+      margin-top: 10px;
+    }
+
+    .tech-box {
+      background: #f8fafc;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 12px 16px;
+    }
+
+    .tech-box-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .tech-box-value {
+      font-size: 13px;
+      color: var(--text-title);
+      font-weight: 600;
+    }
+
+    .tech-box-code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: #2563eb;
+      word-break: break-all;
+    }
+
+    /* Field List Pills */
+    .field-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 6px;
+    }
+
+    .field-item {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+      padding: 2px 8px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: #334155;
+    }
+
+    /* Highlighting Box */
+    .architecture-box {
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 28px;
+      margin-top: 48px;
+    }
+
+    .arch-title {
+      font-family: 'Newsreader', Georgia, serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text-title);
+      margin-bottom: 12px;
+    }
+
+    /* Styles Technical Report Container */
+    .report-box {
+      margin-top: 48px;
+      background: #ffffff;
+      border: 1px dashed var(--border-accent);
+      border-radius: 12px;
+      padding: 32px;
+    }
+
+    .report-title {
+      font-family: 'Newsreader', Georgia, serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text-title);
+      margin-bottom: 8px;
+    }
+
+    .report-sub {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .report-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 20px;
+    }
+
+    .report-item {
+      background: #f8fafc;
+      padding: 16px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+    }
+
+    .report-item h4 {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-title);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .report-item p {
+      font-size: 13px;
+      color: var(--text-body);
+      line-height: 1.5;
+    }
+
+    @media print {
+      body { background: #ffffff; padding: 0; }
+      .section-detail-card, .architecture-box, .report-box { box-shadow: none; break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    
+    <!-- Navigation Back Link -->
+    <a href="index.html" class="nav-link">← Volver al Documento de Alcance MVP</a>
+
+    <!-- Top Subheader -->
+    <div class="top-label">MÓDULO ALUMNO · ESPECIFICACIÓN TÉCNICA DETALLADA</div>
+
+    <!-- Main Title -->
+    <h1 class="doc-title">Detalle por Sección y Tecnologías Utilizadas</h1>
+
+    <!-- Overview Text -->
+    <p class="doc-intro">
+      Especificación técnica detallada de cada sección funcional del Módulo Alumno. Se especifica con precisión qué se construirá en la interfaz, qué servicios o endpoints se consumen, qué tablas y campos de la base de datos central se leen, y qué componentes/reglas de arquitectura se aplican.
+    </p>
+
+    <!-- Top Pills -->
+    <div class="pills-row">
+      <div class="pill">módulo: alumno</div>
+      <div class="pill">arquitectura: read-only</div>
+      <div class="pill">4 secciones de implementación</div>
+      <div class="pill">5 tablas consumidas</div>
+    </div>
+
+    <!-- 01 ACCESO Y CONTEXTO -->
+    <div class="section-detail-card">
+      <div class="section-card-header">
+        <div class="section-card-title-group">
+          <span class="section-card-num">01</span>
+          <h2 class="section-card-title">Acceso y Contexto Académico</h2>
+        </div>
+        <span class="tech-pill-large">usuarios | alumnos</span>
+      </div>
+
+      <!-- Qué se hará -->
+      <div class="detail-sub-block">
+        <div class="sub-title">
+          <span class="sub-title-icon">📌</span> Qué se hará en el Módulo Alumno
+        </div>
+        <p class="sub-content-text">
+          Se desarrollará la pantalla de <strong>Inicio de Sesión</strong> (integrada con el módulo de Autenticación) y la vista de <strong>Mi Perfil Académico</strong>. Al ingresar credenciales válidas, el sistema verifica que el token contenga el rol <code>ALUMNO</code> y despliega la tarjeta con la información personal e institucional del estudiante logueado (legajo, DNI, carrera, plan de estudios y estado de regularidad).
+        </p>
+      </div>
+
+      <!-- Qué se usa específicamente -->
+      <div class="detail-sub-block">
+        <div class="sub-title">
+          <span class="sub-title-icon">⚙️</span> Qué se usa específicamente (Arquitectura & Datos)
+        </div>
+        
+        <div class="tech-grid">
+          <div class="tech-box">
+            <div class="tech-box-label">Endpoint de Autenticación</div>
+            <div class="tech-box-code">POST /auth/login</div>
+            <div class="tech-box-code">GET /auth/me</div>
+          </div>
+
+          <div class="tech-box">
+            <div class="tech-box-label">Tablas BD Consultadas</div>
+            <div class="tech-box-value">usuarios, alumnos</div>
+          </div>
+
+          <div class="tech-box">
+            <div class="tech-box-label">Módulo Emisor Propietario</div>
+            <div class="tech-box-value">Módulo Autenticación & Admin</div>
+          </div>
+        </div>
+
+        <div style="margin-top: 14px;">
+          <div class="tech-box-label">Campos consumidos de la BD:</div>
+          <div class="field-list">
+            <span class="field-item">usuarios.id</span>
+            <span class="field-item">usuarios.email</span>
+            <span class="field-item">usuarios.rol</span>
+            <span class="field-item">alumnos.legajo</span>
+            <span class="field-item">alumnos.dni</span>
+            <span class="field-item">alumnos.carrera_id</span>
+            <span class="field-item">alumnos.estado</span>
+          </div>
+        </div>
+
+        <div style="margin-top: 14px;">
+          <div class="tech-box-label">Componentes de UI a construir:</div>
+          <div class="field-list">
+            <span class="field-item">LoginForm</span>
+            <span class="field-item">PerfilHeaderCard</span>
+            <span class="field-item">EstadoRegularidadBadge</span>
+            <span class="field-item">UserContextModal</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 02 MATERIAS Y COMISIONES -->
+    <div class="section-detail-card">
+      <div class="section-card-header">
+        <div class="section-card-title-group">
+          <span class="section-card-num">02</span>
+          <h2 class="section-card-title">Materias y Comisiones</h2>
+        </div>
+        <span class="tech-pill-large">alumno_comision | comisiones</span>
+      </div>
+
+      <!-- Qué se hará -->
+      <div class="detail-sub-block">
+        <div class="sub-title">
+          <span class="sub-title-icon">📌</span> Qué se hará en el Módulo Alumno
+        </div>
+        <p class="sub-content-text">
+          Se construirá la <strong>Grilla Principal de Materias</strong> que cursa el estudiante en el período lectivo actual. Al hacer clic sobre una materia, se abre el panel con la <strong>Ficha de Comisión</strong>, detallando días de cursada, rango horario, número de aula física y el listado de docentes a cargo de la cátedra.
+        </p>
+      </div>
+
+      <!-- Qué se usa específicamente -->
+      <div class="detail-sub-block">
+        <div class="sub-title">
+          <span class="sub-title-icon">⚙️</span> Qué se usa específicamente (Arquitectura & Datos)
+        </div>
+        
+        <div class="tech-grid">
+          <div class="tech-box">
+            <div class="tech-box-label">Endpoint Consumido</div>
+            <div class="tech-box-code">GET /alumnos/{id}/comisiones</div>
+          </div>
+
+          <div class="tech-box">
+            <div class="tech-box-label">Tablas BD Consultadas</div>
+            <div class="tech-box-value">alumno_comision, comisiones</div>
+          </div>
+
+          <div class="tech-box">
+            <div class="tech-box-label">Módulo Emisor Propietario</div>
+            <div class="tech-box-value">Módulo Administrador / Cursadas</div>
+          </div>
+        </div>
+
+        <div style="margin-top: 14px;">
+          <div class="tech-box-label">Campos consumidos de la BD:</div>
+          <div class="field-list">
+            <span class="field-item">alumno_comision.alumno_id</span>
+            <span class="field-item">alumno_comision.comision_id</span>
+            <span class="field-item">comisiones.materia_nombre</span>
+            <span class="field-item">comisiones.horario</span>
+            <span class="field-item">comisiones.aula</span>
+            <span class="field-item">comisiones.docentes_lista</span>
+          </div>
+        </div>
+
+        <div style="margin-top: 14px;">
+          <div class="tech-box-label">Componentes de UI a construir:</div>
+          <div class="field-list">
+            <span class="field-item">ComisionesGrid</span>
+            <span class="field-item">MateriaCard</span>
+            <span class="field-item">DetalleComisionPanel</span>
+            <span class="field-item">CuerpoDocenteList</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 03 ASISTENCIA -->
+    <div class="section-detail-card">
+      <div class="section-card-header">
+        <div class="section-card-title-group">
+          <span class="section-card-num">03</span>
+          <h2 class="section-card-title">Asistencia y Ausentismo</h2>
+        </div>
+        <span class="tech-pill-large">asistencias</span>
+      </div>
+
+      <!-- Qué se hará -->
+      <div class="detail-sub-block">
+        <div class="sub-title">
+          <span class="sub-title-icon">📌</span> Qué se hará en el Módulo Alumno
+        </div>
+        <p class="sub-content-text">
+          Se desarrollará la pantalla de <strong>Control de Asistencias</strong> por asignatura. Incluye una tabla cronológica con las fechas de clase tomadas por el preceptor/docente y una tarjeta destacada con la barra de progreso del <strong>% de asistencia acumulado</strong> versus el 75% reglamentario. Si el alumno desciende del límite, se activa una alerta preventiva visual.
+        </p>
+      </div>
+
+      <!-- Qué se usa específicamente -->
+      <div class="detail-sub-block">
+        <div class="sub-title">
+          <span class="sub-title-icon">⚙️</span> Qué se usa específicamente (Arquitectura & Datos)
+        </div>
+        
+        <div class="tech-grid">
+          <div class="tech-box">
+            <div class="tech-box-label">Endpoint Consumido</div>
+            <div class="tech-box-code">GET /alumnos/{id}/asistencias</div>
+          </div>
+
+          <div class="tech-box">
+            <div class="tech-box-label">Tablas BD Consultadas</div>
+            <div class="tech-box-value">asistencias</div>
+          </div>
+
+          <div class="tech-box">
+            <div class="tech-box-label">Módulo Emisor Propietario</div>
+            <div class="tech-box-value">Módulo Asistencia / Preceptores</div>
+          </div>
+        </div>
+
+        <div style="margin-top: 14px;">
+          <div class="tech-box-label">Campos consumidos de la BD:</div>
+          <div class="field-list">
+            <span class="field-item">asistencias.id</span>
+            <span class="field-item">asistencias.alumno_id</span>
+            <span class="field-item">asistencias.comision_id</span>
+            <span class="field-item">asistencias.fecha</span>
+            <span class="field-item">asistencias.estado (PRESENTE/AUSENTE/TARDANZA)</span>
+          </div>
+        </div>
+
+        <div style="margin-top: 14px;">
+          <div class="tech-box-label">Componentes de UI a construir:</div>
+          <div class="field-list">
+            <span class="field-item">AsistenciaSummaryCard</span>
+            <span class="field-item">ProgressBarPorcentaje</span>
+            <span class="field-item">HistorialClasesTable</span>
+            <span class="field-item">AlertaAusentismoBadge</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 04 CALIFICACIONES -->
+    <div class="section-detail-card">
+      <div class="section-card-header">
+        <div class="section-card-title-group">
+          <span class="section-card-num">04</span>
+          <h2 class="section-card-title">Libreta Digital de Calificaciones</h2>
+        </div>
+        <span class="tech-pill-large">calificaciones</span>
+      </div>
+
+      <!-- Qué se hará -->
+      <div class="detail-sub-block">
+        <div class="sub-title">
+          <span class="sub-title-icon">📌</span> Qué se hará en el Módulo Alumno
+        </div>
+        <p class="sub-content-text">
+          Se construirá la vista de <strong>Libreta Digital de Notas</strong>. Presenta en formato tabulado las calificaciones registradas por los profesores para cada materia: notas de 1° Parcial, 2° Parcial, Trabajos Prácticos, exámenes recuperatorios y la <strong>condición final de cursada</strong> (Promocionado, Regular, Libre).
+        </p>
+      </div>
+
+      <!-- Qué se usa específicamente -->
+      <div class="detail-sub-block">
+        <div class="sub-title">
+          <span class="sub-title-icon">⚙️</span> Qué se usa específicamente (Arquitectura & Datos)
+        </div>
+        
+        <div class="tech-grid">
+          <div class="tech-box">
+            <div class="tech-box-label">Endpoint Consumido</div>
+            <div class="tech-box-code">GET /alumnos/{id}/calificaciones</div>
+          </div>
+
+          <div class="tech-box">
+            <div class="tech-box-label">Tablas BD Consultadas</div>
+            <div class="tech-box-value">calificaciones</div>
+          </div>
+
+          <div class="tech-box">
+            <div class="tech-box-label">Módulo Emisor Propietario</div>
+            <div class="tech-box-value">Módulo Profesor</div>
+          </div>
+        </div>
+
+        <div style="margin-top: 14px;">
+          <div class="tech-box-label">Campos consumidos de la BD:</div>
+          <div class="field-list">
+            <span class="field-item">calificaciones.id</span>
+            <span class="field-item">calificaciones.alumno_id</span>
+            <span class="field-item">calificaciones.comision_id</span>
+            <span class="field-item">calificaciones.instancia</span>
+            <span class="field-item">calificaciones.nota</span>
+            <span class="field-item">calificaciones.condicion_final</span>
+          </div>
+        </div>
+
+        <div style="margin-top: 14px;">
+          <div class="tech-box-label">Componentes de UI a construir:</div>
+          <div class="field-list">
+            <span class="field-item">LibretaDigitalTable</span>
+            <span class="field-item">NotaBadge (Verde/Amarillo/Rojo)</span>
+            <span class="field-item">CondicionFinalCard</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESUMEN DE ARQUITECTURA -->
+    <div class="architecture-box">
+      <h3 class="arch-title">Resumen de Integración y Reglas de Arquitectura</h3>
+      <p class="sub-content-text">
+        El Módulo Alumno fue diseñado bajo el principio de <strong>Cero Lógica de Modificación (Read-Only)</strong>. El módulo no administra formularios de carga ni realiza escrituras en la base de datos central.
+      </p>
+
+      <div class="tech-grid" style="margin-top: 16px;">
+        <div class="tech-box">
+          <div class="tech-box-label">Verificación de Identidad</div>
+          <div class="tech-box-value">JWT Token transmitido en el Header <code>Authorization: Bearer</code> en cada consulta GET.</div>
+        </div>
+
+        <div class="tech-box">
+          <div class="tech-box-label">Aislamiento por Registro</div>
+          <div class="tech-box-value">Filtro obligatorio <code>WHERE alumno_id = :id_del_token</code> en la capa de servicios backend.</div>
+        </div>
+
+        <div class="tech-box">
+          <div class="tech-box-label">Reutilización de Esquemas</div>
+          <div class="tech-box-value">Reuso directo de las 5 tablas maestras creadas por los módulos centrales.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- INFORME TÉCNICO DE ESTILOS -->
+    <div class="report-box">
+      <h3 class="report-title">Informe Técnico de Estilos y Estructura Visual</h3>
+      <div class="report-sub">Tokens de diseño editorial mantenidos para este documento detallado</div>
+
+      <div class="report-grid">
+        <div class="report-item">
+          <h4>Tipografía Serifa</h4>
+          <p><strong>Newsreader (Google Fonts)</strong><br>Aplicada a títulos principales y nombres de sección para preservar la jerarquía formal.</p>
+        </div>
+
+        <div class="report-item">
+          <h4>Tipografía Sans-Serif</h4>
+          <p><strong>Inter</strong><br>Utilizada en párrafos explicativos, etiquetas y tablas de especificación técnica.</p>
+        </div>
+
+        <div class="report-item">
+          <h4>Tipografía Monoespacio</h4>
+          <p><strong>JetBrains Mono</strong><br>Aplicada a nombres de campos de base de datos, endpoints de API y pills técnicas.</p>
+        </div>
+
+        <div class="report-item">
+          <h4>Paleta Slate</h4>
+          <p><strong>#f8fafc / #0f172a / #e2e8f0</strong><br>Fondo gris sutil, títulos slate de alto contraste y bordes de 1px minimalistas.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</body>
+</html>

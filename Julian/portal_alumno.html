@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portal del Alumno — Sistema de Gestión Académica</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;0,6..72,700;1,6..72,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+  <!-- App Header -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand-group">
+        <div class="brand-icon">A</div>
+        <div>
+          <div class="brand-title">Portal Alumno</div>
+          <div class="brand-subtitle">Sistema de Gestión Académica</div>
+        </div>
+      </div>
+
+      <div class="user-pill">
+        <div class="user-avatar" id="user-avatar-initials">ES</div>
+        <div class="user-name" id="user-name-display">Estudiante</div>
+        <span class="user-role-badge">ALUMNO</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- App Navigation Tabs -->
+  <nav class="app-nav">
+    <div class="nav-container">
+      <button class="nav-tab active" data-tab="tab-dashboard">
+        <span>📊</span> Dashboard y Materias
+      </button>
+      <button class="nav-tab" data-tab="tab-asistencia">
+        <span>📅</span> Control de Asistencia
+      </button>
+      <button class="nav-tab" data-tab="tab-calificaciones">
+        <span>📝</span> Libreta de Notas
+      </button>
+      <button class="nav-tab" data-tab="tab-console">
+        <span>⚡</span> Consola de APIs en Vivo
+      </button>
+      <button class="nav-tab" data-tab="tab-docs">
+        <span>📄</span> Documentación
+      </button>
+    </div>
+  </nav>
+
+  <!-- Main Content Body -->
+  <main class="main-content">
+
+    <!-- TAB 1: DASHBOARD & MATERIAS -->
+    <div class="tab-panel active" id="tab-dashboard">
+      <div class="grid-2col">
+        
+        <!-- Sidebar: Perfil Académico -->
+        <aside>
+          <div class="card">
+            <h2 class="card-title">Mi Perfil Académico</h2>
+            <div class="info-list" id="profile-info-container">
+              <!-- Cargado dinámicamente desde app.js -->
+            </div>
+          </div>
+        </aside>
+
+        <!-- Main Column: Comisiones y Materias -->
+        <section>
+          <div class="card">
+            <div class="card-title">
+              <span>Mis Materias y Comisiones Asignadas</span>
+              <span class="materia-code" style="font-weight:normal;">2026 - 1° Cuatrimestre</span>
+            </div>
+            <p style="font-size:14px; color:var(--text-body); margin-bottom:18px;">
+              Listado de asignaturas en las que figuras inscripto formalmente. Haz clic sobre cualquier materia para consultar la ficha de la comisión, horarios, aula y cuerpo docente.
+            </p>
+
+            <div class="comisiones-grid" id="comisiones-grid-container">
+              <!-- Cargado dinámicamente desde app.js -->
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </div>
+
+    <!-- TAB 2: ASISTENCIA -->
+    <div class="tab-panel" id="tab-asistencia">
+      <div class="card">
+        <div class="card-title">
+          <span>Consulta de Asistencia y Presentismo</span>
+          <select id="asistencia-materia-select" class="materia-code" style="padding:6px 12px; font-size:13px; cursor:pointer;">
+            <!-- Cargado dinámicamente desde app.js -->
+          </select>
+        </div>
+
+        <!-- Metrics Row -->
+        <div class="metrics-row">
+          <div class="metric-card">
+            <span class="info-label">Porcentaje Acumulado</span>
+            <div class="metric-number" id="asistencia-porcentaje-display">87.5%</div>
+            <div class="progress-bar-container">
+              <div class="progress-bar-fill" id="asistencia-progress-fill" style="width: 87.5%;"></div>
+            </div>
+            <div class="metric-sub">Mínimo reglamentario: 75.0%</div>
+          </div>
+
+          <div class="metric-card">
+            <span class="info-label">Clases Presentes / Dictadas</span>
+            <div class="metric-number" id="asistencia-clases-display">14 / 16</div>
+            <div class="metric-sub">Total registradas por Preceptor</div>
+          </div>
+        </div>
+
+        <!-- Dynamic Regularity Alert -->
+        <div id="asistencia-alerta-box" style="margin-bottom: 24px;"></div>
+
+        <!-- History Table -->
+        <h3 style="font-family:'Newsreader', Georgia, serif; font-size:18px; margin-bottom:12px; color:var(--text-title);">Historial de Clases Registradas</h3>
+        <div class="table-responsive">
+          <table class="custom-table">
+            <thead>
+              <tr>
+                <th>Clase Nº</th>
+                <th>Fecha de Cursada</th>
+                <th>Estado Registrado</th>
+              </tr>
+            </thead>
+            <tbody id="asistencia-table-body">
+              <!-- Cargado dinámicamente desde app.js -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: CALIFICACIONES -->
+    <div class="tab-panel" id="tab-calificaciones">
+      <div class="card">
+        <div class="card-title">
+          <span>Libreta Digital de Calificaciones</span>
+          <span class="user-role-badge">OFICIALIZADO POR PROFESORES</span>
+        </div>
+        <p style="font-size:14px; color:var(--text-body); margin-bottom:20px;">
+          Consolidado de evaluaciones cargadas por las cátedras docentes para las asignaturas del cuatrimestre activo.
+        </p>
+
+        <div class="table-responsive">
+          <table class="custom-table">
+            <thead>
+              <tr>
+                <th>Materia / Comisión</th>
+                <th>1° Parcial</th>
+                <th>Trabajo Práctico 1</th>
+                <th>2° Parcial</th>
+                <th>Condición Final</th>
+              </tr>
+            </thead>
+            <tbody id="calificaciones-table-body">
+              <!-- Cargado dinámicamente desde app.js -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: CONSOLA DE APIS -->
+    <div class="tab-panel" id="tab-console">
+      <div class="console-box">
+        <div class="console-header">
+          <div class="console-title">
+            <span>⚡</span> Consola de Integración y Peticiones API en Vivo
+          </div>
+          <span style="font-size:11px; color:#94a3b8;">FILTRADO POR TOKEN JWT (ALUMNO)</span>
+        </div>
+        <p style="font-size:13px; color:#94a3b8; margin-bottom:16px;">
+          Muestra en tiempo real las consultas <code>GET</code> enviadas a los módulos centrales (Auth, Administrador, Asistencia y Profesor) según la arquitectura Read-Only definida.
+        </p>
+
+        <div class="console-body" id="api-console-logs">
+          <!-- Cargado dinámicamente desde app.js -->
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 5: DOCUMENTACIÓN -->
+    <div class="tab-panel" id="tab-docs">
+      <div class="card">
+        <h2 class="card-title">Documentación Técnica del Proyecto</h2>
+        <p style="font-size:14.5px; color:var(--text-body); margin-bottom:20px;">
+          Accede a la documentación funcional, técnica y de arquitectura del Módulo Alumno:
+        </p>
+
+        <div class="comisiones-grid">
+          <a href="index.html" target="_blank" style="text-decoration:none;" class="materia-card">
+            <div>
+              <span class="materia-code">DOCUMENTO 01</span>
+              <h3 class="materia-name" style="margin-top:8px;">Alcance del MVP</h3>
+              <p style="font-size:13px; color:var(--text-body); margin-top:4px;">
+                Especificación funcional del portal Alumno con estética editorial.
+              </p>
+            </div>
+            <div class="materia-footer">
+              <span class="btn-detail">Abrir HTML →</span>
+            </div>
+          </a>
+
+          <a href="index_detalle.html" target="_blank" style="text-decoration:none;" class="materia-card">
+            <div>
+              <span class="materia-code">DOCUMENTO 02</span>
+              <h3 class="materia-name" style="margin-top:8px;">Especificación por Sección</h3>
+              <p style="font-size:13px; color:var(--text-body); margin-top:4px;">
+                Detalle técnico por funcionalidad, componentes UI y campos de BD.
+              </p>
+            </div>
+            <div class="materia-footer">
+              <span class="btn-detail">Abrir HTML →</span>
+            </div>
+          </a>
+
+          <a href="index_conexiones.html" target="_blank" style="text-decoration:none;" class="materia-card">
+            <div>
+              <span class="materia-code">DOCUMENTO 03</span>
+              <h3 class="materia-name" style="margin-top:8px;">Mapa de Conexiones API</h3>
+              <p style="font-size:13px; color:var(--text-body); margin-top:4px;">
+                Contratos de integración con Auth, Admin, Asistencia y Profesor.
+              </p>
+            </div>
+            <div class="materia-footer">
+              <span class="btn-detail">Abrir HTML →</span>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Modal Dialog para Ficha de Comisión -->
+  <div class="modal-overlay" id="comision-modal">
+    <div class="modal-card">
+      <button class="modal-close" onclick="closeComisionModal()">✕</button>
+      <div id="modal-body-content">
+        <!-- Cargado dinámicamente -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="app-footer">
+    <strong>Módulo Alumno</strong> · Sistema de Gestión Académica 2026
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

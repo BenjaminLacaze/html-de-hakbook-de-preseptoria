@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Módulo Alumno · Mapa de Conexiones entre Módulos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;0,6..72,700;1,6..72,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-main: #f8fafc;
+      --card-bg: #ffffff;
+      --text-title: #0f172a;
+      --text-sub: #1e293b;
+      --text-body: #475569;
+      --text-muted: #64748b;
+      --border-color: #e2e8f0;
+      --border-accent: #cbd5e1;
+      
+      --pill-bg: #ffffff;
+      --tag-bg: #f1f5f9;
+
+      --flow-purple-bg: #f3e8ff;
+      --flow-purple-border: #e9d5ff;
+      --flow-purple-text: #6b21a8;
+
+      --flow-green-bg: #f0fdf4;
+      --flow-green-border: #bbf7d0;
+      --flow-green-text: #166534;
+
+      --flow-blue-bg: #eff6ff;
+      --flow-blue-border: #bfdbfe;
+      --flow-blue-text: #1e40af;
+
+      --flow-amber-bg: #fffbeb;
+      --flow-amber-border: #fde68a;
+      --flow-amber-text: #92400e;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-main);
+      color: var(--text-body);
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      line-height: 1.6;
+      padding: 48px 20px 96px 20px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .container {
+      max-width: 880px;
+      margin: 0 auto;
+    }
+
+    /* Subheader label */
+    .top-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+    }
+
+    /* Main Title */
+    h1.doc-title {
+      font-family: 'Newsreader', Georgia, serif;
+      font-size: 36px;
+      font-weight: 700;
+      color: var(--text-title);
+      line-height: 1.25;
+      margin-bottom: 18px;
+      letter-spacing: -0.01em;
+    }
+
+    /* Description */
+    p.doc-intro {
+      font-size: 15.5px;
+      color: var(--text-body);
+      line-height: 1.65;
+      margin-bottom: 24px;
+      max-width: 820px;
+    }
+
+    /* Top Tags Row */
+    .pills-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 36px;
+    }
+
+    .pill {
+      background: var(--pill-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 9999px;
+      padding: 5px 14px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--text-body);
+      font-weight: 500;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+    }
+
+    /* Navigation Bar */
+    .nav-bar {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 32px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+    }
+
+    .nav-link {
+      color: #2563eb;
+      text-decoration: none;
+    }
+
+    .nav-link:hover {
+      text-decoration: underline;
+    }
+
+    /* Section Connection Cards */
+    .connection-card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 26px 30px;
+      margin-bottom: 32px;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.02);
+    }
+
+    .connection-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 14px;
+      margin-bottom: 20px;
+    }
+
+    .connection-title-group {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+    }
+
+    .connection-num {
+      font-family: 'Newsreader', serif;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    .connection-title {
+      font-family: 'Newsreader', Georgia, serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text-title);
+    }
+
+    .target-badge {
+      padding: 4px 12px;
+      border-radius: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11.5px;
+      font-weight: 600;
+    }
+
+    .badge-auth {
+      background: var(--flow-green-bg);
+      border: 1px solid var(--flow-green-border);
+      color: var(--flow-green-text);
+    }
+
+    .badge-admin {
+      background: var(--flow-blue-bg);
+      border: 1px solid var(--flow-blue-border);
+      color: var(--flow-blue-text);
+    }
+
+    .badge-asist {
+      background: var(--flow-purple-bg);
+      border: 1px solid var(--flow-purple-border);
+      color: var(--flow-purple-text);
+    }
+
+    .badge-prof {
+      background: var(--flow-amber-bg);
+      border: 1px solid var(--flow-amber-border);
+      color: var(--flow-amber-text);
+    }
+
+    /* Diagram visual block */
+    .flow-diagram-box {
+      background: #f8fafc;
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      font-size: 13px;
+    }
+
+    .flow-node {
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600;
+      color: var(--text-title);
+    }
+
+    .flow-arrow {
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+    }
+
+    .flow-endpoint-code {
+      background: #0f172a;
+      color: #38bdf8;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    /* Code Block Preview */
+    .code-block {
+      background: #0f172a;
+      color: #f8fafc;
+      border-radius: 8px;
+      padding: 16px 20px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      line-height: 1.5;
+      overflow-x: auto;
+      margin-top: 10px;
+      margin-bottom: 16px;
+    }
+
+    .code-keyword { color: #f43f5e; }
+    .code-key { color: #38bdf8; }
+    .code-str { color: #a3e635; }
+    .code-num { color: #fbbf24; }
+
+    /* Key Value Grid */
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 14px;
+      margin-top: 16px;
+    }
+
+    .detail-item {
+      background: #f8fafc;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 14px;
+    }
+
+    .detail-item-title {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-title);
+      margin-bottom: 6px;
+    }
+
+    .detail-item-desc {
+      font-size: 13px;
+      color: var(--text-body);
+      line-height: 1.5;
+    }
+
+    /* Summary Table */
+    .summary-table-box {
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      padding: 28px;
+      margin-top: 48px;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.02);
+    }
+
+    .table-title {
+      font-family: 'Newsreader', Georgia, serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text-title);
+      margin-bottom: 16px;
+    }
+
+    table.matrix-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      text-align: left;
+    }
+
+    table.matrix-table th {
+      background: #f8fafc;
+      padding: 10px 14px;
+      border-bottom: 2px solid var(--border-color);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      text-transform: uppercase;
+      color: var(--text-title);
+    }
+
+    table.matrix-table td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border-color);
+      color: var(--text-body);
+    }
+
+    table.matrix-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .code-tag-sm {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      background: #f1f5f9;
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: #0f172a;
+    }
+
+    /* Styles Technical Report Container */
+    .report-box {
+      margin-top: 48px;
+      background: #ffffff;
+      border: 1px dashed var(--border-accent);
+      border-radius: 12px;
+      padding: 32px;
+    }
+
+    .report-title {
+      font-family: 'Newsreader', Georgia, serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text-title);
+      margin-bottom: 8px;
+    }
+
+    .report-sub {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .report-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 20px;
+    }
+
+    .report-item {
+      background: #f8fafc;
+      padding: 16px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+    }
+
+    .report-item h4 {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-title);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .report-item p {
+      font-size: 13px;
+      color: var(--text-body);
+      line-height: 1.5;
+    }
+
+    @media print {
+      body { background: #ffffff; padding: 0; }
+      .connection-card, .summary-table-box, .report-box { box-shadow: none; break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    
+    <!-- Navigation Bar -->
+    <div class="nav-bar">
+      <a href="index.html" class="nav-link">← Alcance MVP</a>
+      <span>·</span>
+      <a href="index_detalle.html" class="nav-link">Especificación por Sección →</a>
+    </div>
+
+    <!-- Top Subheader -->
+    <div class="top-label">MÓDULO ALUMNO · MAPA DE CONEXIONES E INTEGRACIONES</div>
+
+    <!-- Main Title -->
+    <h1 class="doc-title">Conexiones y Contratos entre Módulos</h1>
+
+    <!-- Overview Text -->
+    <p class="doc-intro">
+      Especificación técnica detallada de las 4 conexiones estratégicas que debe realizar el Módulo Alumno con los demás componentes del sistema (Autenticación, Administración, Asistencia y Profesor). Define los endpoints consumidos, datos enviados/recibidos, flujo de autenticación JWT y manejo de excepciones.
+    </p>
+
+    <!-- Top Pills -->
+    <div class="pills-row">
+      <div class="pill">módulo: alumno (consumidor)</div>
+      <div class="pill">4 módulos conectados</div>
+      <div class="pill">5 contratos de API</div>
+      <div class="pill">desacoplamiento total</div>
+    </div>
+
+    <!-- 01 CONEXIÓN CON AUTENTICACIÓN -->
+    <div class="connection-card">
+      <div class="connection-header">
+        <div class="connection-title-group">
+          <span class="connection-num">01</span>
+          <h2 class="connection-title">Conexión con Módulo Autenticación</h2>
+        </div>
+        <span class="target-badge badge-auth">Módulo Autenticación</span>
+      </div>
+
+      <!-- Diagrama de Flujo -->
+      <div class="flow-diagram-box">
+        <span class="flow-node">Módulo Alumno</span>
+        <span class="flow-arrow">── POST /auth/login ──►</span>
+        <span class="flow-endpoint-code">Módulo Auth</span>
+        <span class="flow-arrow">── Retorna JWT Token ──►</span>
+        <span class="flow-node">Guardado Contexto</span>
+      </div>
+
+      <p style="font-size: 14px; color: var(--text-body); margin-bottom: 14px;">
+        <strong>Propósito:</strong> Validar credenciales de acceso, obtener el token JWT firmado y extraer la identidad del alumno logueado (<code>alumno_id</code>, <code>legajo</code>, <code>email</code>).
+      </p>
+
+      <!-- Code Payload -->
+      <div class="code-block">
+<span class="code-keyword">GET</span> /auth/me
+<span class="code-key">Headers:</span> { "Authorization": "Bearer eyJhbGciOiJIUzI1Ni..." }
+
+<span class="code-key">Response [200 OK]:</span> {
+  <span class="code-key">"usuario_id"</span>: <span class="code-num">45</span>,
+  <span class="code-key">"alumno_id"</span>: <span class="code-num">1042</span>,
+  <span class="code-key">"legajo"</span>: <span class="code-str">"ALU-99420"</span>,
+  <span class="code-key">"nombre"</span>: <span class="code-str">"Estudiante"</span>,
+  <span class="code-key">"rol"</span>: <span class="code-str">"ALUMNO"</span>
+}
+      </div>
+
+      <div class="detail-grid">
+        <div class="detail-item">
+          <div class="detail-item-title">Responsabilidad del Alumno</div>
+          <div class="detail-item-desc">Almacenar el token en memoria/sessionStorage y adjuntarlo en cada petición subsecuente.</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-item-title">Manejo de Errores (401 / 403)</div>
+          <div class="detail-item-desc">Si el token expira o la cuenta no tiene el flag <code>ALUMNO</code>, se fuerza la redirección al Login central.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 02 CONEXIÓN CON ADMINISTRACIÓN -->
+    <div class="connection-card">
+      <div class="connection-header">
+        <div class="connection-title-group">
+          <span class="connection-num">02</span>
+          <h2 class="connection-title">Conexión con Módulo Administrador</h2>
+        </div>
+        <span class="target-badge badge-admin">Módulo Administrador</span>
+      </div>
+
+      <!-- Diagrama de Flujo -->
+      <div class="flow-diagram-box">
+        <span class="flow-node">Módulo Alumno</span>
+        <span class="flow-arrow">── GET /alumnos/{id}/comisiones ──►</span>
+        <span class="flow-endpoint-code">Módulo Admin</span>
+        <span class="flow-arrow">── Listado de Cursadas ──►</span>
+        <span class="flow-node">Panel Materias</span>
+      </div>
+
+      <p style="font-size: 14px; color: var(--text-body); margin-bottom: 14px;">
+        <strong>Propósito:</strong> Consultar la lista oficial de comisiones y materias asignadas al estudiante durante el período lectivo vigente.
+      </p>
+
+      <!-- Code Payload -->
+      <div class="code-block">
+<span class="code-keyword">GET</span> /alumnos/<span class="code-num">1042</span>/comisiones?periodo=<span class="code-str">2026-1C</span>
+
+<span class="code-key">Response [200 OK]:</span> [
+  {
+    <span class="code-key">"comision_id"</span>: <span class="code-num">12</span>,
+    <span class="code-key">"materia"</span>: <span class="code-str">"Programación II"</span>,
+    <span class="code-key">"horario"</span>: <span class="code-str">"Lunes y Miércoles 18:00 - 22:00"</span>,
+    <span class="code-key">"aula"</span>: <span class="code-str">"Aula 204 - Sede Central"</span>,
+    <span class="code-key">"profesores"</span>: [<span class="code-str">"Lic. Martín Gómez"</span>, <span class="code-str">"Ing. Laura Ríos"</span>]
+  }
+]
+      </div>
+
+      <div class="detail-grid">
+        <div class="detail-item">
+          <div class="detail-item-title">Filtro de Seguridad</div>
+          <div class="detail-item-desc">El backend valida que <code>{id}</code> coincida con el <code>alumno_id</code> verificado en el token.</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-item-title">Caso Borde (Sin Cursadas)</div>
+          <div class="detail-item-desc">Si retorna un array vacío `[]`, la UI muestra un estado informativo: "No tenés comisiones inscriptas".</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 03 CONEXIÓN CON ASISTENCIA -->
+    <div class="connection-card">
+      <div class="connection-header">
+        <div class="connection-title-group">
+          <span class="connection-num">03</span>
+          <h2 class="connection-title">Conexión con Módulo Asistencia</h2>
+        </div>
+        <span class="target-badge badge-asist">Módulo Asistencia (Preceptores)</span>
+      </div>
+
+      <!-- Diagrama de Flujo -->
+      <div class="flow-diagram-box">
+        <span class="flow-node">Módulo Alumno</span>
+        <span class="flow-arrow">── GET /alumnos/{id}/asistencias ──►</span>
+        <span class="flow-endpoint-code">Módulo Asistencia</span>
+        <span class="flow-arrow">── Métricas & Clases ──►</span>
+        <span class="flow-node">Vista Presentismo</span>
+      </div>
+
+      <p style="font-size: 14px; color: var(--text-body); margin-bottom: 14px;">
+        <strong>Propósito:</strong> Consumir las marcas de presentismo cargadas por preceptores/docentes y recibir el cálculo automático de asistencias.
+      </p>
+
+      <!-- Code Payload -->
+      <div class="code-block">
+<span class="code-keyword">GET</span> /alumnos/<span class="code-num">1042</span>/asistencias?comision_id=<span class="code-num">12</span>
+
+<span class="code-key">Response [200 OK]:</span> {
+  <span class="code-key">"comision_id"</span>: <span class="code-num">12</span>,
+  <span class="code-key">"total_clases"</span>: <span class="code-num">16</span>,
+  <span class="code-key">"asistencias"</span>: <span class="code-num">14</span>,
+  <span class="code-key">"porcentaje"</span>: <span class="code-num">87.5</span>,
+  <span class="code-key">"estado_regularidad"</span>: <span class="code-str">"REGULAR"</span>,
+  <span class="code-key">"clases"</span>: [
+    { <span class="code-key">"fecha"</span>: <span class="code-str">"2026-08-10"</span>, <span class="code-key">"estado"</span>: <span class="code-str">"PRESENTE"</span> },
+    { <span class="code-key">"fecha"</span>: <span class="code-str">"2026-08-12"</span>, <span class="code-key">"estado"</span>: <span class="code-str">"AUSENTE"</span> }
+  ]
+}
+      </div>
+
+      <div class="detail-grid">
+        <div class="detail-item">
+          <div class="detail-item-title">Consumo Read-Only</div>
+          <div class="detail-item-desc">El Alumno no puede modificar ni justificar inasistencias a través de este contrato.</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-item-title">Cálculo de Regularidad</div>
+          <div class="detail-item-desc">El Módulo Asistencia provee el valor <code>porcentaje</code> precalculado para evitar diferencias en frontend.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 04 CONEXIÓN CON PROFESOR -->
+    <div class="connection-card">
+      <div class="connection-header">
+        <div class="connection-title-group">
+          <span class="connection-num">04</span>
+          <h2 class="connection-title">Conexión con Módulo Profesor</h2>
+        </div>
+        <span class="target-badge badge-prof">Módulo Profesor</span>
+      </div>
+
+      <!-- Diagrama de Flujo -->
+      <div class="flow-diagram-box">
+        <span class="flow-node">Módulo Alumno</span>
+        <span class="flow-arrow">── GET /alumnos/{id}/notas ──►</span>
+        <span class="flow-endpoint-code">Módulo Profesor</span>
+        <span class="flow-arrow">── Calificaciones Cátedra ──►</span>
+        <span class="flow-node">Libreta Digital</span>
+      </div>
+
+      <p style="font-size: 14px; color: var(--text-body); margin-bottom: 14px;">
+        <strong>Propósito:</strong> Consultar las calificaciones de exámenes parciales, trabajos prácticos y la condición final oficializada por el equipo docente.
+      </p>
+
+      <!-- Code Payload -->
+      <div class="code-block">
+<span class="code-keyword">GET</span> /alumnos/<span class="code-num">1042</span>/calificaciones?comision_id=<span class="code-num">12</span>
+
+<span class="code-key">Response [200 OK]:</span> {
+  <span class="code-key">"comision_id"</span>: <span class="code-num">12</span>,
+  <span class="code-key">"evaluaciones"</span>: [
+    { <span class="code-key">"instancia"</span>: <span class="code-str">"Primer Parcial"</span>, <span class="code-key">"nota"</span>: <span class="code-num">8</span>, <span class="code-key">"fecha"</span>: <span class="code-str">"2026-09-05"</span> },
+    { <span class="code-key">"instancia"</span>: <span class="code-str">"Trabajo Práctico 1"</span>, <span class="code-key">"nota"</span>: <span class="code-num">10</span>, <span class="code-key">"fecha"</span>: <span class="code-str">"2026-09-15"</span> }
+  ],
+  <span class="code-key">"condicion_final"</span>: <span class="code-str">"EN_CURSADA"</span>
+}
+      </div>
+
+      <div class="detail-grid">
+        <div class="detail-item">
+          <div class="detail-item-title">Sincronización Docente</div>
+          <div class="detail-item-desc">Las notas son visibles en el portal del alumno inmediatamente después de que el profesor las guarda/oficializa.</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-item-title">Notas Pendientes</div>
+          <div class="detail-item-desc">Si una evaluación no ha sido tomada o cargada, se excluye o se retorna <code>nota: null</code> renderizando "Pendiente".</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MATRIZ RESUMEN DE INTEGRACIONES -->
+    <div class="summary-table-box">
+      <h3 class="table-title">Matriz Resumen de Contratos de API</h3>
+      
+      <table class="matrix-table">
+        <thead>
+          <tr>
+            <th>Origen</th>
+            <th>Módulo Destino</th>
+            <th>Método</th>
+            <th>Endpoint de Conexión</th>
+            <th>Frecuencia / Caché</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Módulo Alumno</td>
+            <td>Autenticación</td>
+            <td><span class="code-tag-sm">POST</span></td>
+            <td><code>/auth/login</code></td>
+            <td>Al iniciar sesión</td>
+          </tr>
+          <tr>
+            <td>Módulo Alumno</td>
+            <td>Autenticación</td>
+            <td><span class="code-tag-sm">GET</span></td>
+            <td><code>/auth/me</code></td>
+            <td>Al cargar la app (JWT)</td>
+          </tr>
+          <tr>
+            <td>Módulo Alumno</td>
+            <td>Administración</td>
+            <td><span class="code-tag-sm">GET</span></td>
+            <td><code>/alumnos/{id}/comisiones</code></td>
+            <td>En Dashboard / 15 min caché</td>
+          </tr>
+          <tr>
+            <td>Módulo Alumno</td>
+            <td>Asistencia</td>
+            <td><span class="code-tag-sm">GET</span></td>
+            <td><code>/alumnos/{id}/asistencias</code></td>
+            <td>Al ver materia / 5 min caché</td>
+          </tr>
+          <tr>
+            <td>Módulo Alumno</td>
+            <td>Profesor</td>
+            <td><span class="code-tag-sm">GET</span></td>
+            <td><code>/alumnos/{id}/calificaciones</code></td>
+            <td>Al ver notas / Real-time</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- INFORME TÉCNICO DE ESTILOS -->
+    <div class="report-box">
+      <h3 class="report-title">Informe Técnico de Estilos del Mapa de Conexiones</h3>
+      <div class="report-sub">Especificación visual de los bloques de integración y resaltado de código</div>
+
+      <div class="report-grid">
+        <div class="report-item">
+          <h4>Bloques de Código API</h4>
+          <p><strong>Slate Dark Theme (#0f172a)</strong><br>Contenedores de código con sintaxis resaltada para métodos HTTP (POST/GET), JSON keys y valores numéricos.</p>
+        </div>
+
+        <div class="report-item">
+          <h4>Badges de Módulos Destino</h4>
+          <p><strong>Color-Coded Badges</strong><br>Asignación de tonos pastel específicos por módulo: Verde (Auth), Azul (Admin), Púrpura (Asistencia) y Ámbar (Profesor).</p>
+        </div>
+
+        <div class="report-item">
+          <h4>Diagramas de Flujo In-line</h4>
+          <p><strong>Flow Diagram Nodes</strong><br>Secuencias de cajas conectadas por flechas monoespaciadas que resumen gráficamente la interacción de la llamada.</p>
+        </div>
+
+        <div class="report-item">
+          <h4>Matriz Resumen Tabulada</h4>
+          <p><strong>Table Component System</strong><br>Tabla con encabezados monoespaciados, líneas divisoras sutiles e identificadores de métodos HTTP destacados.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</body>
+</html>
