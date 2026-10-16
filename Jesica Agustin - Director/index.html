@@ -1,225 +1,55 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#172d4d">
-<title>Perfil Directivo en Sistema Educativo</title>
-<link rel="stylesheet" href="styles.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#14214F">
+  <title>Panel Directivo · ISFDyT N° 26</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<header class="topbar">
-  <div class="topbar-inner">
-    <a class="brand" href="#inicio" aria-label="Inicio de la documentación">
-      <span class="brand-mark">D</span>
-      <span>Perfil Directivo<small>Sistema Educativo</small></span>
-    </a>
-    <div class="top-actions">
-      <span class="skin-label">Apariencia</span>
-      <div class="skin-toggle" role="group" aria-label="Elegir apariencia">
-        <button type="button" class="active" id="standardBtn" aria-pressed="true">Institucional</button>
-        <button type="button" id="pompomBtn" aria-pressed="false">🍮 Pompom</button>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <a class="brand" href="#inicio" aria-label="Jornadas Estudiantiles, inicio">
+        <span class="brand-symbol">26</span><span class="brand-copy"><b>Jornadas</b><small>ISFDyT N° 26</small></span>
+      </a>
+      <div class="school-chip"><span class="school-dot"></span><span><b>Instituto Superior</b><small>Ciclo lectivo 2026</small></span><span class="chevron">⌄</span></div>
+      <div class="nav-caption">GESTIÓN</div>
+      <nav class="main-nav" aria-label="Navegación principal">
+        <a class="nav-item active" href="#inicio" data-view="inicio"><span class="nav-icon">▦</span>Resumen</a>
+        <a class="nav-item" href="#usuarios" data-view="usuarios"><span class="nav-icon">♙</span>Usuarios <span class="nav-count">4</span></a>
+        <a class="nav-item" href="#cursos" data-view="cursos"><span class="nav-icon">▤</span>Cursos y divisiones</a>
+        <a class="nav-item" href="#asistencia" data-view="asistencia"><span class="nav-icon">✓</span>Asistencia</a>
+        <a class="nav-item" href="#academico" data-view="academico"><span class="nav-icon">▥</span>Rendimiento académico</a>
+      </nav>
+      <div class="nav-caption">INSTITUCIÓN</div>
+      <nav class="main-nav" aria-label="Herramientas institucionales">
+        <a class="nav-item" href="#organizacion" data-view="organizacion"><span class="nav-icon">▦</span>Organización</a>
+        <a class="nav-item" href="#comunicados" data-view="comunicados"><span class="nav-icon">✉</span>Comunicados</a>
+        <a class="nav-item" href="#informes" data-view="informes"><span class="nav-icon">▧</span>Informes</a>
+        <a class="nav-item" href="#auditoria" data-view="auditoria"><span class="nav-icon">◷</span>Actividad y auditoría</a>
+        <a class="nav-item" href="#configuracion" data-view="configuracion"><span class="nav-icon">⚙</span>Configuración</a>
+      </nav>
+      <div class="sidebar-bottom"><div class="help-card"><span class="help-star">✦</span><b>¿Necesitás ayuda?</b><p>Consultá la guía rápida del sistema.</p><button class="text-button" data-toast="La guía rápida estará disponible próximamente">Abrir centro de ayuda <span>↗</span></button></div>
+        <button class="profile" id="profileButton"><span class="avatar avatar-navy">JV</span><span class="profile-copy"><b>Julieta Vega</b><small>Directora</small></span><span class="more">···</span></button>
       </div>
-      <button class="print-btn" onclick="window.print()">Imprimir / PDF ↗</button>
-    </div>
+    </aside>
+    <div class="mobile-scrim" id="scrim"></div>
+    <main class="main-area">
+      <header class="topbar">
+        <button class="icon-button menu-toggle" id="menuToggle" aria-label="Abrir menú">☰</button>
+        <div class="breadcrumb"><span>ISFDyT N° 26</span><span class="crumb-sep">/</span><b id="crumbCurrent">Resumen</b></div>
+        <div class="topbar-actions"><div class="today-label"><span class="calendar-icon">▦</span><span>Viernes, 16 de octubre de 2026</span></div><button class="icon-button notification-button" id="notificationButton" aria-label="Notificaciones">♧<i></i></button><button class="top-avatar">JV</button></div>
+      </header>
+      <div class="content" id="content" tabindex="-1"></div>
+      <footer class="page-footer"><span>© 2026 ISFDyT N° 26 · Sistema de Gestión Educativa</span><span><i class="status-dot"></i> Todos los sistemas operativos</span></footer>
+    </main>
   </div>
-</header>
-
-<div class="layout" id="inicio">
-  <aside class="sidebar" aria-label="Índice del documento">
-    <p class="side-title">Contenido del documento</p>
-    <a class="nav-link" href="#contexto"><span>01</span> Contexto del proyecto</a>
-    <a class="nav-link" href="#proposito"><span>02</span> Propósito y alcance</a>
-    <a class="nav-link" href="#funcionalidades"><span>03</span> Funcionalidades</a>
-    <a class="nav-link" href="#reglas"><span>04</span> Reglas generales</a>
-    <a class="nav-link" href="#futuro"><span>05</span> Proyección futura</a>
-    <a class="nav-link" href="#prioridades"><span>06</span> Etapas de desarrollo</a>
-    <a class="nav-link" href="#aceptacion"><span>07</span> Criterios de aceptación</a>
-    <a class="nav-link" href="#cierre"><span>08</span> Consideraciones finales</a>
-  </aside>
-
-  <main>
-    <section class="hero">
-      <span class="eyebrow">✦ Especificación funcional · Versión 1.0</span>
-      <div class="hero-sticker" aria-hidden="true">📚</div>
-      <span class="pudding-dots" aria-hidden="true">✦ 🍮 ✦</span>
-      <h1>Perfil<br>Directivo</h1>
-      <p>Documento de análisis funcional para definir el propósito, las responsabilidades, las funcionalidades y la evolución prevista del perfil Directivo dentro del Sistema de Gestión Educativa.</p>
-      <div class="hero-meta">
-        <span>Documento de análisis</span>
-        <span>Alcance funcional</span>
-        <span>Planificación evolutiva</span><span class="pompom-only" style="display:none">🍮 Un toque dulce para organizar mejor</span>
-      </div>
-    </section>
-
-    <div class="intro-grid">
-      <article class="metric">
-        <div class="metric-icon">⌂</div>
-        <div><strong>Administración</strong><p>Organizar usuarios, cursos y parámetros institucionales.</p></div>
-      </article>
-      <article class="metric">
-        <div class="metric-icon">◉</div>
-        <div><strong>Supervisión</strong><p>Consultar asistencia, rendimiento y actividad escolar.</p></div>
-      </article>
-      <article class="metric">
-        <div class="metric-icon">↗</div>
-        <div><strong>Toma de decisiones</strong><p>Convertir los datos en informes e indicadores útiles.</p></div>
-      </article>
-    </div>
-
-    <section class="section" id="contexto">
-      <div class="section-head"><span class="section-number">01</span><div><h2>Contexto general del proyecto</h2><p class="section-lead">Origen y marco de funcionamiento del módulo.</p></div></div>
-      <p>El proyecto consiste en desarrollar un sistema de gestión educativa destinado a centralizar, organizar y facilitar la administración de la información de una institución escolar.</p>
-      <p>La plataforma estará compuesta por distintos perfiles de usuario, cada uno con funcionalidades y permisos específicos de acuerdo con sus responsabilidades. Dentro de esta arquitectura, el módulo Directivo tendrá una función estratégica: proporcionar una visión integral del funcionamiento de la institución y ofrecer herramientas para administrar, supervisar y evaluar su actividad.</p>
-      <div class="callout"><strong>Enfoque del módulo</strong>Centralizar la información institucional y transformarla en una herramienta práctica para la organización, el seguimiento y la toma de decisiones.</div>
-    </section>
-
-    <section class="section" id="proposito">
-      <div class="section-head"><span class="section-number">02</span><div><h2>Propósito, alcance y responsabilidades</h2><p class="section-lead">Qué debe resolver el perfil Directivo y cuáles son sus límites.</p></div></div>
-      <p>El módulo Directivo tiene como propósito proporcionar herramientas para gestionar la estructura organizativa, supervisar el funcionamiento escolar y acceder a información relevante para la toma de decisiones.</p>
-      <p>Su perspectiva será transversal: a diferencia de las tareas operativas, el Directivo necesita una visión general de la institución y la posibilidad de profundizar en los datos cuando sea necesario.</p>
-      <div class="feature-grid">
-        <article class="feature"><div class="feature-top"><span class="feature-icon">⚙</span><div><h3>Administrar</h3><p>Mantener organizada la estructura institucional y gestionar la información autorizada.</p></div></div></article>
-        <article class="feature"><div class="feature-top"><span class="feature-icon">◉</span><div><h3>Supervisar</h3><p>Controlar el funcionamiento general de los cursos y los procesos escolares.</p></div></div></article>
-        <article class="feature"><div class="feature-top"><span class="feature-icon">▥</span><div><h3>Analizar</h3><p>Consultar estadísticas e informes para identificar situaciones relevantes.</p></div></div></article>
-        <article class="feature"><div class="feature-top"><span class="feature-icon">↗</span><div><h3>Coordinar</h3><p>Comunicar decisiones, organizar actividades y facilitar la coordinación institucional.</p></div></div></article>
-      </div>
-      <h3>Responsabilidades funcionales</h3>
-      <ul>
-        <li>Administrar usuarios, roles y permisos.</li>
-        <li>Gestionar la estructura de cursos y divisiones.</li>
-        <li>Consultar información de asistencia y rendimiento académico.</li>
-        <li>Coordinar aspectos organizativos del ciclo lectivo.</li>
-        <li>Emitir comunicaciones institucionales.</li>
-        <li>Generar informes y estadísticas.</li>
-        <li>Supervisar la consistencia de la información registrada.</li>
-        <li>Gestionar parámetros generales del sistema.</li>
-      </ul>
-      <div class="callout"><strong>Límite de responsabilidad</strong>El módulo no debe reemplazar las tareas operativas de otros perfiles. Debe aprovechar la información que estos generan para facilitar el seguimiento y la supervisión.</div>
-    </section>
-
-    <section class="section" id="funcionalidades">
-      <div class="section-head"><span class="section-number">03</span><div><h2>Descripción funcional</h2><p class="section-lead">Capacidades previstas para la primera definición del módulo.</p></div></div>
-      <div class="feature-grid">
-        <article class="feature">
-          <div class="feature-top"><span class="feature-icon">▦</span><div><h3>3.1 · Panel principal</h3><p>Resumen del estado general de la institución.</p></div></div>
-          <ul><li>Mostrar cantidad de alumnos, docentes, preceptores, cursos y divisiones.</li><li>Consultar indicadores generales de asistencia.</li><li>Ver novedades y comunicaciones recientes.</li><li>Acceder rápidamente a las áreas principales.</li><li>Mostrar alertas que requieran atención.</li></ul>
-          <span class="tag">Visualización centralizada</span>
-        </article>
-        <article class="feature">
-          <div class="feature-top"><span class="feature-icon">♙</span><div><h3>3.2 · Gestión de usuarios</h3><p>Administración de cuentas y permisos.</p></div></div>
-          <ul><li>Consultar, buscar y registrar usuarios.</li><li>Modificar datos autorizados.</li><li>Asignar roles y administrar permisos.</li><li>Activar o desactivar accesos según las reglas.</li><li>Consultar el estado de las cuentas.</li></ul>
-          <span class="tag">Control de acceso</span>
-        </article>
-        <article class="feature">
-          <div class="feature-top"><span class="feature-icon">▤</span><div><h3>3.3 · Cursos y divisiones</h3><p>Organización de la estructura académica.</p></div></div>
-          <ul><li>Crear y modificar cursos y divisiones.</li><li>Consultar integrantes y asignaciones.</li><li>Visualizar la distribución de alumnos.</li><li>Gestionar la estructura por ciclo lectivo.</li><li>Conservar la información histórica.</li></ul>
-          <span class="tag">Estructura escolar</span>
-        </article>
-        <article class="feature">
-          <div class="feature-top"><span class="feature-icon">✓</span><div><h3>3.4 · Seguimiento de asistencia</h3><p>Consulta y análisis de la asistencia escolar.</p></div></div>
-          <ul><li>Consultar asistencias, inasistencias y llegadas tarde.</li><li>Filtrar por alumno, curso, fecha o período.</li><li>Visualizar indicadores generales.</li><li>Identificar casos de ausentismo reiterado.</li><li>Consultar la evolución durante el ciclo lectivo.</li></ul>
-          <span class="tag">Seguimiento</span>
-        </article>
-        <article class="feature">
-          <div class="feature-top"><span class="feature-icon">▥</span><div><h3>3.5 · Seguimiento académico</h3><p>Supervisión del rendimiento de estudiantes y cursos.</p></div></div>
-          <ul><li>Consultar calificaciones registradas.</li><li>Visualizar resultados por materia y período.</li><li>Identificar dificultades de rendimiento.</li><li>Analizar la evolución académica.</li><li>Consultar indicadores de aprobación y desaprobación.</li></ul>
-          <span class="tag">Análisis académico</span>
-        </article>
-        <article class="feature">
-          <div class="feature-top"><span class="feature-icon">▦</span><div><h3>3.6 · Organización institucional</h3><p>Planificación y coordinación de la actividad escolar.</p></div></div>
-          <ul><li>Consultar horarios de clases.</li><li>Supervisar asignaciones de docentes y materias.</li><li>Administrar o consultar el calendario institucional.</li><li>Registrar actividades y fechas importantes.</li><li>Detectar conflictos organizativos cuando sea posible.</li></ul>
-          <span class="tag">Planificación</span>
-        </article>
-        <article class="feature">
-          <div class="feature-top"><span class="feature-icon">✉</span><div><h3>3.7 · Comunicados y notificaciones</h3><p>Comunicación institucional centralizada.</p></div></div>
-          <ul><li>Crear, editar y publicar avisos.</li><li>Seleccionar destinatarios o grupos.</li><li>Consultar el historial de comunicados.</li><li>Gestionar vigencia y publicación.</li><li>Consultar lecturas si la plataforma lo permite.</li></ul>
-          <span class="tag">Comunicación</span>
-        </article>
-        <article class="feature">
-          <div class="feature-top"><span class="feature-icon">▧</span><div><h3>3.8 · Informes y estadísticas</h3><p>Datos organizados para apoyar decisiones.</p></div></div>
-          <ul><li>Generar informes de asistencia y rendimiento.</li><li>Consultar matrícula por curso.</li><li>Comparar resultados entre períodos.</li><li>Filtrar por curso, división, materia y fecha.</li><li>Visualizar gráficos y exportar informes si se incorpora esa capacidad.</li></ul>
-          <span class="tag">Información para decidir</span>
-        </article>
-        <article class="feature">
-          <div class="feature-top"><span class="feature-icon">⬡</span><div><h3>3.9 · Supervisión y control</h3><p>Revisión del funcionamiento y de los registros.</p></div></div>
-          <ul><li>Consultar registros relevantes de actividad.</li><li>Supervisar modificaciones institucionales.</li><li>Identificar inconsistencias.</li><li>Controlar permisos y operaciones sensibles.</li><li>Consultar historiales de auditoría.</li></ul>
-          <span class="tag">Trazabilidad</span>
-        </article>
-        <article class="feature">
-          <div class="feature-top"><span class="feature-icon">⚙</span><div><h3>3.10 · Configuración institucional</h3><p>Parámetros generales de la escuela.</p></div></div>
-          <ul><li>Gestionar datos generales de la institución.</li><li>Configurar ciclos lectivos y períodos académicos.</li><li>Administrar parámetros autorizados.</li><li>Mantener actualizada la información institucional.</li><li>Validar cambios que puedan afectar registros existentes.</li></ul>
-          <span class="tag">Configuración</span>
-        </article>
-      </div>
-      <div class="callout"><strong>Comportamiento esperado</strong>Las capacidades de consulta, creación, modificación y eliminación no se deben asumir como equivalentes. Cada operación deberá habilitarse según el permiso correspondiente y las reglas definidas para el proyecto.</div>
-    </section>
-
-    <section class="section" id="reglas">
-      <div class="section-head"><span class="section-number">04</span><div><h2>Reglas generales de funcionamiento</h2><p class="section-lead">Criterios transversales para diseñar y desarrollar el módulo.</p></div></div>
-      <h3>4.1 · Autenticación y autorización</h3><p>El acceso requiere una sesión válida. Las funcionalidades disponibles dependerán del rol y de los permisos asignados. Las operaciones también deberán validarse en el servidor; ocultar una opción en la interfaz no constituye una protección suficiente.</p>
-      <h3>4.2 · Integridad de la información</h3><p>Los registros deberán mantener relaciones consistentes entre alumnos, cursos, materias, docentes y ciclos lectivos. Los cambios no deberán eliminar accidentalmente información histórica.</p>
-      <h3>4.3 · Trazabilidad</h3><p>Las operaciones administrativas relevantes deberán poder auditarse. Se deberá registrar quién realizó el cambio, cuándo se realizó y, cuando corresponda, cuáles fueron los valores anteriores y posteriores.</p>
-      <h3>4.4 · Privacidad</h3><p>Cada usuario deberá acceder únicamente a la información necesaria para sus funciones. Los datos personales y académicos deberán protegerse con controles de acceso adecuados.</p>
-      <h3>4.5 · Consistencia de indicadores</h3><p>Los paneles e informes deberán utilizar criterios de cálculo uniformes. Una misma métrica no deberá presentar resultados contradictorios en distintas pantallas.</p>
-      <h3>4.6 · Validación de operaciones</h3><p>Antes de ejecutar una operación, el sistema deberá comprobar que los datos y las condiciones sean válidos. Si una acción no puede realizarse, deberá explicar el motivo con claridad.</p>
-    </section>
-
-    <section class="section" id="futuro">
-      <div class="section-head"><span class="section-number">05</span><div><h2>Proyección futura del módulo</h2><p class="section-lead">Capacidades posibles para etapas posteriores del proyecto.</p></div></div>
-      <p>El módulo se plantea como una funcionalidad evolutiva. Las siguientes propuestas no deben interpretarse como capacidades ya implementadas, sino como posibles ampliaciones a evaluar según las necesidades y los recursos disponibles.</p>
-      <div class="future-grid">
-        <article class="future-item"><span class="future-num">FUTURO · 01</span><h3>Alertas institucionales inteligentes</h3><p>Identificar automáticamente situaciones como ausentismo reiterado, dificultades académicas persistentes o inconsistencias administrativas. Las alertas serán apoyo para la revisión humana, no decisiones automáticas sobre estudiantes.</p></article>
-        <article class="future-item"><span class="future-num">FUTURO · 02</span><h3>Análisis comparativo de períodos</h3><p>Comparar indicadores entre ciclos lectivos, cursos, divisiones y períodos para identificar tendencias y evaluar cambios.</p></article>
-        <article class="future-item"><span class="future-num">FUTURO · 03</span><h3>Tablero de indicadores configurable</h3><p>Incorporar un tablero analítico que permita priorizar métricas de asistencia, rendimiento, matrícula y actividad institucional.</p></article>
-        <article class="future-item"><span class="future-num">FUTURO · 04</span><h3>Gestión documental</h3><p>Centralizar actas, reglamentos, resoluciones y documentos administrativos, con permisos y control de acceso.</p></article>
-        <article class="future-item"><span class="future-num">FUTURO · 05</span><h3>Seguimiento de situaciones particulares</h3><p>Registrar intervenciones, responsables y seguimiento de situaciones que requieran atención, con controles estrictos de confidencialidad y auditoría.</p></article>
-        <article class="future-item"><span class="future-num">FUTURO · 06</span><h3>Integración entre módulos</h3><p>Reducir la duplicación de tareas mediante la actualización coordinada de los datos que utilizan los distintos perfiles.</p></article>
-        <article class="future-item"><span class="future-num">FUTURO · 07</span><h3>Exportación avanzada de informes</h3><p>Generar documentos descargables y distribuir reportes de forma controlada, respetando los permisos y la privacidad.</p></article>
-        <article class="future-item"><span class="future-num">FUTURO · 08</span><h3>Historial institucional</h3><p>Consultar la evolución histórica de cursos, matrículas, asignaciones y resultados a lo largo de distintos ciclos lectivos.</p></article>
-      </div>
-    </section>
-
-    <section class="section" id="prioridades">
-      <div class="section-head"><span class="section-number">06</span><div><h2>Priorización del desarrollo</h2><p class="section-lead">Una hoja de ruta inicial para implementar el módulo de forma gradual.</p></div></div>
-      <div class="phase"><div class="phase-label">ETAPA 1</div><div><h3>Funcionalidades fundamentales</h3><p>Panel principal, gestión de usuarios y roles, cursos y divisiones, consulta de asistencia, consulta académica y comunicados básicos.</p><p><strong>Resultado esperado:</strong> módulo funcional para administrar la estructura escolar y consultar información esencial.</p></div></div>
-      <div class="phase"><div class="phase-label">ETAPA 2</div><div><h3>Supervisión y análisis</h3><p>Informes de asistencia y rendimiento, filtros avanzados, estadísticas por curso y período, historial de operaciones y mejoras de organización y notificaciones.</p><p><strong>Resultado esperado:</strong> mayor capacidad de supervisión y toma de decisiones basada en información.</p></div></div>
-      <div class="phase"><div class="phase-label">ETAPA 3</div><div><h3>Ampliación y automatización</h3><p>Alertas institucionales, análisis comparativo, tablero configurable, gestión documental, seguimiento de situaciones particulares y exportación avanzada.</p><p><strong>Resultado esperado:</strong> evolución hacia una herramienta integral con mayor capacidad de análisis, trazabilidad y planificación.</p></div></div>
-      <div class="callout"><strong>Nota de planificación</strong>Las etapas constituyen una propuesta inicial. La prioridad definitiva dependerá del alcance escolar, el tiempo disponible y los recursos técnicos del equipo.</div>
-    </section>
-
-    <section class="section" id="aceptacion">
-      <div class="section-head"><span class="section-number">07</span><div><h2>Criterios de aceptación generales</h2><p class="section-lead">Condiciones mínimas para considerar funcional el módulo.</p></div></div>
-      <ul class="checklist">
-        <li>El usuario Directivo puede autenticarse y acceder únicamente a las funcionalidades autorizadas.</li>
-        <li>La información institucional se encuentra organizada y puede consultarse mediante filtros adecuados.</li>
-        <li>Los datos de los paneles e informes coinciden con los registros de origen.</li>
-        <li>Las operaciones administrativas validan los datos antes de guardar cambios.</li>
-        <li>Los usuarios no autorizados no pueden acceder a funciones restringidas.</li>
-        <li>Las operaciones críticas disponen de mecanismos adecuados de trazabilidad.</li>
-        <li>Los comunicados pueden dirigirse a los destinatarios correspondientes.</li>
-        <li>El sistema conserva la información histórica necesaria para el seguimiento institucional.</li>
-        <li>Los mensajes de error explican por qué una operación no pudo completarse.</li>
-        <li>Las futuras funcionalidades pueden incorporarse sin comprometer la integridad de los módulos existentes.</li>
-      </ul>
-      <p class="muted">Estos criterios generales deberán complementarse con pruebas específicas para cada funcionalidad durante las etapas de diseño, desarrollo y validación.</p>
-    </section>
-
-    <section class="section" id="cierre">
-      <div class="section-head"><span class="section-number">08</span><div><h2>Consideraciones finales</h2><p class="section-lead">Definición funcional consolidada.</p></div></div>
-      <p>El módulo Directivo constituye el componente de supervisión y administración estratégica del sistema de gestión educativa. Su valor no radica únicamente en permitir consultas, sino en organizar los datos institucionales y convertirlos en herramientas útiles para la gestión.</p>
-      <p>La implementación deberá priorizar la claridad de la información, la integridad de los registros, la seguridad de los accesos y la facilidad de uso. También será fundamental mantener una separación clara de responsabilidades para evitar duplicaciones innecesarias de tareas.</p>
-      <p>El módulo deberá diseñarse con una estructura funcional que permita incorporar nuevas capacidades progresivamente, acompañando las necesidades de la institución sin comprometer la coherencia del sistema.</p>
-      <div class="callout"><strong>Definición final</strong>El perfil Directivo será el encargado de administrar, supervisar y analizar el funcionamiento institucional mediante herramientas de gestión, consulta, comunicación y generación de informes, con permisos acordes a sus responsabilidades y capacidad de evolución hacia una plataforma integral de gestión educativa.</div>
-    </section>
-
-    <footer class="footer">
-      <strong>Sistema de Gestión Educativa</strong><br>
-      Documentación funcional · Perfil Directivo · Versión 1.0<br>
-      <span>Documento de análisis para orientar el diseño, desarrollo y validación del módulo.</span>
-    </footer>
-  </main>
-</div>
-<script src="script.js" defer></script>
+  <dialog class="modal" id="modal"><form method="dialog"><button class="modal-close" aria-label="Cerrar">×</button></form><div id="modalBody"></div></dialog>
+  <div class="toast-region" id="toastRegion" aria-live="polite"></div>
+  <script src="script.js" defer></script>
 </body>
 </html>
