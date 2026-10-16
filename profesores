@@ -1,0 +1,769 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Informe de avance - Sistema Profesor</title>
+
+  <style>
+    :root {
+      --azul: #1769aa;
+      --azul-oscuro: #124d7b;
+      --texto: #263445;
+      --secundario: #596879;
+      --borde: #d8e1e9;
+      --fondo: #eef2f6;
+      --suave: #f2f6fa;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--fondo);
+      color: var(--texto);
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 15px;
+      line-height: 1.7;
+    }
+
+    .barra {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      padding: 14px;
+      background: #ffffff;
+      border-bottom: 1px solid var(--borde);
+    }
+
+    button {
+      padding: 10px 18px;
+      border: none;
+      border-radius: 6px;
+      background: var(--azul);
+      color: white;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: var(--azul-oscuro);
+    }
+
+    .contenedor {
+      width: min(960px, calc(100% - 32px));
+      margin: 30px auto;
+      background: white;
+      box-shadow: 0 8px 30px rgba(20, 50, 80, 0.10);
+    }
+
+    .portada {
+      padding: 55px 65px 45px;
+      background: linear-gradient(135deg, var(--azul-oscuro), #1976b9);
+      color: white;
+      border-bottom: 6px solid #7db9e3;
+    }
+
+    .etiqueta {
+      margin: 0 0 12px;
+      font-size: 12px;
+      font-weight: bold;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 38px;
+      line-height: 1.2;
+    }
+
+    .subtitulo {
+      margin-top: 12px;
+      font-size: 21px;
+    }
+
+    .datos {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+      margin-top: 35px;
+    }
+
+    .dato {
+      padding-top: 12px;
+      border-top: 1px solid rgba(255,255,255,0.4);
+    }
+
+    .dato small {
+      display: block;
+      margin-bottom: 4px;
+      opacity: 0.8;
+      text-transform: uppercase;
+      font-size: 11px;
+    }
+
+    .contenido {
+      padding: 42px 65px 55px;
+    }
+
+    section {
+      margin-bottom: 34px;
+    }
+
+    h2 {
+      padding-bottom: 9px;
+      margin: 0 0 16px;
+      color: var(--azul-oscuro);
+      font-size: 22px;
+      line-height: 1.35;
+      border-bottom: 2px solid var(--borde);
+    }
+
+    h3 {
+      margin: 20px 0 8px;
+      color: #284e70;
+      font-size: 17px;
+    }
+
+    p {
+      margin: 0 0 13px;
+    }
+
+    ul, ol {
+      padding-left: 25px;
+    }
+
+    li {
+      margin-bottom: 7px;
+    }
+
+    strong {
+      color: #1c3f5d;
+    }
+
+    .destacado {
+      margin: 20px 0;
+      padding: 17px 20px;
+      background: var(--suave);
+      border-left: 4px solid var(--azul);
+    }
+
+    .tabla-contenedor {
+      overflow-x: auto;
+      margin: 16px 0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    th, td {
+      padding: 11px 12px;
+      border: 1px solid var(--borde);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: var(--suave);
+      color: var(--azul-oscuro);
+    }
+
+    .pie {
+      padding-top: 18px;
+      margin-top: 40px;
+      border-top: 1px solid var(--borde);
+      color: var(--secundario);
+      font-size: 12px;
+    }
+
+    @media (max-width: 650px) {
+      .contenedor {
+        width: 100%;
+        margin: 0;
+      }
+
+      .portada {
+        padding: 35px 25px;
+      }
+
+      .contenido {
+        padding: 30px 25px;
+      }
+
+      h1 {
+        font-size: 30px;
+      }
+
+      .datos {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+    }
+
+    @page {
+      size: A4;
+      margin: 15mm;
+    }
+
+    @media print {
+      body {
+        background: white;
+        font-size: 11pt;
+      }
+
+      .barra {
+        display: none;
+      }
+
+      .contenedor {
+        width: 100%;
+        margin: 0;
+        box-shadow: none;
+      }
+
+      .portada {
+        padding: 25mm 15mm 15mm;
+        print-color-adjust: exact;
+        -webkit-print-color-adjust: exact;
+      }
+
+      .contenido {
+        padding: 12mm 15mm;
+      }
+
+      h2, h3 {
+        break-after: avoid;
+      }
+
+      table, .destacado {
+        break-inside: avoid;
+      }
+
+      tr {
+        break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <nav class="barra">
+    <button onclick="window.print()">Imprimir / Guardar como PDF</button>
+  </nav>
+
+  <main class="contenedor">
+
+    <header class="portada">
+      <p class="etiqueta">Informe académico de avance</p>
+
+      <h1>Sistema de Gestión Académica</h1>
+      <p class="subtitulo">Módulo Profesor</p>
+
+      <div class="datos">
+        <div class="dato">
+          <small>Estudiante</small>
+          Nicolás Díaz
+        </div>
+
+        <div class="dato">
+          <small>Carrera</small>
+          Tecnicatura Superior en Desarrollo de Software
+        </div>
+
+        <div class="dato">
+          <small>Fecha</small>
+          16 de octubre de 2026
+        </div>
+      </div>
+    </header>
+
+    <article class="contenido">
+
+      <section>
+        <h2>1. Introducción</h2>
+
+        <p>
+          El presente informe comunica el estado de avance del desarrollo
+          del Sistema Profesor, un módulo de un Sistema de Gestión Académica
+          (SGA) destinado a facilitar las tareas cotidianas de los docentes
+          dentro de una institución educativa.
+        </p>
+
+        <p>
+          El proyecto se encuentra en la etapa de análisis, diseño conceptual
+          del dominio y planificación técnica. Durante esta fase se trabajó
+          en la definición del alcance funcional, la identificación de las
+          entidades principales, el análisis de las reglas de negocio y la
+          evaluación de una arquitectura que permita desarrollar el módulo
+          de manera organizada, mantenible y preparada para su futura
+          integración con otros componentes del sistema académico.
+        </p>
+
+        <p>
+          La estrategia consiste en avanzar progresivamente, validando cada
+          etapa antes de implementar la siguiente. Se busca reducir errores
+          de diseño, evitar decisiones prematuras y mantener una separación
+          clara entre las reglas propias del módulo y las responsabilidades
+          de los sistemas institucionales externos.
+        </p>
+      </section>
+
+      <section>
+        <h2>2. Objetivo general</h2>
+
+        <p>
+          Diseñar e implementar un módulo web que permita a los docentes
+          consultar sus comisiones y materias asignadas, acceder a las
+          nóminas de alumnos, registrar la asistencia, consultar su historial
+          y registrar observaciones académicas, respetando los permisos
+          correspondientes y las reglas de negocio definidas para el sistema.
+        </p>
+      </section>
+
+      <section>
+        <h2>3. Alcance funcional del MVP</h2>
+
+        <p>
+          Se definió un producto mínimo viable (MVP) compuesto por seis
+          funcionalidades principales:
+        </p>
+
+        <ol>
+          <li>
+            <strong>Acceso del profesor:</strong>
+            permitir que el docente ingrese mediante el mecanismo de
+            autenticación que se determine para la integración institucional.
+          </li>
+
+          <li>
+            <strong>Consulta de comisiones y materias:</strong>
+            mostrar las comisiones y materias asignadas al docente durante
+            el período lectivo correspondiente.
+          </li>
+
+          <li>
+            <strong>Consulta de alumnos:</strong>
+            visualizar la nómina de alumnos pertenecientes a una comisión
+            a la que el docente esté asignado.
+          </li>
+
+          <li>
+            <strong>Registro de asistencia:</strong>
+            registrar los estados presente, ausente y tarde para los alumnos
+            de una instancia de clase.
+          </li>
+
+          <li>
+            <strong>Historial de asistencia:</strong>
+            consultar los registros históricos de asistencia de un alumno
+            dentro de las comisiones autorizadas, sin modificar registros
+            desde esta funcionalidad.
+          </li>
+
+          <li>
+            <strong>Observaciones académicas:</strong>
+            registrar y consultar observaciones cualitativas asociadas a un
+            alumno, una comisión, una fecha y un docente autor, según los
+            permisos que se definan.
+          </li>
+        </ol>
+
+        <p>
+          El alcance inicial excluye la gestión de calificaciones, los
+          comunicados a comisiones y la carga de archivos adjuntos. Estas
+          funcionalidades podrán evaluarse en etapas posteriores, una vez
+          que el MVP esté implementado y validado.
+        </p>
+      </section>
+
+      <section>
+        <h2>4. Análisis y diseño del dominio</h2>
+
+        <p>
+          Antes de comenzar la implementación, se elaboró un modelo conceptual
+          del dominio para identificar los conceptos necesarios para
+          representar las operaciones del módulo.
+        </p>
+
+        <p>Entre las entidades y referencias identificadas se encuentran:</p>
+
+        <ul>
+          <li>Profesor, alumno, materia y comisión.</li>
+          <li>Período lectivo y asignación docente.</li>
+          <li>Vínculo temporal entre alumno y comisión.</li>
+          <li>Instancia de clase y registro de asistencia.</li>
+          <li>Observación académica.</li>
+        </ul>
+
+        <p>
+          Se distinguieron los datos propios del Sistema Profesor de aquellos
+          que deberían ser proporcionados por otros componentes del SGA. Las
+          identidades de profesores y alumnos, las comisiones, las materias
+          y las asignaciones docentes se consideran referencias a datos
+          institucionales externos cuya fuente oficial debe confirmarse.
+          Las observaciones académicas se plantean como información propia
+          del módulo.
+        </p>
+
+        <p>
+          La propiedad del registro oficial de asistencia permanece pendiente
+          de definición, ya que depende de cómo se integre el módulo con el
+          sistema central de asistencia.
+        </p>
+
+        <div class="destacado">
+          <strong>Decisión de diseño relevante:</strong>
+          se diferencia una fecha del calendario de una instancia de clase
+          concreta. Así se pueden representar dos clases de una misma
+          comisión en un mismo día sin confundir sus registros de asistencia.
+        </div>
+
+        <p>
+          También se incorporó el concepto de vínculo temporal entre alumno
+          y comisión para contemplar cambios de comisión y preservar la
+          interpretación histórica de los registros.
+        </p>
+      </section>
+
+      <section>
+        <h2>5. Arquitectura propuesta</h2>
+
+        <p>
+          Se está evaluando una arquitectura organizada mediante el enfoque
+          de <strong>puertos y adaptadores</strong>, también conocido como
+          arquitectura hexagonal. El objetivo es separar las reglas de
+          negocio de los detalles técnicos, como la base de datos, la
+          interfaz web y las comunicaciones con sistemas externos.
+        </p>
+
+        <h3>Frontend</h3>
+        <p>
+          Será la interfaz web utilizada por los docentes. Presentará las
+          pantallas, gestionará las interacciones del usuario y se comunicará
+          con el backend.
+        </p>
+
+        <h3>Backend</h3>
+        <p>
+          Concentrará las reglas de negocio, las validaciones, los controles
+          de autorización y los casos de uso del módulo. La lógica principal
+          no debería depender directamente de la interfaz web ni de los
+          mecanismos concretos de persistencia.
+        </p>
+
+        <h3>Dominio</h3>
+        <p>
+          Representará los conceptos, las reglas y las restricciones propias
+          del Sistema Profesor.
+        </p>
+
+        <h3>Puertos y adaptadores</h3>
+        <p>
+          Permitirán definir interfaces para acceder a servicios externos,
+          como autenticación, datos académicos y asistencia. De esta manera,
+          se podrán desarrollar y probar determinadas funcionalidades con
+          implementaciones simuladas mientras se definen los contratos de
+          integración reales.
+        </p>
+
+        <h3>Persistencia</h3>
+        <p>
+          La tecnología y la responsabilidad definitiva del almacenamiento
+          deberán ajustarse a los acuerdos sobre la propiedad de los datos.
+          No se considera confirmado que el Sistema Profesor deba almacenar
+          localmente los registros oficiales de asistencia.
+        </p>
+
+        <p>
+          Esta arquitectura es una propuesta de diseño y todavía debe
+          confirmarse antes de iniciar la implementación.
+        </p>
+      </section>
+
+      <section>
+        <h2>6. Tecnologías evaluadas</h2>
+
+        <p>
+          Se analizaron las siguientes tecnologías como candidatas para
+          el desarrollo:
+        </p>
+
+        <div class="tabla-contenedor">
+          <table>
+            <thead>
+              <tr>
+                <th>Componente</th>
+                <th>Tecnología propuesta</th>
+                <th>Responsabilidad</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Frontend</td>
+                <td>React + TypeScript</td>
+                <td>Interfaz web y componentes reutilizables.</td>
+              </tr>
+              <tr>
+                <td>Backend</td>
+                <td>Python + Django REST Framework</td>
+                <td>API, validaciones y lógica del servidor.</td>
+              </tr>
+              <tr>
+                <td>Base de datos</td>
+                <td>PostgreSQL</td>
+                <td>Persistencia relacional, si corresponde al modelo de integración definitivo.</td>
+              </tr>
+              <tr>
+                <td>Contratos</td>
+                <td>API REST y OpenAPI</td>
+                <td>Comunicación documentada entre componentes.</td>
+              </tr>
+              <tr>
+                <td>Control de versiones</td>
+                <td>Git</td>
+                <td>Seguimiento de cambios y organización del desarrollo.</td>
+              </tr>
+              <tr>
+                <td>Pruebas</td>
+                <td>pytest y herramientas apropiadas para frontend</td>
+                <td>Verificación de reglas, casos de uso e integración.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>
+          Las herramientas de desarrollo disponibles fueron inspeccionadas
+          y se informó que el entorno cuenta con Python, Node.js, npm y un
+          servicio PostgreSQL instalado. Git también está disponible,
+          aunque todavía queda pendiente inicializar el repositorio del
+          proyecto.
+        </p>
+
+        <p>
+          La selección definitiva del stack tecnológico forma parte de las
+          decisiones que deben aprobarse antes de instalar las dependencias
+          y crear la estructura inicial.
+        </p>
+      </section>
+
+      <section>
+        <h2>7. Seguridad y control de acceso</h2>
+
+        <p>
+          El diseño contempla que el acceso a la información no dependa
+          únicamente de que un usuario haya iniciado sesión. Se distinguen
+          cuatro aspectos de seguridad:
+        </p>
+
+        <ol>
+          <li><strong>Identidad:</strong> determinar qué usuario está autenticado.</li>
+          <li><strong>Rol:</strong> verificar que el usuario tenga el perfil docente correspondiente.</li>
+          <li><strong>Asignación académica:</strong> comprobar que el docente esté vinculado a la comisión y al período relevantes.</li>
+          <li><strong>Autorización del recurso:</strong> validar que pueda consultar o ejecutar la operación solicitada sobre los datos específicos.</li>
+        </ol>
+
+        <p>
+          Esta separación es importante para evitar que un docente acceda
+          a información de comisiones que no tiene asignadas. El mecanismo
+          de autenticación y la forma de obtener las asignaciones docentes
+          deben acordarse con los responsables de los sistemas institucionales
+          antes de implementar la integración real.
+        </p>
+      </section>
+
+      <section>
+        <h2>8. Estrategia de desarrollo</h2>
+
+        <p>
+          Se decidió trabajar por etapas pequeñas, con objetivos y criterios
+          de aceptación definidos para cada una.
+        </p>
+
+        <ol>
+          <li>
+            <strong>Análisis y documentación:</strong>
+            definición del alcance funcional, revisión de la arquitectura
+            y elaboración del modelo conceptual del dominio.
+          </li>
+          <li>
+            <strong>Preparación técnica:</strong>
+            confirmación del stack, definición de la estructura de
+            directorios, inicialización del repositorio Git y preparación
+            de los entornos de desarrollo.
+          </li>
+          <li>
+            <strong>Inicialización del proyecto:</strong>
+            creación del esqueleto de frontend y backend, configuración
+            de las herramientas básicas y verificación de que ambas partes
+            puedan ejecutarse.
+          </li>
+          <li>
+            <strong>Dominio y pruebas iniciales:</strong>
+            implementación progresiva de las reglas de negocio que puedan
+            definirse sin depender de acuerdos externos, con pruebas
+            automatizadas.
+          </li>
+          <li>
+            <strong>Funcionalidades del MVP:</strong>
+            desarrollo gradual de las consultas de comisiones y alumnos,
+            asistencia, historial y observaciones, junto con los mecanismos
+            de acceso correspondientes.
+          </li>
+          <li>
+            <strong>Integración y validación:</strong>
+            adaptación a los contratos institucionales disponibles, pruebas
+            de integración, revisión de permisos y validación del
+            funcionamiento general.
+          </li>
+        </ol>
+
+        <p>
+          Las etapas podrán ajustarse según los acuerdos de integración
+          y los resultados obtenidos durante las pruebas.
+        </p>
+      </section>
+
+      <section>
+        <h2>9. Uso de herramientas de asistencia al desarrollo</h2>
+
+        <p>
+          Para organizar el trabajo se está utilizando un flujo asistido
+          por herramientas de inteligencia artificial, con responsabilidades
+          diferenciadas. La herramienta de desarrollo se utilizará para
+          ejecutar tareas concretas, generar archivos y realizar cambios
+          en el proyecto. La planificación técnica, la revisión de las
+          decisiones de diseño y la validación de los resultados se
+          realizarán mediante un proceso de revisión humana asistido por IA.
+        </p>
+
+        <p>
+          Cada tarea tendrá un alcance definido y deberá informar qué
+          archivos modificó, qué pruebas ejecutó y qué cuestiones quedaron
+          pendientes. No se avanzará automáticamente a la siguiente etapa
+          sin revisar el resultado.
+        </p>
+
+        <p>
+          Este enfoque busca utilizar la automatización para agilizar el
+          trabajo, manteniendo el control sobre las decisiones técnicas
+          y la comprensión del sistema desarrollado.
+        </p>
+      </section>
+
+      <section>
+        <h2>10. Decisiones pendientes</h2>
+
+        <p>
+          Se identificaron cuestiones que dependen de definiciones
+          institucionales o técnicas todavía no confirmadas:
+        </p>
+
+        <ul>
+          <li>Propiedad y almacenamiento oficial de los registros de asistencia.</li>
+          <li>Política de rectificación de una asistencia registrada.</li>
+          <li>Posibilidad de guardar una toma de asistencia incompleta.</li>
+          <li>Mecanismo para consultar las asignaciones docentes.</li>
+          <li>Fuente y actualización de la nómina de alumnos.</li>
+          <li>Resolución del período lectivo activo.</li>
+          <li>Política de visibilidad de las observaciones entre docentes.</li>
+          <li>Formato de los identificadores compartidos entre sistemas.</li>
+        </ul>
+
+        <p>
+          Estas cuestiones no impiden preparar el entorno ni desarrollar
+          componentes independientes, pero deberán resolverse antes de
+          cerrar las partes del sistema que dependan directamente de ellas.
+        </p>
+      </section>
+
+      <section>
+        <h2>11. Estado actual y próximos pasos</h2>
+
+        <p>
+          A la fecha de este informe, se completaron tareas de análisis
+          documental, evaluación de alternativas arquitectónicas y diseño
+          conceptual del dominio. Se cuenta con documentación sobre
+          arquitectura, decisiones, progreso, planificación y especificación
+          del modelo conceptual.
+        </p>
+
+        <p>
+          La versión 1.1 del modelo de dominio incorpora correcciones
+          derivadas de una revisión técnica, entre ellas la posibilidad
+          de registrar asistencia parcialmente, la distinción entre
+          identidad y descripción de una instancia de clase, y la
+          representación temporal de la relación entre alumnos y comisiones.
+        </p>
+
+        <div class="destacado">
+          <strong>Estado real del proyecto:</strong>
+          la implementación del código de aplicación todavía no comenzó.
+          La inicialización del repositorio, la creación del esqueleto
+          del frontend y backend y la instalación de dependencias siguen
+          pendientes.
+        </div>
+
+        <p>Los próximos pasos son:</p>
+
+        <ol>
+          <li>Confirmar la estructura técnica y aprobar el stack.</li>
+          <li>Inicializar Git y preparar los directorios del proyecto.</li>
+          <li>Configurar frontend y backend.</li>
+          <li>Comprobar que ambos entornos se ejecuten correctamente.</li>
+          <li>Incorporar pruebas básicas y comenzar con una primera funcionalidad pequeña.</li>
+          <li>Avanzar progresivamente hacia el MVP, manteniendo documentadas las decisiones pendientes.</li>
+        </ol>
+      </section>
+
+      <section>
+        <h2>12. Conclusión</h2>
+
+        <p>
+          El proyecto cuenta con una base de análisis y diseño que permite
+          comenzar la implementación de manera ordenada. La principal
+          prioridad en esta etapa es transformar las decisiones conceptuales
+          en una estructura técnica funcional, sin anticipar acuerdos
+          institucionales que todavía no están definidos.
+        </p>
+
+        <p>
+          El desarrollo se realizará de forma incremental, con separación
+          de responsabilidades, pruebas y revisión de cada etapa. Se busca
+          obtener un módulo comprensible, mantenible y preparado para
+          integrarse con los demás componentes del Sistema de Gestión
+          Académica.
+        </p>
+
+        <p>
+          El objetivo inmediato no es implementar todas las funcionalidades
+          de una sola vez, sino establecer una base técnica verificable y
+          construir el MVP progresivamente, validando tanto su funcionamiento
+          como su adecuación a las necesidades académicas de la institución.
+        </p>
+      </section>
+
+      <footer class="pie">
+        Informe de avance del proyecto Sistema de Gestión Académica —
+        Módulo Profesor. Documento preparado para exposición y revisión
+        académica.
+      </footer>
+
+    </article>
+  </main>
+
+</body>
+</html>
