@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Requisitos funcionales — Módulo Alumno</title>
+<style>
+:root{color-scheme:light;--ink:#202b3c;--muted:#526174;--line:#d7dee8;--paper:#fff;--accent:#244b75;--soft:#f3f6fa}*{box-sizing:border-box}body{margin:0;background:#edf1f5;color:var(--ink);font:16px/1.62 system-ui,-apple-system,"Segoe UI",sans-serif}main{max-width:1120px;margin:32px auto;padding:40px 48px;background:var(--paper);box-shadow:0 2px 14px #172b4414}h1,h2,h3,h4{color:#183451;line-height:1.25;margin:1.5em 0 .55em}h1{font-size:2rem;margin-top:0;border-bottom:2px solid var(--accent);padding-bottom:.45em}h2{font-size:1.45rem;border-bottom:1px solid var(--line);padding-bottom:.3em}h3{font-size:1.15rem}p{margin:.6em 0}ul,ol{padding-left:1.5em}li{margin:.28em 0}strong{color:#172d47}.table-wrap{overflow-x:auto;margin:1em 0 1.5em}table{border-collapse:collapse;width:100%;font-size:.94rem}th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top}th{background:var(--soft);color:#183451}code{background:var(--soft);padding:.1em .3em;border-radius:3px}a{color:#155da0}hr{border:0;border-top:1px solid var(--line);margin:1.5em 0}@media(max-width:700px){main{margin:0;padding:24px 18px}body{font-size:15px}}</style>
+</head>
+<body>
+<main>
+<h1>Requisitos funcionales — Módulo Alumno</h1>
+<p><strong>Proyecto:</strong> Sistema de Asistencia</p>
+<p><strong>Módulo:</strong> Alumno</p>
+<p><strong>Estado:</strong> Requisitos propuestos; pendientes de validación institucional y técnica.</p>
+<h2>1. Convenciones</h2>
+<ul>
+<li><strong>Necesaria:</strong> requisito mínimo para una consulta segura y útil.</li>
+<li><strong>Opcional:</strong> capacidad valiosa, pero no condición para la primera versión.</li>
+<li><strong>Pendiente de decisión:</strong> requiere definición institucional o confirmación de arquitectura antes de incluirse.</li>
+<li>Prioridad <strong>Alta/Media/Baja</strong> expresa importancia para una entrega inicial, no un compromiso de implementación.</li>
+</ul>
+<h2>2. Requisitos funcionales</h2>
+<div class="table-wrap"><table><thead><tr><th scope="col">ID</th><th scope="col">Funcionalidad</th><th scope="col">Propósito y funcionamiento esperado</th><th scope="col">Prioridad / clasificación</th><th scope="col">Criterios de aceptación</th></tr></thead><tbody>
+<tr><td>RF-01</td><td>Inicio de sesión</td><td>Permitir al alumno autenticarse usando el mecanismo general del sistema o el mecanismo autorizado que se defina.</td><td>Alta — Necesaria</td><td>Una identidad válida obtiene una sesión conforme a la política; credenciales inválidas no habilitan consultas; se informa el error sin revelar datos sensibles.</td></tr>
+<tr><td>RF-02</td><td>Cierre de sesión</td><td>Finalizar la sesión del alumno e impedir la reutilización normal de la sesión cerrada.</td><td>Alta — Necesaria</td><td>Al cerrar sesión, las operaciones protegidas requieren autenticación nuevamente conforme al mecanismo de sesión adoptado.</td></tr>
+<tr><td>RF-03</td><td>Identificación del alumno</td><td>Vincular la identidad autenticada con un único alumno autorizado mediante una fuente confiable.</td><td>Alta — Necesaria</td><td>La relación se valida; si falta, es ambigua o está inactiva, no se muestran datos y se comunica un estado accionable sin exponer información de terceros.</td></tr>
+<tr><td>RF-04</td><td>Acceso a datos propios</td><td>Restringir consultas al alumno asociado a la sesión, sin confiar en identificadores arbitrarios enviados por el cliente.</td><td>Alta — Necesaria</td><td>Una solicitud propia autorizada se procesa; intentos de consultar otro alumno se deniegan y no devuelven datos ajenos.</td></tr>
+<tr><td>RF-05</td><td>Consulta de datos personales</td><td>Mostrar únicamente los datos personales que existan y estén autorizados para consulta.</td><td>Alta — Necesaria</td><td>Se muestran los campos aprobados; campos ausentes se representan claramente y no se inventan valores.</td></tr>
+<tr><td>RF-06</td><td>Consulta de información académica</td><td>Mostrar curso, división u otros datos académicos disponibles y autorizados, indicando su vigencia cuando corresponda.</td><td>Alta — Necesaria</td><td>La información corresponde al vínculo institucional aplicable; ante datos no disponibles, se informa sin atribuir curso o división incorrectos.</td></tr>
+<tr><td>RF-07</td><td>Historial de asistencia</td><td>Consultar los registros oficiales propios por fecha o período, según datos y calendario disponibles.</td><td>Alta — Necesaria</td><td>El resultado incluye solo registros autorizados; los períodos inválidos se rechazan con explicación; un período válido sin registros se presenta como vacío.</td></tr>
+<tr><td>RF-08</td><td>Consulta de asistencias e inasistencias</td><td>Mostrar los estados reconocidos por la fuente institucional con etiquetas comprensibles.</td><td>Alta — Necesaria</td><td>Cada registro conserva su estado de origen o su correspondencia aprobada; no se reclasifica silenciosamente.</td></tr>
+<tr><td>RF-09</td><td>Consulta de llegadas tarde</td><td>Mostrar la categoría de tardanza si existe en el sistema y se aprueba su publicación.</td><td>Media — Pendiente de decisión</td><td>Si se habilita, solo se muestran tardanzas oficiales propias y se explica la etiqueta; si no está habilitada, no se simula ni se infiere.</td></tr>
+<tr><td>RF-10</td><td>Consulta de ausencias justificadas</td><td>Distinguir ausencias justificadas únicamente si existe categoría institucional y política de acceso aprobada.</td><td>Media — Pendiente de decisión</td><td>Si se habilita, se muestra el estado autorizado sin revelar documentación o información sensible no aprobada.</td></tr>
+<tr><td>RF-11</td><td>Consulta de observaciones</td><td>Presentar observaciones autorizadas vinculadas a registros propios, si la institución define qué contenido es visible.</td><td>Baja — Pendiente de decisión</td><td>Solo se exponen observaciones clasificadas como visibles; contenido interno o sensible permanece restringido.</td></tr>
+<tr><td>RF-12</td><td>Filtro por período</td><td>Permitir acotar el historial a fechas o períodos reconocidos por el sistema.</td><td>Media — Opcional</td><td>El filtro valida formato, límites y orden; los resultados corresponden al intervalo solicitado y a la zona/calendario institucional aplicable.</td></tr>
+<tr><td>RF-13</td><td>Cantidad de presentes y ausentes</td><td>Resumir registros del período con categorías confirmadas.</td><td>Media — Opcional</td><td>Los totales se derivan de registros autorizados y explican el período; las categorías no computables siguen una regla aprobada.</td></tr>
+<tr><td>RF-14</td><td>Porcentaje de asistencia</td><td>Calcular y mostrar un porcentaje cuando se acuerden sesiones computables, fórmula y tratamiento de excepciones.</td><td>Media — Pendiente de decisión</td><td>Se aplica una fórmula aprobada y se identifica el período; no se presenta porcentaje si el denominador o los datos son insuficientes.</td></tr>
+<tr><td>RF-15</td><td>Notificaciones de inasistencia</td><td>Informar eventos relevantes por un canal institucional aprobado, si se considera necesario.</td><td>Baja — Opcional</td><td>Solo se generan avisos basados en eventos confirmados, para destinatarios y canales autorizados; duplicados y preferencias se rigen por política acordada.</td></tr>
+<tr><td>RF-16</td><td>Errores y estados de consulta</td><td>Informar de manera diferenciada falta de autenticación, falta de permiso, indisponibilidad y ausencia de datos.</td><td>Alta — Necesaria</td><td>Los mensajes son comprensibles, no filtran datos internos y permiten distinguir un resultado vacío de una falla.</td></tr>
+</tbody></table></div>
+<h2>3. Requisitos no funcionales asociados</h2>
+<div class="table-wrap"><table><thead><tr><th scope="col">ID</th><th scope="col">Requisito</th><th scope="col">Criterio de aceptación propuesto</th></tr></thead><tbody>
+<tr><td>RNF-01</td><td>Confidencialidad y autorización</td><td>Toda operación de lectura está autenticada y autorizada por identidad; se verifica con pruebas de acceso propio y cruzado.</td></tr>
+<tr><td>RNF-02</td><td>Integridad de los registros</td><td>El Módulo Alumno no expone acciones de escritura sobre asistencia; pruebas de API/servicio confirman que no existe modificación desde este módulo.</td></tr>
+<tr><td>RNF-03</td><td>Privacidad por diseño</td><td>Se muestran solo campos aprobados y se minimiza la información registrada en logs; revisión institucional documentada.</td></tr>
+<tr><td>RNF-04</td><td>Usabilidad</td><td>Estados, categorías, filtros y mensajes se entienden sin conocimiento técnico; se valida mediante revisión funcional.</td></tr>
+<tr><td>RNF-05</td><td>Accesibilidad</td><td>La solución cumple las pautas de accesibilidad que el equipo y la institución definan para el sistema.</td></tr>
+<tr><td>RNF-06</td><td>Rendimiento</td><td>Se establecen y verifican objetivos medibles después de conocer volumen, infraestructura y servicio de datos.</td></tr>
+<tr><td>RNF-07</td><td>Mantenibilidad</td><td>Las reglas de autorización, mapeo de estados y cálculo se documentan y prueban de forma aislable.</td></tr>
+<tr><td>RNF-08</td><td>Observabilidad</td><td>Fallos operativos y eventos de seguridad pertinentes pueden investigarse sin registrar contraseñas ni contenido sensible innecesario.</td></tr>
+</tbody></table></div>
+<h2>4. Reglas y validaciones transversales</h2>
+<ul>
+<li>El servidor o capa confiable deriva el alumno autorizado desde la identidad autenticada; no acepta como autorización un número de alumno aportado por el cliente.</li>
+<li>Los filtros se validan en el límite del servicio: formato, rango válido, fechas invertidas, límites permitidos y período disponible.</li>
+<li>El estado mostrado debe corresponder al dato fuente o a una transformación documentada y aprobada.</li>
+<li>Los cálculos omiten o incluyen tardanzas, justificaciones, feriados y sesiones canceladas solo conforme a reglas aprobadas.</li>
+<li>Las consultas no deben permitir enumeración de alumnos a través de respuestas, identificadores o diferencias de error.</li>
+<li>La ausencia de información se diferencia de los errores de autenticación, autorización, validación y dependencia.</li>
+</ul>
+<h2>5. Casos mínimos de aceptación de extremo a extremo</h2>
+<ol>
+<li>Un alumno autenticado y correctamente vinculado consulta su información autorizada y su historial.</li>
+<li>El mismo alumno intenta cambiar el identificador por el de otro alumno y no obtiene datos de terceros.</li>
+<li>Un usuario no autenticado intenta consultar el historial y no lo obtiene.</li>
+<li>Un rango de fechas inválido produce un error de validación claro; un rango válido sin registros produce una lista vacía informativa.</li>
+<li>Una categoría pendiente de aprobación no se muestra como funcionalidad activa ni afecta los totales.</li>
+<li>Una indisponibilidad de la fuente de asistencia se informa como error y no como ausencia de registros.</li>
+<li>Se confirma mediante pruebas que el módulo no modifica registros oficiales.</li>
+</ol>
+<h2>6. Decisiones pendientes</h2>
+<ul>
+<li>Proveedor y mecanismo de autenticación, y modo de vínculo cuenta-alumno.</li>
+<li>Campos personales y académicos visibles y sus reglas de vigencia.</li>
+<li>Catálogo oficial de estados de asistencia, tardanza y justificación.</li>
+<li>Política de observaciones, notificaciones y posibles destinatarios.</li>
+<li>Períodos consultables, zona horaria y fórmula de porcentaje.</li>
+<li>Contratos, permisos, auditoría, retención y tratamiento de menores según normativa institucional.</li>
+<li>Objetivos medibles de rendimiento, disponibilidad y accesibilidad.</li>
+</ul>
+</main>
+</body>
+</html>

@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Handbook — Módulo Alumno</title>
+<style>
+:root{color-scheme:light;--ink:#202b3c;--muted:#526174;--line:#d7dee8;--paper:#fff;--accent:#244b75;--soft:#f3f6fa}*{box-sizing:border-box}body{margin:0;background:#edf1f5;color:var(--ink);font:16px/1.62 system-ui,-apple-system,"Segoe UI",sans-serif}main{max-width:1120px;margin:32px auto;padding:40px 48px;background:var(--paper);box-shadow:0 2px 14px #172b4414}h1,h2,h3,h4{color:#183451;line-height:1.25;margin:1.5em 0 .55em}h1{font-size:2rem;margin-top:0;border-bottom:2px solid var(--accent);padding-bottom:.45em}h2{font-size:1.45rem;border-bottom:1px solid var(--line);padding-bottom:.3em}h3{font-size:1.15rem}p{margin:.6em 0}ul,ol{padding-left:1.5em}li{margin:.28em 0}strong{color:#172d47}.table-wrap{overflow-x:auto;margin:1em 0 1.5em}table{border-collapse:collapse;width:100%;font-size:.94rem}th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top}th{background:var(--soft);color:#183451}code{background:var(--soft);padding:.1em .3em;border-radius:3px}a{color:#155da0}hr{border:0;border-top:1px solid var(--line);margin:1.5em 0}@media(max-width:700px){main{margin:0;padding:24px 18px}body{font-size:15px}}</style>
+</head>
+<body>
+<main>
+<h1>Handbook — Módulo Alumno</h1>
+<p><strong>Responsable:</strong> Lucia Salgado</p>
+<p><strong>Carrera:</strong> Tecnicatura en Desarrollo de Software</p>
+<p><strong>Proyecto:</strong> Sistema de Asistencia</p>
+<p><strong>Módulo:</strong> Alumno</p>
+<p><strong>Estado:</strong> Guía de diseño propuesta; no representa código ni procedimientos ya implementados.</p>
+<h2>1. Propósito y alcance</h2>
+<p>Este handbook orienta el análisis, diseño, desarrollo, prueba y mantenimiento del Módulo Alumno. La solución propuesta permite a cada alumno consultar datos propios autorizados y registros de asistencia de solo lectura. La autenticación, los datos fuente, los contratos de integración y las políticas institucionales deben confirmarse antes de construir.</p>
+<p>Quedan fuera del alcance la carga, modificación o eliminación de asistencia, la consulta de otros alumnos y la administración de matrícula o identidad.</p>
+<h2>2. Actores y permisos</h2>
+<div class="table-wrap"><table><thead><tr><th scope="col">Actor</th><th scope="col">Permisos propuestos</th></tr></thead><tbody>
+<tr><td>Alumno autenticado y vinculado</td><td>Leer su perfil académico/persona autorizado y su historial propio</td></tr>
+<tr><td>Alumno sin vínculo válido</td><td>Ninguna consulta de datos; recibe orientación general para resolver el acceso</td></tr>
+<tr><td>Personal docente/administrativo</td><td>No recibe permisos por pertenecer a este módulo; usa los módulos institucionales que correspondan</td></tr>
+<tr><td>Servicio de identidad</td><td>Verificar sesión y proporcionar una identidad autenticada, según integración aprobada</td></tr>
+<tr><td>Servicios de datos institucionales</td><td>Proporcionar datos fuente dentro de sus contratos y permisos</td></tr>
+<tr><td>Soporte autorizado</td><td>Acceso técnico mínimo, sujeto a controles y políticas institucionales</td></tr>
+</tbody></table></div>
+<p>El permiso de alumno es de lectura. La autorización se aplica en cada solicitud, no solo al iniciar sesión.</p>
+<h2>3. Organización lógica propuesta</h2>
+<p>La organización debe separar responsabilidades, aunque la arquitectura general del sistema puede imponer otra estructura:</p>
+<ol>
+<li><strong>Presentación:</strong> recibe interacciones, solicita consultas, presenta datos y estados; no decide quién puede acceder a qué alumno.</li>
+<li><strong>Aplicación o servicios del módulo:</strong> coordina autenticación contextual, autorización, filtros y solicitudes a fuentes autorizadas.</li>
+<li><strong>Dominio/reglas:</strong> define las reglas aprobadas para interpretar categorías, períodos y métricas; evita fórmulas implícitas.</li>
+<li><strong>Acceso a datos e integración:</strong> obtiene información de los servicios institucionales y adapta sus contratos sin exponer detalles de infraestructura a la presentación.</li>
+<li><strong>Seguridad y observabilidad:</strong> aplica controles transversales, manejo de sesión, auditoría mínima y diagnóstico operativo.</li>
+</ol>
+<p>Estos son componentes conceptuales; sus nombres, límites y despliegue quedan pendientes de la arquitectura general.</p>
+<h2>4. Componentes principales y responsabilidades</h2>
+<div class="table-wrap"><table><thead><tr><th scope="col">Componente propuesto</th><th scope="col">Responsabilidad</th></tr></thead><tbody>
+<tr><td>Adaptador de autenticación</td><td>Validar contexto de sesión e identidad mediante la solución general aprobada</td></tr>
+<tr><td>Resolutor de identidad alumno</td><td>Asociar identidad autenticada con alumno vigente; rechazar asociaciones ausentes o ambiguas</td></tr>
+<tr><td>Servicio de consulta de perfil</td><td>Recuperar y filtrar campos personales/académicos autorizados</td></tr>
+<tr><td>Servicio de historial</td><td>Validar período, consultar registros propios y presentar estados aprobados</td></tr>
+<tr><td>Servicio de estadísticas (opcional)</td><td>Calcular totales/porcentajes solo a partir de reglas aprobadas</td></tr>
+<tr><td>Adaptador de asistencia</td><td>Integrar con la fuente oficial y conservar errores/estados relevantes</td></tr>
+<tr><td>Presentador de resultados</td><td>Preparar datos y mensajes legibles sin incorporar reglas de autorización</td></tr>
+<tr><td>Registro operativo/auditoría</td><td>Capturar eventos mínimos, protegidos y útiles para seguridad y diagnóstico</td></tr>
+</tbody></table></div>
+<h2>5. Flujo propuesto de acceso del alumno</h2>
+<ol>
+<li>El alumno inicia el acceso a través del mecanismo general de autenticación o el mecanismo institucional que se defina.</li>
+<li>El sistema valida las credenciales o la sesión y devuelve una identidad confiable, sin exponer secretos al módulo.</li>
+<li>El módulo resuelve el vínculo entre esa identidad y un alumno. Si el vínculo no existe, no es único o no está vigente, deniega el acceso a datos y presenta un mensaje general de resolución.</li>
+<li>Para cada consulta, el servicio obtiene el alumno autorizado desde el contexto confiable y verifica el permiso.</li>
+<li>El alumno consulta datos propios. El módulo valida parámetros, obtiene datos de la fuente autorizada y presenta el resultado con su estado.</li>
+<li>Al cerrar sesión, se invalida o finaliza el contexto según el protocolo de autenticación adoptado.</li>
+</ol>
+<p>No debe confiarse en un identificador de alumno libremente enviado por la interfaz como prueba de identidad.</p>
+<h2>6. Flujo propuesto de consulta del historial</h2>
+<ol>
+<li>El alumno autenticado selecciona un período válido o usa el período por defecto que acuerde el equipo.</li>
+<li>La capa de aplicación valida formato, límites, orden de fechas y disponibilidad del período.</li>
+<li>La autorización determina el alumno a partir de la sesión; el filtro se ejecuta contra ese alumno, nunca contra un identificador no verificado.</li>
+<li>El adaptador consulta la fuente oficial y mantiene la distinción entre resultado vacío y error de dependencia.</li>
+<li>El módulo presenta fechas y estados aprobados; muestra tardanzas, justificaciones u observaciones únicamente cuando estén habilitadas.</li>
+<li>Si se solicitan estadísticas, se aplican reglas documentadas y se informa el período y la base del cálculo.</li>
+<li>La operación deja los eventos mínimos definidos por política, sin contraseñas ni información sensible innecesaria.</li>
+</ol>
+<h2>7. Reglas de negocio</h2>
+<ul>
+<li>Solo se consultan datos del alumno que corresponde a la identidad autenticada y autorizada.</li>
+<li>Historial, perfil y estadísticas son de solo lectura desde este módulo.</li>
+<li>Las fuentes institucionales definen los registros y sus estados.</li>
+<li>Las categorías especiales solo se presentan después de su aprobación y mapeo documentado.</li>
+<li>Un resultado válido sin registros no se presenta como fallo técnico.</li>
+<li>Los cambios históricos de curso o división deben respetar las fechas de vigencia de la matrícula, si la fuente las ofrece.</li>
+<li>No se calcula porcentaje si la definición de sesiones computables y excepciones no está aprobada.</li>
+</ul>
+<h2>8. Validaciones</h2>
+<ul>
+<li><strong>Identidad:</strong> sesión presente, vigente y válida; vínculo a alumno único y activo.</li>
+<li><strong>Autorización:</strong> permiso de lectura para cada recurso; rechazo de identificadores ajenos.</li>
+<li><strong>Período:</strong> formato, fechas posibles, orden cronológico, límites consultables y zona horaria acordada.</li>
+<li><strong>Datos de origen:</strong> manejar campos ausentes, estados desconocidos y datos inconsistentes sin inventar información.</li>
+<li><strong>Presentación:</strong> etiquetar estados de forma clara y distinguir vacío, carga, acceso denegado y error.</li>
+<li><strong>Estadísticas:</strong> validar denominador no nulo, período, categorías y política para sesiones no computables.</li>
+</ul>
+<h2>9. Seguridad y privacidad</h2>
+<ul>
+<li>Integrarse con autenticación general si existe; no implementar credenciales paralelas sin decisión expresa.</li>
+<li>Aplicar mínimo privilegio, denegación por defecto y autorización del lado servidor o capa confiable.</li>
+<li>Evitar enumeración de alumnos y filtraciones por identificadores, mensajes, logs o diferencias de respuesta.</li>
+<li>Proteger transporte y almacenamiento de sesión conforme a los mecanismos institucionales aprobados.</li>
+<li>No exponer contraseñas, tokens, documentos de justificación ni observaciones internas.</li>
+<li>Definir clasificación, minimización, retención y acceso a logs con responsables institucionales.</li>
+<li>Revisar requisitos aplicables a datos personales y alumnos menores junto con la institución; no asumir que una autorización técnica sustituye los consentimientos requeridos.</li>
+</ul>
+<h2>10. Manejo de errores</h2>
+<div class="table-wrap"><table><thead><tr><th scope="col">Situación</th><th scope="col">Comportamiento propuesto</th></tr></thead><tbody>
+<tr><td>Sesión inválida o expirada</td><td>Denegar consulta y solicitar autenticación conforme al flujo general</td></tr>
+<tr><td>Alumno no asociado o asociación ambigua</td><td>No mostrar datos; informar que debe solicitar revisión del acceso</td></tr>
+<tr><td>Acceso a otro alumno</td><td>Denegar sin revelar si el identificador existe</td></tr>
+<tr><td>Filtro inválido</td><td>Explicar qué dato debe corregirse</td></tr>
+<tr><td>Período válido sin registros</td><td>Mostrar estado vacío explícito</td></tr>
+<tr><td>Servicio de asistencia no disponible</td><td>Informar indisponibilidad; no afirmar que no hubo asistencias</td></tr>
+<tr><td>Error inesperado</td><td>Mostrar mensaje general y conservar detalle técnico solo en canales protegidos</td></tr>
+</tbody></table></div>
+<p>No se deben ocultar fallos de integración con respuestas que aparenten éxito ni sustituir datos faltantes por valores inventados.</p>
+<h2>11. Pruebas necesarias</h2>
+<ul>
+<li>Pruebas unitarias de validación de períodos, reglas de estados y cálculos aprobados.</li>
+<li>Pruebas de integración con autenticación, resolución de identidad, matrícula y asistencia.</li>
+<li>Pruebas funcionales de perfil, historial, filtros, resultados vacíos y mensajes de error.</li>
+<li>Pruebas negativas de autorización: usuario anónimo, vínculo inexistente, vínculo ambiguo y acceso cruzado entre alumnos.</li>
+<li>Pruebas que confirmen que el módulo no altera asistencia.</li>
+<li>Pruebas de privacidad para campos expuestos, observaciones y logs.</li>
+<li>Pruebas de accesibilidad y usabilidad conforme a criterios definidos por el equipo.</li>
+<li>Pruebas de rendimiento y resiliencia una vez conocidos los volúmenes y objetivos.</li>
+</ul>
+<h2>12. Mantenimiento y ampliaciones</h2>
+<p>Documentar cambios en categorías, contratos de integración, períodos, reglas de cálculo y permisos. Ante una modificación de la fuente institucional, revisar adaptadores y pruebas de contrato. Las estadísticas, notificaciones y solicitudes de revisión pueden incorporarse posteriormente mediante análisis de privacidad y alcance; ninguna ampliación debe otorgar al alumno escritura sobre el registro oficial sin una decisión institucional y un proceso separado.</p>
+<h2>13. Lista de verificación previa a implementación</h2>
+<ul>
+<li>[ ] Identidad autenticada y vínculo cuenta-alumno definidos.</li>
+<li>[ ] Fuente maestra de perfil, matrícula y asistencia identificada.</li>
+<li>[ ] Campos y categorías visibles aprobados.</li>
+<li>[ ] Reglas de período, zona horaria y estadísticas documentadas.</li>
+<li>[ ] Contratos y tratamiento de errores de dependencias acordados.</li>
+<li>[ ] Permisos, privacidad, auditoría y retención revisados.</li>
+<li>[ ] Casos de aceptación y pruebas de acceso cruzado definidos.</li>
+</ul>
+</main>
+</body>
+</html>

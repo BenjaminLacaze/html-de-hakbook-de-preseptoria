@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Roadmap de desarrollo — Módulo Alumno</title>
+<style>
+:root{color-scheme:light;--ink:#202b3c;--muted:#526174;--line:#d7dee8;--paper:#fff;--accent:#244b75;--soft:#f3f6fa}*{box-sizing:border-box}body{margin:0;background:#edf1f5;color:var(--ink);font:16px/1.62 system-ui,-apple-system,"Segoe UI",sans-serif}main{max-width:1120px;margin:32px auto;padding:40px 48px;background:var(--paper);box-shadow:0 2px 14px #172b4414}h1,h2,h3,h4{color:#183451;line-height:1.25;margin:1.5em 0 .55em}h1{font-size:2rem;margin-top:0;border-bottom:2px solid var(--accent);padding-bottom:.45em}h2{font-size:1.45rem;border-bottom:1px solid var(--line);padding-bottom:.3em}h3{font-size:1.15rem}p{margin:.6em 0}ul,ol{padding-left:1.5em}li{margin:.28em 0}strong{color:#172d47}.table-wrap{overflow-x:auto;margin:1em 0 1.5em}table{border-collapse:collapse;width:100%;font-size:.94rem}th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top}th{background:var(--soft);color:#183451}code{background:var(--soft);padding:.1em .3em;border-radius:3px}a{color:#155da0}hr{border:0;border-top:1px solid var(--line);margin:1.5em 0}@media(max-width:700px){main{margin:0;padding:24px 18px}body{font-size:15px}}</style>
+</head>
+<body>
+<main>
+<h1>Roadmap de desarrollo — Módulo Alumno</h1>
+<p><strong>Proyecto:</strong> Sistema de Asistencia</p>
+<p><strong>Módulo:</strong> Alumno</p>
+<p><strong>Estado inicial de todas las tareas:</strong> Pendiente</p>
+<p><strong>Nota:</strong> Las fases son una secuencia propuesta. No implican fechas, porcentaje de avance ni trabajo ya realizado.</p>
+<h2>Fase 1. Análisis de requisitos</h2>
+<div class="table-wrap"><table><thead><tr><th scope="col">Tarea</th><th scope="col">Descripción</th><th scope="col">Prioridad</th><th scope="col">Estado inicial</th><th scope="col">Dependencias</th><th scope="col">Criterios de aceptación</th></tr></thead><tbody>
+<tr><td>Relevar actores y necesidades</td><td>Confirmar perfiles, escenarios de consulta y límites de acceso del alumno.</td><td>Alta</td><td>Pendiente</td><td>Ninguna</td><td>Actores, necesidades, exclusiones y responsables de validación quedan documentados y aprobados.</td></tr>
+<tr><td>Definir datos y categorías visibles</td><td>Identificar campos personales/académicos y estados de asistencia que pueden publicarse.</td><td>Alta</td><td>Pendiente</td><td>Relevar actores y necesidades</td><td>Existe catálogo acordado con fuente, significado, vigencia y nivel de visibilidad de cada dato.</td></tr>
+<tr><td>Clasificar requisitos y alcance</td><td>Separar capacidades necesarias, opcionales y sujetas a decisión.</td><td>Alta</td><td>Pendiente</td><td>Relevar actores y necesidades; definir datos y categorías visibles</td><td>Requisitos tienen prioridad, criterios verificables y aprobación del equipo/institución.</td></tr>
+</tbody></table></div>
+<h2>Fase 2. Diseño funcional y técnico</h2>
+<div class="table-wrap"><table><thead><tr><th scope="col">Tarea</th><th scope="col">Descripción</th><th scope="col">Prioridad</th><th scope="col">Estado inicial</th><th scope="col">Dependencias</th><th scope="col">Criterios de aceptación</th></tr></thead><tbody>
+<tr><td>Diseñar flujos funcionales</td><td>Especificar acceso, consulta de perfil, historial, filtros y estados de error.</td><td>Alta</td><td>Pendiente</td><td>Clasificar requisitos y alcance</td><td>Flujos incluyen casos normales, vacíos, denegados e indisponibilidad y son revisados por los interesados.</td></tr>
+<tr><td>Definir arquitectura e interfaces</td><td>Acordar responsabilidades, contratos y límites con autenticación y servicios institucionales, sin anticipar tecnología no elegida.</td><td>Alta</td><td>Pendiente</td><td>Diseñar flujos funcionales; conocer arquitectura general</td><td>Componentes, contratos, identidad y errores están documentados y aprobados por responsables técnicos.</td></tr>
+<tr><td>Definir seguridad y privacidad</td><td>Establecer autorización, datos mínimos, logging, retención y revisión de requisitos institucionales.</td><td>Alta</td><td>Pendiente</td><td>Relevar actores y necesidades; definir datos visibles</td><td>Amenazas y controles esenciales tienen responsables y criterios de prueba acordados.</td></tr>
+</tbody></table></div>
+<h2>Fase 3. Diseño del modelo de datos e integración</h2>
+<div class="table-wrap"><table><thead><tr><th scope="col">Tarea</th><th scope="col">Descripción</th><th scope="col">Prioridad</th><th scope="col">Estado inicial</th><th scope="col">Dependencias</th><th scope="col">Criterios de aceptación</th></tr></thead><tbody>
+<tr><td>Identificar fuentes y relaciones</td><td>Confirmar entidades y fuentes de alumno, curso, división, matrícula y asistencia.</td><td>Alta</td><td>Pendiente</td><td>Definir arquitectura e interfaces</td><td>Las relaciones, identificadores y vigencias se describen sin duplicar fuentes maestras.</td></tr>
+<tr><td>Acordar mapeo de asistencia</td><td>Documentar estados de origen y correspondencia visible, incluidos casos especiales aprobados.</td><td>Alta</td><td>Pendiente</td><td>Identificar fuentes y relaciones; definir datos visibles</td><td>Cada estado expuesto tiene definición, origen y regla de presentación aprobados.</td></tr>
+<tr><td>Especificar contrato de integración</td><td>Acordar operaciones de consulta, autorización, filtros y errores con servicios dependientes.</td><td>Alta</td><td>Pendiente</td><td>Identificar fuentes y relaciones; definir arquitectura e interfaces</td><td>Contratos y casos de fallo se revisan con responsables de los módulos dependientes.</td></tr>
+</tbody></table></div>
+<h2>Fase 4. Desarrollo de las funcionalidades esenciales</h2>
+<div class="table-wrap"><table><thead><tr><th scope="col">Tarea</th><th scope="col">Descripción</th><th scope="col">Prioridad</th><th scope="col">Estado inicial</th><th scope="col">Dependencias</th><th scope="col">Criterios de aceptación</th></tr></thead><tbody>
+<tr><td>Implementar contexto de acceso y autorización</td><td>Integrar autenticación aprobada, vínculo a alumno y autorización de solo lectura.</td><td>Alta</td><td>Pendiente</td><td>Definir seguridad y privacidad; especificar integración</td><td>Solo identidades válidas y correctamente vinculadas consultan sus propios datos; accesos cruzados se deniegan.</td></tr>
+<tr><td>Implementar consulta de perfil autorizado</td><td>Obtener y presentar los campos personales y académicos aprobados.</td><td>Alta</td><td>Pendiente</td><td>Identificar fuentes y relaciones; implementar autorización</td><td>Datos corresponden a la fuente y vigencia acordadas; faltantes no se inventan ni exponen campos no autorizados.</td></tr>
+<tr><td>Implementar historial de asistencia</td><td>Validar filtros y consultar registros propios con categorías aprobadas.</td><td>Alta</td><td>Pendiente</td><td>Acordar mapeo; especificar integración; implementar autorización</td><td>Historial, rango vacío, filtro inválido y fallo de fuente producen los resultados definidos; no hay escritura.</td></tr>
+<tr><td>Evaluar estadísticas y notificaciones</td><td>Decidir si se incluyen resúmenes, porcentajes o avisos y definir reglas/canales.</td><td>Media</td><td>Pendiente</td><td>Validar requisitos; definir categorías y reglas</td><td>Decisión documentada; si se aprueban, fórmulas, destinatarios, privacidad y criterios de aceptación están definidos.</td></tr>
+</tbody></table></div>
+<h2>Fase 5. Pruebas funcionales y de seguridad</h2>
+<div class="table-wrap"><table><thead><tr><th scope="col">Tarea</th><th scope="col">Descripción</th><th scope="col">Prioridad</th><th scope="col">Estado inicial</th><th scope="col">Dependencias</th><th scope="col">Criterios de aceptación</th></tr></thead><tbody>
+<tr><td>Ejecutar pruebas funcionales</td><td>Verificar acceso, perfil, historial, filtros, categorías y manejo de estados.</td><td>Alta</td><td>Pendiente</td><td>Funcionalidades esenciales implementadas</td><td>Casos de aceptación aprobados pasan y los defectos bloqueantes se resuelven o se registran formalmente.</td></tr>
+<tr><td>Ejecutar pruebas de autorización y privacidad</td><td>Probar sesión inválida, asociación ambigua, acceso cruzado, exposición de campos y logs.</td><td>Alta</td><td>Pendiente</td><td>Implementar contexto de acceso; definir seguridad y privacidad</td><td>No se obtiene información de terceros ni se registran secretos; resultados revisados por responsables.</td></tr>
+<tr><td>Verificar calidad operativa y accesibilidad</td><td>Validar errores, resiliencia, rendimiento y criterios de accesibilidad definidos.</td><td>Media</td><td>Pendiente</td><td>Pruebas funcionales; acordar objetivos y criterios</td><td>Se reportan resultados medibles respecto de objetivos confirmados y se documentan excepciones.</td></tr>
+</tbody></table></div>
+<h2>Fase 6. Integración con el sistema de asistencia</h2>
+<div class="table-wrap"><table><thead><tr><th scope="col">Tarea</th><th scope="col">Descripción</th><th scope="col">Prioridad</th><th scope="col">Estado inicial</th><th scope="col">Dependencias</th><th scope="col">Criterios de aceptación</th></tr></thead><tbody>
+<tr><td>Integrar identidad, matrícula y asistencia</td><td>Conectar contratos aprobados en el entorno de integración del sistema general.</td><td>Alta</td><td>Pendiente</td><td>Contratos acordados; pruebas esenciales aprobadas</td><td>Flujos end-to-end usan fuentes autorizadas y mantienen autorización de alumno en todas las consultas.</td></tr>
+<tr><td>Validar consistencia y operación integrada</td><td>Revisar sincronización, vigencias, indisponibilidad y correspondencia con registros oficiales.</td><td>Alta</td><td>Pendiente</td><td>Integrar identidad, matrícula y asistencia</td><td>Casos de consistencia y fallos se validan con responsables del sistema; no hay divergencias sin tratamiento definido.</td></tr>
+</tbody></table></div>
+<h2>Fase 7. Documentación y mantenimiento</h2>
+<div class="table-wrap"><table><thead><tr><th scope="col">Tarea</th><th scope="col">Descripción</th><th scope="col">Prioridad</th><th scope="col">Estado inicial</th><th scope="col">Dependencias</th><th scope="col">Criterios de aceptación</th></tr></thead><tbody>
+<tr><td>Publicar documentación operativa y funcional</td><td>Mantener flujos, permisos, reglas, contratos, errores y procedimientos de soporte actualizados.</td><td>Media</td><td>Pendiente</td><td>Integración y validación funcional</td><td>Documentación aprobada coincide con el comportamiento aceptado y señala decisiones/limitaciones.</td></tr>
+<tr><td>Establecer mantenimiento y revisión periódica</td><td>Definir responsables para cambios de categorías, privacidad, dependencias y métricas.</td><td>Media</td><td>Pendiente</td><td>Documentación operativa; integración</td><td>Existe procedimiento de revisión, responsables y registro de cambios sin fechas de avance inventadas.</td></tr>
+<tr><td>Priorizar ampliaciones futuras</td><td>Evaluar estadísticas, avisos y funciones adicionales a partir de necesidades verificadas.</td><td>Baja</td><td>Pendiente</td><td>Versión esencial validada; revisión institucional</td><td>Cada ampliación tiene caso de uso, análisis de privacidad, dependencias y criterios antes de entrar al alcance.</td></tr>
+</tbody></table></div>
+<h2>Criterio de avance entre fases</h2>
+<p>Una fase puede considerarse lista para revisión cuando sus criterios de aceptación estén demostrados y las decisiones pendientes necesarias para la fase siguiente tengan responsables. Este roadmap no declara tareas completadas ni establece fechas o porcentajes.</p>
+</main>
+</body>
+</html>

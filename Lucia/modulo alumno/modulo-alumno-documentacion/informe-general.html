@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Informe general — Módulo Alumno</title>
+<style>
+:root{color-scheme:light;--ink:#202b3c;--muted:#526174;--line:#d7dee8;--paper:#fff;--accent:#244b75;--soft:#f3f6fa}*{box-sizing:border-box}body{margin:0;background:#edf1f5;color:var(--ink);font:16px/1.62 system-ui,-apple-system,"Segoe UI",sans-serif}main{max-width:1120px;margin:32px auto;padding:40px 48px;background:var(--paper);box-shadow:0 2px 14px #172b4414}h1,h2,h3,h4{color:#183451;line-height:1.25;margin:1.5em 0 .55em}h1{font-size:2rem;margin-top:0;border-bottom:2px solid var(--accent);padding-bottom:.45em}h2{font-size:1.45rem;border-bottom:1px solid var(--line);padding-bottom:.3em}h3{font-size:1.15rem}p{margin:.6em 0}ul,ol{padding-left:1.5em}li{margin:.28em 0}strong{color:#172d47}.table-wrap{overflow-x:auto;margin:1em 0 1.5em}table{border-collapse:collapse;width:100%;font-size:.94rem}th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top}th{background:var(--soft);color:#183451}code{background:var(--soft);padding:.1em .3em;border-radius:3px}a{color:#155da0}hr{border:0;border-top:1px solid var(--line);margin:1.5em 0}@media(max-width:700px){main{margin:0;padding:24px 18px}body{font-size:15px}}</style>
+</head>
+<body>
+<main>
+<h1>Informe general — Módulo Alumno</h1>
+<p><strong>Responsable:</strong> Lucia Salgado</p>
+<p><strong>Carrera:</strong> Tecnicatura en Desarrollo de Software</p>
+<p><strong>Proyecto:</strong> Sistema de Asistencia</p>
+<p><strong>Módulo:</strong> Alumno</p>
+<p><strong>Tipo de documento:</strong> Informe técnico y análisis funcional</p>
+<p><strong>Estado:</strong> Propuesta para revisión; no describe una implementación existente.</p>
+<h2>1. Introducción</h2>
+<p>Un Sistema de Asistencia Escolar permite registrar y consultar la asistencia de los alumnos durante las actividades académicas. Su operación puede involucrar alumnos, personal docente, preceptores, administración y responsables autorizados. La información oficial debe originarse en los procesos institucionales de registro y conservar trazabilidad.</p>
+<p>Este informe define una propuesta para el Módulo Alumno: un espacio de consulta de información propia, subordinado a las reglas, los datos y la seguridad del sistema general. La arquitectura, las categorías de asistencia y las políticas institucionales deberán confirmarse con el equipo antes de implementar.</p>
+<h2>2. Propósito del módulo</h2>
+<p>El propósito es ofrecer al alumno acceso seguro y comprensible a sus datos disponibles y a su historial de asistencia. El módulo presenta información de solo lectura: no reemplaza los procesos institucionales de registro, corrección ni justificación.</p>
+<h2>3. Objetivos</h2>
+<h3>Objetivo general</h3>
+<p>Definir un módulo que permita a cada alumno consultar su información personal y académica disponible, y revisar sus registros de asistencia, respetando permisos, privacidad y reglas institucionales.</p>
+<h3>Objetivos específicos</h3>
+<ul>
+<li>Identificar al alumno de forma confiable mediante el mecanismo de autenticación general, si existe.</li>
+<li>Restringir cada consulta a la identidad autenticada y a los permisos otorgados.</li>
+<li>Presentar asistencias, inasistencias y demás categorías que el sistema institucional confirme.</li>
+<li>Facilitar la consulta por fecha o período y comunicar claramente la falta de datos o los errores.</li>
+<li>Mantener la integridad de los registros oficiales y evitar la exposición de información de terceros.</li>
+</ul>
+<h2>4. Problema que busca resolver</h2>
+<p>Sin un canal de consulta individual, el alumno puede depender de consultas presenciales o comunicaciones dispersas para conocer su situación de asistencia. Esto dificulta revisar el historial, comprender la información registrada y detectar discrepancias a tiempo. El módulo propuesto centraliza la consulta autorizada; no determina por sí solo la validez de una ausencia ni modifica registros.</p>
+<h2>5. Alcance</h2>
+<h3>Incluido en la propuesta</h3>
+<ul>
+<li>Acceso autenticado y cierre de sesión, integrado con el servicio general cuando esté disponible.</li>
+<li>Consulta de datos personales y académicos que la institución autorice publicar.</li>
+<li>Consulta de registros de asistencia propios, incluidos los filtros y categorías confirmados.</li>
+<li>Presentación de cantidades y porcentaje de asistencia cuando exista una regla de cálculo acordada.</li>
+<li>Mensajes de estado, controles de autorización, validación de filtros y registro técnico de eventos relevantes conforme a políticas institucionales.</li>
+</ul>
+<h3>Fuera del alcance</h3>
+<ul>
+<li>Crear, editar, borrar, aprobar o corregir registros oficiales de asistencia.</li>
+<li>Consultar datos o historiales de otros alumnos.</li>
+<li>Resolver justificaciones, reclamos, sanciones o situaciones académicas.</li>
+<li>Administrar usuarios, cursos, divisiones o períodos institucionales.</li>
+<li>Definir una interfaz, tecnología, base de datos o integración definitiva sin decisión del equipo.</li>
+</ul>
+<h2>6. Usuarios involucrados</h2>
+<div class="table-wrap"><table><thead><tr><th scope="col">Actor</th><th scope="col">Necesidad o responsabilidad</th><th scope="col">Acceso propuesto</th></tr></thead><tbody>
+<tr><td>Alumno</td><td>Consultar únicamente su información autorizada</td><td>Lectura de datos e historial propios</td></tr>
+<tr><td>Docente o personal registrador</td><td>Registrar asistencia mediante el módulo correspondiente</td><td>No forma parte del Módulo Alumno</td></tr>
+<tr><td>Preceptoría o administración</td><td>Gestionar datos y registros según sus permisos institucionales</td><td>Fuera de este módulo; fuente autorizada</td></tr>
+<tr><td>Responsable institucional</td><td>Definir políticas de acceso, categorías y publicación</td><td>Define y valida reglas</td></tr>
+<tr><td>Equipo de desarrollo y soporte</td><td>Construir, integrar y mantener la solución</td><td>Acceso técnico controlado, según política</td></tr>
+</tbody></table></div>
+<h2>7. Requisitos funcionales resumidos</h2>
+<p>El detalle verificable se encuentra en <a href="requisitos-funcionales.html">requisitos-funcionales.md</a>. Las prioridades de esta propuesta son:</p>
+<ul>
+<li><strong>Necesaria:</strong> autenticación integrada o mecanismo autorizado; consulta propia; protección frente a acceso a datos de terceros; consulta de información personal/académica disponible; historial básico y manejo claro de errores.</li>
+<li><strong>Opcional:</strong> estadísticas de asistencia y filtros de período, si el modelo de datos y las reglas institucionales lo permiten.</li>
+<li><strong>Pendiente de decisión:</strong> notificaciones, llegadas tarde, ausencias justificadas, observaciones visibles y alcance exacto de los datos personales publicados.</li>
+</ul>
+<p>Las categorías opcionales o pendientes no deben presentarse como existentes hasta su confirmación.</p>
+<h2>8. Requisitos no funcionales</h2>
+<ul>
+<li><strong>Seguridad:</strong> autenticar al usuario y autorizar cada operación; denegar por defecto; limitar la exposición de datos y proteger credenciales y sesiones.</li>
+<li><strong>Privacidad:</strong> mostrar solo información necesaria y autorizada; no revelar datos de otros alumnos ni detalles internos no destinados al alumno.</li>
+<li><strong>Integridad:</strong> el módulo es de consulta y no altera registros oficiales.</li>
+<li><strong>Usabilidad y accesibilidad:</strong> usar etiquetas comprensibles, estados explícitos y una presentación legible en los dispositivos que defina el sistema.</li>
+<li><strong>Rendimiento:</strong> las consultas habituales deben responder dentro de objetivos que el equipo acuerde y mida; no se fija un umbral sin conocer la infraestructura.</li>
+<li><strong>Disponibilidad y resiliencia:</strong> manejar indisponibilidad de servicios dependientes sin mostrar datos engañosos ni registrar resultados parciales como exitosos.</li>
+<li><strong>Mantenibilidad:</strong> separar presentación, reglas de consulta y acceso a datos; documentar contratos y decisiones.</li>
+<li><strong>Auditoría:</strong> registrar solo eventos necesarios para seguridad y operación, conforme a retención y privacidad institucionales.</li>
+</ul>
+<h2>9. Reglas de negocio propuestas</h2>
+<ol>
+<li>El alumno autenticado solo puede consultar los datos vinculados a su identidad; la identidad no debe depender de un identificador recibido sin verificar.</li>
+<li>Todos los registros de asistencia consultados deben corresponder al alumno autorizado.</li>
+<li>El módulo no ofrece operaciones para modificar o eliminar registros oficiales.</li>
+<li>La fuente institucional autorizada determina el estado de cada registro; el módulo no infiere ni transforma categorías sin una regla aprobada.</li>
+<li>Un filtro de fechas debe ser válido y acotarse a períodos disponibles; un rango sin datos se informa como resultado vacío, no como error.</li>
+<li>Los totales y porcentajes solo se muestran si se ha definido qué sesiones son computables, cómo se tratan las categorías especiales y qué período se considera.</li>
+<li>Observaciones, justificaciones y notificaciones solo se exponen si la institución confirma su contenido, audiencia y política de privacidad.</li>
+<li>Los cambios de curso, división o matrícula deben reflejar la fuente institucional y el período de vigencia aplicable.</li>
+</ol>
+<h2>10. Restricciones y supuestos</h2>
+<ul>
+<li>No se confirmó una implementación, tecnología, esquema de datos, servicio de autenticación ni API existente.</li>
+<li>Se supone que el sistema general, o una autoridad institucional, puede asociar una cuenta autenticada con un alumno de manera confiable.</li>
+<li>Se supone que existe una fuente autorizada de datos de asistencia y de información académica, o que se definirá una integración.</li>
+<li>Los permisos, la edad de los alumnos, la participación de responsables legales, la retención de datos y las obligaciones normativas requieren validación institucional.</li>
+<li>No se fijan tablas, frameworks, endpoints, tiempos de respuesta ni políticas de despliegue.</li>
+<li>La disponibilidad de cada dato dependerá de su existencia, calidad, autorización y vigencia en los sistemas fuente.</li>
+</ul>
+<h2>11. Dependencias con otros módulos</h2>
+<div class="table-wrap"><table><thead><tr><th scope="col">Dependencia</th><th scope="col">Interacción esperada</th><th scope="col">Confirmación necesaria</th></tr></thead><tbody>
+<tr><td>Autenticación y gestión de identidad</td><td>Validar sesión y obtener identidad confiable del alumno</td><td>Proveedor, protocolo, ciclo de sesión y recuperación de acceso</td></tr>
+<tr><td>Gestión de alumnos/matrícula</td><td>Obtener datos personales, curso, división y vínculo vigente</td><td>Fuente maestra, identificadores y reglas de actualización</td></tr>
+<tr><td>Registro de asistencia</td><td>Consultar eventos y estados oficiales</td><td>Categorías, períodos, observaciones y consistencia</td></tr>
+<tr><td>Gestión académica</td><td>Resolver curso, división, calendario y sesiones computables</td><td>Modelo institucional y vigencias</td></tr>
+<tr><td>Notificaciones (si se aprueban)</td><td>Enviar avisos sobre eventos autorizados</td><td>Canal, consentimiento, destinatarios y política</td></tr>
+</tbody></table></div>
+<h2>12. Riesgos y mitigaciones</h2>
+<div class="table-wrap"><table><thead><tr><th scope="col">Riesgo</th><th scope="col">Consecuencia</th><th scope="col">Mitigación propuesta</th></tr></thead><tbody>
+<tr><td>Asociación incorrecta entre cuenta y alumno</td><td>Exposición o atribución errónea de registros</td><td>Validar vínculo con fuente de identidad confiable y probar casos de cambio de matrícula</td></tr>
+<tr><td>Autorización incompleta en consultas</td><td>Acceso a información de terceros</td><td>Aplicar autorización en cada operación y pruebas negativas de acceso</td></tr>
+<tr><td>Datos desactualizados o inconsistentes</td><td>El alumno toma decisiones sobre información incorrecta</td><td>Identificar fuente y vigencia; mostrar fecha de actualización cuando esté disponible</td></tr>
+<tr><td>Definiciones ambiguas de asistencia</td><td>Totales y porcentajes engañosos</td><td>Aprobar reglas de cálculo antes de publicar estadísticas</td></tr>
+<tr><td>Exposición de observaciones sensibles</td><td>Afectación a la privacidad</td><td>No publicarlas por defecto; clasificación y aprobación institucional</td></tr>
+<tr><td>Dependencias no disponibles</td><td>Consultas fallidas o datos parciales</td><td>Errores explícitos, monitoreo y reintentos controlados según arquitectura</td></tr>
+</tbody></table></div>
+<h2>13. Mejoras futuras</h2>
+<p>Una vez validada la versión esencial, podrían evaluarse filtros avanzados, estadísticas con reglas aprobadas, avisos configurables, exportación accesible del historial y mecanismos de solicitud de revisión dirigidos al área responsable. Estas mejoras no habilitan al alumno a editar el registro oficial y requieren análisis de privacidad, accesibilidad y operación.</p>
+<h2>14. Criterio de cierre de la propuesta</h2>
+<p>Antes de iniciar la construcción, el equipo debe validar la identidad alumno-cuenta, las fuentes de datos, las categorías visibles, los períodos, el cálculo de estadísticas, los permisos, las políticas de privacidad y los contratos de integración. Este documento constituye una propuesta revisable, no una declaración de funcionalidades implementadas.</p>
+</main>
+</body>
+</html>
