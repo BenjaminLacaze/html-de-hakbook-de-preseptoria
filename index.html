@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f8fafc">
+  <meta name="description" content="Proyectos de los módulos del sistema de gestión y asistencia escolar.">
+  <title>Proyectos | Sistema de Gestión Escolar</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #172b4d;
+      --muted: #52647b;
+      --accent: #1d4ed8;
+      --line: #dbe4ef;
+      --surface: #fff;
+      --background: #f8fafc;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--background);
+      color: var(--ink);
+      font-family: "Atkinson Hyperlegible", "Segoe UI", sans-serif;
+      font-size: 1rem;
+      line-height: 1.6;
+    }
+
+    a { color: inherit; }
+
+    .wrap {
+      width: min(100% - 2rem, 1080px);
+      margin-inline: auto;
+    }
+
+    header { padding: clamp(3.5rem, 9vw, 7rem) 0 2.5rem; }
+
+    .eyebrow {
+      margin: 0 0 .75rem;
+      color: var(--accent);
+      font-size: .82rem;
+      font-weight: 700;
+      letter-spacing: .09em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      max-width: 15ch;
+      margin: 0;
+      font-size: clamp(2.4rem, 6vw, 4.5rem);
+      letter-spacing: -.045em;
+      line-height: 1.08;
+    }
+
+    .intro {
+      max-width: 62ch;
+      margin: 1.25rem 0 0;
+      color: var(--muted);
+      font-size: clamp(1.05rem, 2vw, 1.2rem);
+    }
+
+    main { padding-bottom: 4rem; }
+
+    .section-heading {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 1rem;
+      margin: 0 0 1rem;
+    }
+
+    h2 { margin: 0; font-size: 1.35rem; }
+
+    .count { color: var(--muted); font-size: .95rem; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1rem;
+    }
+
+    .card {
+      display: flex;
+      min-height: 205px;
+      flex-direction: column;
+      align-items: flex-start;
+      padding: 1.4rem;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--surface);
+      text-decoration: none;
+      transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+    }
+
+    .card:hover {
+      transform: translateY(-2px);
+      border-color: #9bb6ef;
+      box-shadow: 0 10px 28px rgb(23 43 77 / 8%);
+    }
+
+    .card:focus-visible {
+      outline: 3px solid #2563eb;
+      outline-offset: 3px;
+    }
+
+    .owner {
+      margin: 0 0 .35rem;
+      color: var(--accent);
+      font-size: .85rem;
+      font-weight: 700;
+    }
+
+    h3 { margin: 0; font-size: 1.3rem; line-height: 1.3; }
+
+    .description { margin: .65rem 0 1rem; color: var(--muted); }
+
+    .open {
+      margin-top: auto;
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    footer {
+      padding: 1.25rem 0 2rem;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: .9rem;
+    }
+
+    @media (max-width: 650px) {
+      .grid { grid-template-columns: 1fr; }
+      .card { min-height: 0; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        scroll-behavior: auto !important;
+        transition-duration: .01ms !important;
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <p class="eyebrow">Sistema de gestión escolar</p>
+      <h1>Proyectos por módulo</h1>
+      <p class="intro">Explorá las propuestas y prototipos desarrollados para cada parte del sistema de asistencia y gestión académica.</p>
+    </header>
+
+    <main>
+      <div class="section-heading">
+        <h2>Módulos del equipo</h2>
+        <span class="count">5 proyectos</span>
+      </div>
+      <section class="grid" aria-label="Proyectos por módulo">
+        <a class="card" href="Julian%20-%20Alumnos/portal_definitivo/index.html">
+          <p class="owner">Julian</p>
+          <h3>Alumnos</h3>
+          <p class="description">Portal de consulta académica para que cada estudiante revise su información, asistencia y calificaciones.</p>
+          <span class="open">Abrir proyecto <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="card" href="Jesica%20y%20Agustin%20-%20Directivos/index.html">
+          <p class="owner">Jesica y Agustin</p>
+          <h3>Directivos</h3>
+          <p class="description">Definición funcional del perfil Directivo, sus responsabilidades y herramientas de supervisión institucional.</p>
+          <span class="open">Abrir proyecto <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="card" href="Benjamin%20-%20Preceptor%C3%ADa/handbook.html">
+          <p class="owner">Benjamin</p>
+          <h3>Preceptoría</h3>
+          <p class="description">Handbook del prototipo para seguimiento de asistencia, justificaciones, llegadas tarde y alertas.</p>
+          <span class="open">Abrir proyecto <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="card" href="Lucia%20-%20Alumnos/modulo%20alumno/modulo-alumno-documentacion/informe-general.html">
+          <p class="owner">Lucia</p>
+          <h3>Alumnos</h3>
+          <p class="description">Propuesta y documentación del módulo de consulta segura de datos propios e historial de asistencia.</p>
+          <span class="open">Abrir proyecto <span aria-hidden="true">→</span></span>
+        </a>
+
+        <a class="card" href="Nicolas%20-%20Profesores/profesores.html">
+          <p class="owner">Nicolas</p>
+          <h3>Profesores</h3>
+          <p class="description">Informe del módulo docente para consultar comisiones y alumnos, y registrar asistencia.</p>
+          <span class="open">Abrir proyecto <span aria-hidden="true">→</span></span>
+        </a>
+      </section>
+    </main>
+
+    <footer>Sistema de Gestión Escolar · Proyectos del equipo</footer>
+  </div>
+</body>
+</html>
