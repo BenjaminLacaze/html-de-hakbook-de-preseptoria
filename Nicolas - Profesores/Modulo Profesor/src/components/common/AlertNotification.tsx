@@ -1,5 +1,6 @@
 import React from 'react';
 import { CheckCircle2, AlertTriangle, XCircle, Info, X } from 'lucide-react';
+import { motion, useReducedMotion } from 'motion/react';
 
 interface AlertNotificationProps {
   type: 'success' | 'warning' | 'error' | 'info';
@@ -12,6 +13,8 @@ export const AlertNotification: React.FC<AlertNotificationProps> = ({
   message,
   onClose,
 }) => {
+  const shouldReduceMotion = useReducedMotion();
+
   const getConfig = () => {
     switch (type) {
       case 'success':
@@ -48,9 +51,13 @@ export const AlertNotification: React.FC<AlertNotificationProps> = ({
   const config = getConfig();
 
   return (
-    <div
+    <motion.div
       role={type === 'error' ? 'alert' : 'status'}
       aria-live="polite"
+      initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, y: -6 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: -6 }}
+      transition={{ duration: shouldReduceMotion ? 0 : 0.15 }}
       style={{
         display: 'flex',
         alignItems: 'center',
@@ -86,6 +93,6 @@ export const AlertNotification: React.FC<AlertNotificationProps> = ({
           <X size={18} aria-hidden="true" />
         </button>
       )}
-    </div>
+    </motion.div>
   );
 };

@@ -476,7 +476,7 @@ export const ObservationsView: React.FC<ObservationsViewProps> = ({
                       fontSize: '0.75rem',
                       fontWeight: 600,
                       backgroundColor: 'var(--isf-gold-light)',
-                      color: 'var(--isf-gold-ochre)',
+                      color: 'var(--isf-gold-text)',
                       padding: '0.2rem 0.6rem',
                       borderRadius: 'var(--radius-full)',
                       border: '1px solid var(--isf-gold-border)',

@@ -10,6 +10,7 @@ import { CommissionsView } from './views/CommissionsView';
 import { StudentsView } from './views/StudentsView';
 import { AttendanceView } from './views/AttendanceView';
 import { ObservationsView } from './views/ObservationsView';
+import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
 import './styles/global.css';
 
 export const App: React.FC = () => {
@@ -38,10 +39,14 @@ export const App: React.FC = () => {
       setCommissions(comms);
       setObservations(obs);
 
-      // Cargar sesiones de la primera comisión si existe
+      // Cargar sesiones de todas las comisiones asignadas al docente
       if (comms.length > 0) {
-        const sess = await academicService.getClassSessions(comms[0].id);
-        setSessions(sess);
+        const commIds = new Set(comms.map((c) => c.id));
+        const allSessions = await academicService.getClassSessions();
+        const teacherSessions = allSessions.filter((s) => commIds.has(s.commissionId));
+        setSessions(teacherSessions);
+      } else {
+        setSessions([]);
       }
     } catch (err) {
       console.error('Error al cargar datos institucionales:', err);
@@ -60,6 +65,10 @@ export const App: React.FC = () => {
       setNavigationContext(context);
     }
     setActiveScreen(screen);
+    // Sincronizar métricas y bitácora en vivo cuando el docente regresa al panel principal
+    if (screen === 'dashboard') {
+      loadData();
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -70,6 +79,8 @@ export const App: React.FC = () => {
       'Los datos de demostración han sido restablecidos con éxito a sus valores iniciales predeterminados.'
     );
   };
+
+  const shouldReduceMotion = useReducedMotion();
 
   if (!teacher) {
     return (
@@ -127,49 +138,59 @@ export const App: React.FC = () => {
           </div>
         )}
 
-        {/* Contenido Principal con Enlace de Salto */}
+        {/* Contenido Principal con Enlace de Salto y Transición Discreta */}
         <main id="main-content" tabIndex={-1} className="main-content">
-          {activeScreen === 'dashboard' && (
-            <DashboardView
-              teacher={teacher}
-              commissions={commissions}
-              sessions={sessions}
-              observations={observations}
-              onNavigate={handleNavigate}
-            />
-          )}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeScreen}
+              initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, y: -4 }}
+              transition={{ duration: 0.18, ease: 'easeOut' }}
+            >
+              {activeScreen === 'dashboard' && (
+                <DashboardView
+                  teacher={teacher}
+                  commissions={commissions}
+                  sessions={sessions}
+                  observations={observations}
+                  onNavigate={handleNavigate}
+                />
+              )}
 
-          {activeScreen === 'commissions' && (
-            <CommissionsView
-              commissions={commissions}
-              onNavigate={handleNavigate}
-            />
-          )}
+              {activeScreen === 'commissions' && (
+                <CommissionsView
+                  commissions={commissions}
+                  onNavigate={handleNavigate}
+                />
+              )}
 
-          {activeScreen === 'students' && (
-            <StudentsView
-              commissions={commissions}
-              initialCommissionId={navigationContext.commissionId}
-              onNavigate={handleNavigate}
-            />
-          )}
+              {activeScreen === 'students' && (
+                <StudentsView
+                  commissions={commissions}
+                  initialCommissionId={navigationContext.commissionId}
+                  onNavigate={handleNavigate}
+                />
+              )}
 
-          {activeScreen === 'attendance' && (
-            <AttendanceView
-              commissions={commissions}
-              initialCommissionId={navigationContext.commissionId}
-              onNavigate={handleNavigate}
-            />
-          )}
+              {activeScreen === 'attendance' && (
+                <AttendanceView
+                  commissions={commissions}
+                  initialCommissionId={navigationContext.commissionId}
+                  onNavigate={handleNavigate}
+                />
+              )}
 
-          {activeScreen === 'observations' && (
-            <ObservationsView
-              commissions={commissions}
-              initialCommissionId={navigationContext.commissionId}
-              initialStudentId={navigationContext.studentId}
-              onNavigate={handleNavigate}
-            />
-          )}
+              {activeScreen === 'observations' && (
+                <ObservationsView
+                  commissions={commissions}
+                  initialCommissionId={navigationContext.commissionId}
+                  initialStudentId={navigationContext.studentId}
+                  onNavigate={handleNavigate}
+                />
+              )}
+            </motion.div>
+          </AnimatePresence>
         </main>
       </div>
     </div>

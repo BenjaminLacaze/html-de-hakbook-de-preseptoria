@@ -148,13 +148,12 @@ export const CommissionsView: React.FC<CommissionsViewProps> = ({
           {filteredCommissions.map((comm) => (
             <div
               key={comm.id}
-              className="card"
+              className="card card-interactive card-primary-top"
               style={{
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'space-between',
                 padding: '1.5rem',
-                borderTop: '4px solid var(--isf-blue-primary)',
               }}
             >
               <div>
@@ -164,7 +163,7 @@ export const CommissionsView: React.FC<CommissionsViewProps> = ({
                       fontFamily: 'var(--font-family-mono)',
                       fontSize: '0.8rem',
                       fontWeight: 700,
-                      color: 'var(--isf-gold-ochre)',
+                      color: 'var(--isf-gold-text)',
                       backgroundColor: 'var(--isf-gold-light)',
                       padding: '0.2rem 0.6rem',
                       borderRadius: '4px',
@@ -191,8 +190,8 @@ export const CommissionsView: React.FC<CommissionsViewProps> = ({
                   {comm.subjectName}
                 </h2>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--isf-gold-ochre)', fontWeight: 600, fontSize: '0.875rem', marginBottom: '0.5rem' }}>
-                  <GraduationCap size={16} aria-hidden="true" />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--isf-gold-text)', fontWeight: 600, fontSize: '0.875rem', marginBottom: '0.5rem' }}>
+                  <GraduationCap size={16} color="var(--isf-gold-ochre)" aria-hidden="true" />
                   <span>{comm.careerName}</span>
                 </div>
 

@@ -144,10 +144,14 @@ export const academicService = {
   },
 
   /**
-   * Obtiene las instancias de clase para una comisión
+   * Obtiene las instancias de clase para una comisión específica,
+   * o todas las instancias registradas si no se especifica commissionId.
    */
-  async getClassSessions(commissionId: string): Promise<ClassSession[]> {
+  async getClassSessions(commissionId?: string): Promise<ClassSession[]> {
     const sessions = getStored<ClassSession[]>(STORAGE_KEYS.SESSIONS, MOCK_CLASS_SESSIONS);
+    if (!commissionId) {
+      return sessions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    }
     return sessions
       .filter((s) => s.commissionId === commissionId)
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());

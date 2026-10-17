@@ -62,7 +62,7 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.875rem' }}>
-            {/* Isotipo institucional sobrio y accesible */}
+            {/* Isotipo institucional con tipografía oficial de marca */}
             <div
               style={{
                 width: '42px',
@@ -74,6 +74,7 @@ export const Header: React.FC<HeaderProps> = ({
                 flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
+                fontFamily: 'var(--font-family-logo)',
                 fontWeight: 800,
                 fontSize: '0.75rem',
                 lineHeight: 1.1,
@@ -82,8 +83,8 @@ export const Header: React.FC<HeaderProps> = ({
               }}
               aria-hidden="true"
             >
-              <span style={{ fontSize: '0.65rem', color: 'var(--isf-gold-ochre)' }}>ISFDyT</span>
-              <span style={{ fontSize: '1rem', color: 'var(--isf-blue-primary)' }}>26</span>
+              <span style={{ fontSize: '0.65rem', color: 'var(--isf-gold-text)', fontWeight: 700 }}>ISFDyT</span>
+              <span style={{ fontSize: '1rem', color: 'var(--isf-blue-primary)', fontWeight: 800 }}>26</span>
             </div>
 
             <div>

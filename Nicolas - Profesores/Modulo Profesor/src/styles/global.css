@@ -191,14 +191,36 @@ p {
   min-height: 36px;
 }
 
-/* --- TARJETAS --- */
+/* --- TARJETAS CON MICROINTERACCIONES Y DETALLES INSTITUCIONALES --- */
 .card {
   background-color: var(--color-bg-card);
   border-radius: var(--radius-lg);
   border: 1px solid var(--color-border-light);
   box-shadow: var(--shadow-sm);
   padding: 1.5rem;
-  transition: box-shadow 0.2s ease;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease;
+}
+
+.card-interactive {
+  cursor: pointer;
+}
+
+.card-interactive:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--isf-blue-sky);
+}
+
+.card-primary-top {
+  border-top: 3px solid var(--isf-blue-primary);
+}
+
+.card-sky-top {
+  border-top: 3px solid var(--isf-blue-sky);
+}
+
+.card-gold-top {
+  border-top: 3px solid var(--isf-gold-ochre);
 }
 
 .card-header {

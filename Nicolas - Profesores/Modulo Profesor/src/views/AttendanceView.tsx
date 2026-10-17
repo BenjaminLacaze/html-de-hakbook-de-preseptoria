@@ -15,6 +15,7 @@ import {
   Save,
   ArrowLeft,
 } from 'lucide-react';
+import { motion } from 'motion/react';
 
 interface AttendanceViewProps {
   commissions: Commission[];
@@ -650,76 +651,82 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                           }}
                         >
                           {/* Botón PRESENTE */}
-                          <button
+                          <motion.button
                             type="button"
                             onClick={() => handleSetStudentStatus(student.id, 'PRESENTE')}
                             aria-pressed={currentStatus === 'PRESENTE'}
+                            whileTap={{ scale: 0.95 }}
                             style={{
                               display: 'inline-flex',
                               alignItems: 'center',
-                              gap: '0.25rem',
-                              padding: '0.35rem 0.65rem',
+                              gap: '0.3rem',
+                              padding: '0.45rem 0.75rem',
                               borderRadius: 'var(--radius-sm)',
                               border: currentStatus === 'PRESENTE' ? '2px solid var(--status-present-border)' : '1px solid transparent',
                               backgroundColor: currentStatus === 'PRESENTE' ? 'var(--status-present-bg)' : '#FFFFFF',
                               color: currentStatus === 'PRESENTE' ? 'var(--status-present-text)' : 'var(--color-text-secondary)',
                               fontWeight: currentStatus === 'PRESENTE' ? 700 : 500,
-                              fontSize: '0.8125rem',
+                              fontSize: '0.85rem',
                               cursor: 'pointer',
-                              minHeight: '36px',
+                              minHeight: '40px',
+                              transition: 'background-color 0.15s ease, border-color 0.15s ease',
                             }}
                           >
-                            <CheckCircle2 size={14} color="var(--status-present-badge)" aria-hidden="true" />
+                            <CheckCircle2 size={16} color="var(--status-present-badge)" aria-hidden="true" />
                             <span>Presente</span>
-                          </button>
+                          </motion.button>
 
                           {/* Botón AUSENTE */}
-                          <button
+                          <motion.button
                             type="button"
                             onClick={() => handleSetStudentStatus(student.id, 'AUSENTE')}
                             aria-pressed={currentStatus === 'AUSENTE'}
+                            whileTap={{ scale: 0.95 }}
                             style={{
                               display: 'inline-flex',
                               alignItems: 'center',
-                              gap: '0.25rem',
-                              padding: '0.35rem 0.65rem',
+                              gap: '0.3rem',
+                              padding: '0.45rem 0.75rem',
                               borderRadius: 'var(--radius-sm)',
                               border: currentStatus === 'AUSENTE' ? '2px solid var(--status-absent-border)' : '1px solid transparent',
                               backgroundColor: currentStatus === 'AUSENTE' ? 'var(--status-absent-bg)' : '#FFFFFF',
                               color: currentStatus === 'AUSENTE' ? 'var(--status-absent-text)' : 'var(--color-text-secondary)',
                               fontWeight: currentStatus === 'AUSENTE' ? 700 : 500,
-                              fontSize: '0.8125rem',
+                              fontSize: '0.85rem',
                               cursor: 'pointer',
-                              minHeight: '36px',
+                              minHeight: '40px',
+                              transition: 'background-color 0.15s ease, border-color 0.15s ease',
                             }}
                           >
-                            <XCircle size={14} color="var(--status-absent-badge)" aria-hidden="true" />
+                            <XCircle size={16} color="var(--status-absent-badge)" aria-hidden="true" />
                             <span>Ausente</span>
-                          </button>
+                          </motion.button>
 
                           {/* Botón TARDE */}
-                          <button
+                          <motion.button
                             type="button"
                             onClick={() => handleSetStudentStatus(student.id, 'TARDE')}
                             aria-pressed={currentStatus === 'TARDE'}
+                            whileTap={{ scale: 0.95 }}
                             style={{
                               display: 'inline-flex',
                               alignItems: 'center',
-                              gap: '0.25rem',
-                              padding: '0.35rem 0.65rem',
+                              gap: '0.3rem',
+                              padding: '0.45rem 0.75rem',
                               borderRadius: 'var(--radius-sm)',
                               border: currentStatus === 'TARDE' ? '2px solid var(--status-late-border)' : '1px solid transparent',
                               backgroundColor: currentStatus === 'TARDE' ? 'var(--status-late-bg)' : '#FFFFFF',
                               color: currentStatus === 'TARDE' ? 'var(--status-late-text)' : 'var(--color-text-secondary)',
                               fontWeight: currentStatus === 'TARDE' ? 700 : 500,
-                              fontSize: '0.8125rem',
+                              fontSize: '0.85rem',
                               cursor: 'pointer',
-                              minHeight: '36px',
+                              minHeight: '40px',
+                              transition: 'background-color 0.15s ease, border-color 0.15s ease',
                             }}
                           >
-                            <Clock size={14} color="var(--status-late-badge)" aria-hidden="true" />
+                            <Clock size={16} color="var(--status-late-badge)" aria-hidden="true" />
                             <span>Tarde</span>
-                          </button>
+                          </motion.button>
                         </div>
                       </td>
                     </tr>

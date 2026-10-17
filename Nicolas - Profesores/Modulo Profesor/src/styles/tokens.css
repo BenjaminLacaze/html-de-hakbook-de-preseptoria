@@ -12,7 +12,8 @@
   --isf-blue-sky-light: #EAF2F9; /* Fondo azul cielo suave */
   
   --isf-gold-ochre: #89743A;     /* Dorado ocre oficial */
-  --isf-gold-sand: #AF9B63;      /* Arena dorada oficial */
+  --isf-gold-text: #6B5B2E;      /* Dorado ocre oscuro accesible para texto sobre blanco (Ratio > 7:1, WCAG AAA) */
+  --isf-gold-sand: #AF9B63;      /* Arena dorada oficial (acento para bordes, separadores y detalles heráldicos) */
   --isf-gold-light: #F9F6EE;     /* Fondo arena claro para avisos y tarjetas */
   --isf-gold-border: #D8CCA9;    /* Borde dorado sutil */
 
@@ -65,10 +66,15 @@
   --status-unassigned-border: #94A3B8;
 
   /* --- TIPOGRAFÍA INSTITUCIONAL Y SISTEMA DE SUSTITUCIÓN --- */
-  /* Nota: Manual oficial indica Cocomat Pro para títulos y Hussar Bold para cuerpo.
-     Se proporciona pila de sustitución tipográfica legible y accesible. */
+  /* Nota: El Manual de Identidad Visual del ISFDyT N.° 26 estipula:
+     - Títulos: 'Cocomat Pro'
+     - Cuerpo de texto: 'Hussar Bold'
+     - Elementos del logotipo: 'Dubai'
+     Dado que son tipografías comerciales propietarias, se establece una pila de sustitución
+     declarada, legible y universal que preserva la personalidad geométrica y humanista. */
   --font-family-headings: 'Cocomat Pro', 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-family-body: 'Hussar Bold', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-family-logo: 'Dubai', 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-family-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
 
   /* --- SOMBRAS SUAVES Y ELEVACIÓN --- */

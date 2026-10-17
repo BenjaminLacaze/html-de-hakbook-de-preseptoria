@@ -32,192 +32,114 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.75rem' }}>
-      {/* Banner de Bienvenida Institucional */}
-      <div
+      {/* Encabezado Institucional del Docente */}
+      <section
         className="card"
         style={{
-          background: 'linear-gradient(135deg, var(--isf-blue-primary) 0%, var(--isf-blue-hover) 100%)',
-          color: 'var(--isf-white)',
-          border: 'none',
-          padding: '1.75rem 2rem',
-          boxShadow: 'var(--shadow-md)',
-          position: 'relative',
-          overflow: 'hidden',
+          borderLeft: '5px solid var(--isf-blue-primary)',
+          padding: '1.5rem 1.75rem',
+          backgroundColor: '#FFFFFF',
         }}
       >
-        <div style={{ position: 'relative', zIndex: 1, maxWidth: '800px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-            <span
-              style={{
-                fontSize: '0.75rem',
-                backgroundColor: 'rgba(175, 155, 99, 0.3)',
-                color: '#F4ECCC',
-                padding: '0.2rem 0.6rem',
-                borderRadius: '4px',
-                border: '1px solid rgba(175, 155, 99, 0.5)',
-                fontWeight: 600,
-                textTransform: 'uppercase',
-                letterSpacing: '0.05em',
-              }}
-            >
-              Ciclo Lectivo 2026
-            </span>
-            <span style={{ fontSize: '0.8rem', color: '#94A3B8' }}>•</span>
-            <span style={{ fontSize: '0.82rem', color: '#CBD5E1' }}>ISFDyT N.° 26</span>
-          </div>
-
-          <h1 style={{ color: 'var(--isf-white)', fontSize: '1.65rem', marginBottom: '0.5rem' }}>
-            Bienvenido, {teacher.name}
-          </h1>
-          <p style={{ color: '#E2E8F0', fontSize: '0.95rem', margin: 0, lineHeight: 1.5 }}>
-            Desde este panel podés gestionar el seguimiento de tus comisiones, registrar la asistencia en clases presenciales y asentar observaciones cualitativas pedagógicas.
-          </p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.4rem', flexWrap: 'wrap' }}>
+          <span
+            style={{
+              fontSize: '0.75rem',
+              backgroundColor: 'var(--isf-gold-light)',
+              color: 'var(--isf-gold-text)',
+              padding: '0.15rem 0.5rem',
+              borderRadius: '4px',
+              border: '1px solid var(--isf-gold-border)',
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: '0.04em',
+            }}
+          >
+            Ciclo Lectivo 2026
+          </span>
+          <span style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>•</span>
+          <span style={{ fontSize: '0.82rem', color: 'var(--color-text-muted)' }}>
+            ISFDyT N.° 26 — Sistema de Gestión Académica
+          </span>
         </div>
 
-        {/* Detalle visual sutil de fondo */}
-        <div
-          style={{
-            position: 'absolute',
-            right: '-20px',
-            bottom: '-30px',
-            opacity: 0.08,
-            fontSize: '12rem',
-            fontWeight: 900,
-            color: '#FFFFFF',
-            pointerEvents: 'none',
-            userSelect: 'none',
-          }}
-          aria-hidden="true"
-        >
-          26
-        </div>
-      </div>
+        <h1 style={{ color: 'var(--isf-blue-primary)', fontSize: '1.5rem', marginBottom: '0.35rem' }}>
+          Bienvenido, {teacher.name}
+        </h1>
+        <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.9rem', margin: 0, lineHeight: 1.45 }}>
+          {teacher.title} — {teacher.department}.
+        </p>
+      </section>
 
-      {/* Tarjetas de Métricas de Resumen */}
+      {/* Resumen Operativo de Cátedra */}
       <section aria-labelledby="section-summary-title">
         <h2 id="section-summary-title" className="sr-only">
-          Resumen cuantitativo del profesor
+          Resumen operativo de cátedras y clases
         </h2>
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))',
             gap: '1rem',
           }}
         >
-          <div className="card" style={{ padding: '1.25rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-              <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--color-text-muted)' }}>
+          <div className="card" style={{ padding: '1.15rem', borderTop: '3px solid var(--isf-blue-primary)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
+              <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--color-text-muted)' }}>
                 Comisiones Asignadas
               </span>
-              <div
-                style={{
-                  width: '36px',
-                  height: '36px',
-                  borderRadius: '8px',
-                  backgroundColor: 'var(--isf-blue-sky-light)',
-                  color: 'var(--isf-blue-primary)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-                aria-hidden="true"
-              >
-                <BookOpen size={18} />
-              </div>
+              <BookOpen size={18} color="var(--isf-blue-primary)" aria-hidden="true" />
             </div>
-            <div style={{ fontSize: '1.85rem', fontWeight: 700, color: 'var(--isf-blue-primary)' }}>
+            <div style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--isf-blue-primary)' }}>
               {commissions.length}
             </div>
             <span style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)' }}>
-              Materias de grado regular
+              Materias a tu cargo
             </span>
           </div>
 
-          <div className="card" style={{ padding: '1.25rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-              <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--color-text-muted)' }}>
+          <div className="card" style={{ padding: '1.15rem', borderTop: '3px solid var(--isf-blue-sky)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
+              <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--color-text-muted)' }}>
                 Total Estudiantes
               </span>
-              <div
-                style={{
-                  width: '36px',
-                  height: '36px',
-                  borderRadius: '8px',
-                  backgroundColor: '#EFF6FF',
-                  color: '#1D4ED8',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-                aria-hidden="true"
-              >
-                <Users size={18} />
-              </div>
+              <Users size={18} color="var(--isf-blue-sky)" aria-hidden="true" />
             </div>
-            <div style={{ fontSize: '1.85rem', fontWeight: 700, color: 'var(--isf-blue-primary)' }}>
+            <div style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--isf-blue-primary)' }}>
               {totalStudents}
             </div>
             <span style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)' }}>
-              En tus comisiones simuladas
+              Matrícula activa total
             </span>
           </div>
 
-          <div className="card" style={{ padding: '1.25rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-              <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--color-text-muted)' }}>
+          <div className="card" style={{ padding: '1.15rem', borderTop: '3px solid var(--isf-gold-ochre)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
+              <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--color-text-muted)' }}>
                 Clases con Asistencia
               </span>
-              <div
-                style={{
-                  width: '36px',
-                  height: '36px',
-                  borderRadius: '8px',
-                  backgroundColor: '#ECFDF5',
-                  color: '#059669',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-                aria-hidden="true"
-              >
-                <ClipboardCheck size={18} />
-              </div>
+              <ClipboardCheck size={18} color="var(--isf-gold-ochre)" aria-hidden="true" />
             </div>
-            <div style={{ fontSize: '1.85rem', fontWeight: 700, color: 'var(--isf-blue-primary)' }}>
+            <div style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--isf-blue-primary)' }}>
               {closedSessions.length}
             </div>
             <span style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)' }}>
-              Registros históricos activos
+              De {sessions.length} clases totales registradas
             </span>
           </div>
 
-          <div className="card" style={{ padding: '1.25rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-              <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--color-text-muted)' }}>
-                Observaciones Cargadas
+          <div className="card" style={{ padding: '1.15rem', borderTop: '3px solid var(--isf-blue-primary)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.35rem' }}>
+              <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--color-text-muted)' }}>
+                Observaciones Asentadas
               </span>
-              <div
-                style={{
-                  width: '36px',
-                  height: '36px',
-                  borderRadius: '8px',
-                  backgroundColor: '#FEF3C7',
-                  color: '#B45309',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-                aria-hidden="true"
-              >
-                <MessageSquare size={18} />
-              </div>
+              <MessageSquare size={18} color="var(--isf-blue-primary)" aria-hidden="true" />
             </div>
-            <div style={{ fontSize: '1.85rem', fontWeight: 700, color: 'var(--isf-blue-primary)' }}>
+            <div style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--isf-blue-primary)' }}>
               {observations.length}
             </div>
             <span style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)' }}>
-              Anotaciones formativas
+              Seguimientos pedagógicos
             </span>
           </div>
         </div>
@@ -232,7 +154,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           <button
             type="button"
             onClick={() => onNavigate('attendance')}
-            className="card"
+            className="card card-interactive card-primary-top"
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -275,7 +197,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           <button
             type="button"
             onClick={() => onNavigate('observations')}
-            className="card"
+            className="card card-interactive card-gold-top"
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -341,7 +263,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           {commissions.map((comm) => (
             <div
               key={comm.id}
-              className="card"
+              className="card card-interactive card-sky-top"
               style={{
                 display: 'flex',
                 flexDirection: 'column',
@@ -356,7 +278,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       fontFamily: 'var(--font-family-mono)',
                       fontSize: '0.78rem',
                       fontWeight: 700,
-                      color: 'var(--isf-gold-ochre)',
+                      color: 'var(--isf-gold-text)',
                       backgroundColor: 'var(--isf-gold-light)',
                       padding: '0.15rem 0.5rem',
                       borderRadius: '4px',
