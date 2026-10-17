@@ -1,6 +1,0 @@
-{
-  "name": "Asistencia Terciario - Panel de Alumno",
-  "description": "Sistema de gestión académica, control de asistencias, calificaciones y agenda para estudiantes de nivel terciario del Instituto 26.",
-  "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
-}

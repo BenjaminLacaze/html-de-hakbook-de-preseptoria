@@ -1,0 +1,6 @@
+{
+  "name": "Asistencia Terciario — Panel de Alumno",
+  "description": "Plataforma de gestión académica para estudiantes de educación superior: control de asistencias, notas, agenda, foros y comunidad.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
