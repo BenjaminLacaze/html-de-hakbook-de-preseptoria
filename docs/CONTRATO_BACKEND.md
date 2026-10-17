@@ -82,7 +82,7 @@ Después del análisis, el equipo acuerda responsables, arquitectura, base de da
 - Framework y alojamiento del backend y PostgreSQL.
 - Ambientes de desarrollo, pruebas y producción, y estrategia de copias de seguridad.
 
-Estas tareas completan el contrato; no cambian la decisión de mantener una API común y una base PostgreSQL central para la primera versión.
+Estas definiciones siguen pendientes. La arquitectura, el motor y la estrategia de bases de datos se decidirán después de comparar los informes y frontends de los módulos; este documento no aprueba una API común, microservicios ni una base central.
 
 ## 8. Documentos usados como base
 
