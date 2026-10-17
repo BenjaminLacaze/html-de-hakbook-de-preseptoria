@@ -1,0 +1,3 @@
+/* Estilos base importados desde tokens institucionales y global */
+@import './styles/tokens.css';
+@import './styles/global.css';
