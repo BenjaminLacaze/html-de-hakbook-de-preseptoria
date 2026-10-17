@@ -1,6 +1,0 @@
-{
-  "name": "Panel Alumno - Sistema de Asistencia Escolar",
-  "description": "Módulo Alumno para la consulta académica y registro de asistencias escolares. Desarrollado por Lucia Salgado para la Tecnicatura en Desarrollo de Software.",
-  "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
-}
