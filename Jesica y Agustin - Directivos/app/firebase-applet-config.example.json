@@ -1,0 +1,11 @@
+{
+  "projectId": "TU_PROJECT_ID",
+  "appId": "TU_APP_ID",
+  "apiKey": "TU_API_KEY",
+  "authDomain": "TU_PROJECT_ID.firebaseapp.com",
+  "storageBucket": "TU_PROJECT_ID.firebasestorage.app",
+  "messagingSenderId": "TU_SENDER_ID",
+  "measurementId": "",
+  "oAuthClientId": "TU_OAUTH_CLIENT_ID.apps.googleusercontent.com",
+  "recaptchaSiteKey": ""
+}

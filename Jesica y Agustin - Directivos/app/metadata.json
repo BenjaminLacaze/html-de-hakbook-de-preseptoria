@@ -1,0 +1,6 @@
+{
+  "name": "Perfil Directivo — Sistema de Gestión Educativa",
+  "description": "Sistema integral de gestión institucional y supervisión directiva para el ISFDyT N° 26 con seguimiento de asistencia, rendimiento académico, organización institucional y auditoría.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
