@@ -1,7 +1,7 @@
 # Contrato de integración backend — Módulo Alumno
 
 **Proyecto:** Asistencia Terciario
-**Módulo:** Alumno (`Julian - Alumnos/Modulo Alumno`)
+**Módulo:** Alumno (`alumnos-julian/app`)
 **Estado:** propuesta basada en la implementación actual; requiere acuerdo del equipo antes de conectar datos institucionales.
 **Fecha:** 16 de octubre de 2026
 
@@ -15,15 +15,15 @@ El backend, la tecnología de persistencia y los responsables de cada dominio se
 
 ## 2. Fuentes inspeccionadas
 
-- `Julian - Alumnos/Modulo Alumno/src/types/index.ts`
-- `Julian - Alumnos/Modulo Alumno/src/services/`
-- `Julian - Alumnos/Modulo Alumno/src/lib/apiClient.ts`
-- `Julian - Alumnos/Modulo Alumno/src/lib/queryClient.ts`
-- `Julian - Alumnos/Modulo Alumno/src/mocks/mockData.ts`
-- `Julian - Alumnos/Modulo Alumno/src/features/`
-- `Julian - Alumnos/Modulo Alumno/README.md`
-- `Julian - Alumnos/docs/ALCANCE_MVP.md`
-- `Julian - Alumnos/docs/ARQUITECTURA_E_INTEGRACIONES.md`
+- `alumnos-julian/app/src/types/index.ts`
+- `alumnos-julian/app/src/services/`
+- `alumnos-julian/app/src/lib/apiClient.ts`
+- `alumnos-julian/app/src/lib/queryClient.ts`
+- `alumnos-julian/app/src/mocks/mockData.ts`
+- `alumnos-julian/app/src/features/`
+- `alumnos-julian/app/README.md`
+- `alumnos-julian/docs/ALCANCE_MVP.md`
+- `alumnos-julian/docs/ARQUITECTURA_E_INTEGRACIONES.md`
 - `docs/CONTRATO_BACKEND.md`
 
 El frontend nuevo usa React, TypeScript, Vite, Axios, TanStack Query y React Router. `VITE_USE_MOCK` elige entre datos de demostración y HTTP. Los servicios HTTP actuales esperan DTOs con nombres de propiedades en camelCase español y rutas relativas `/student/...`.

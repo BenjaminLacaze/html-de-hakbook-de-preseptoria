@@ -86,8 +86,8 @@ Estas definiciones siguen pendientes. La arquitectura, el motor y la estrategia 
 
 ## 8. Documentos usados como base
 
-- `Julian - Alumnos/docs/ARQUITECTURA_E_INTEGRACIONES.md`
-- `Lucia - Alumnos/modulo alumno/modulo-alumno-documentacion/arquitectura-tecnica.md`
-- `Benjamin - Preceptoría/handbook.html`
-- `Nicolas - Profesores/profesores.html`
-- `Jesica y Agustin - Directivos/README.md`
+- `alumnos-julian/docs/ARQUITECTURA_E_INTEGRACIONES.md`
+- `alumnos-lucia/documentacion/arquitectura-tecnica.md`
+- `preceptoria-benjamin/handbook.html`
+- `profesores-nicolas/profesores.html`
+- `directivos-jesica-agustin/README.md`

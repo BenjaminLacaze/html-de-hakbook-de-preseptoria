@@ -1,7 +1,7 @@
 # Informe técnico para el contrato backend — Módulo Directivo (ISFDyT N.° 26)
 
 **Estado:** base de análisis para acordar el contrato de integración; la API actual es demostrativa y no constituye todavía un backend institucional de producción.  
-**Frontend analizado:** `Jesica y Agustin - Directivos/app/`  
+**Frontend analizado:** `directivos-jesica-agustin/app/`  
 **Tecnologías:** React 19, TypeScript, Vite y servidor Express para desarrollo/demostración.  
 **Fecha de revisión:** 17 de octubre de 2026.  
 
@@ -11,7 +11,7 @@
 
 Este documento describe las pantallas, datos y operaciones del **Módulo Directivo** y propone el contrato HTTP necesario para integrarlo con los módulos de Alumnos, Preceptoría y Profesorado. Separa las rutas que existen en el servidor demostrativo de las rutas que todavía deben acordarse o implementarse.
 
-La especificación de tipos que sirve como fuente principal está en `Jesica y Agustin - Directivos/app/src/contracts/apiContract.ts`. El catálogo navegable de ejemplos se encuentra en `Jesica y Agustin - Directivos/app/src/contracts/endpointsCatalog.ts`. Este documento traslada y amplía esa información para su revisión intermodular; no reemplaza esos archivos ni declara aprobada una arquitectura institucional.
+La especificación de tipos que sirve como fuente principal está en `directivos-jesica-agustin/app/src/contracts/apiContract.ts`. El catálogo navegable de ejemplos se encuentra en `directivos-jesica-agustin/app/src/contracts/endpointsCatalog.ts`. Este documento traslada y amplía esa información para su revisión intermodular; no reemplaza esos archivos ni declara aprobada una arquitectura institucional.
 
 Se propone el prefijo `/api/v1`, ya utilizado por el prototipo. La elección de backend común, servicios separados, base de datos, autenticación y fuente oficial de cada dato debe acordarse con el equipo antes de una integración de producción.
 
@@ -245,14 +245,14 @@ Los informes deben usar las mismas reglas de cálculo que las pantallas. La audi
 
 ## 9. Archivos consultados del proyecto
 
-- `Jesica y Agustin - Directivos/app/src/contracts/apiContract.ts`
-- `Jesica y Agustin - Directivos/app/src/contracts/endpointsCatalog.ts`
-- `Jesica y Agustin - Directivos/app/src/types/index.ts`
-- `Jesica y Agustin - Directivos/app/src/context/AppContext.tsx`
-- `Jesica y Agustin - Directivos/app/src/data/mockData.ts`
-- `Jesica y Agustin - Directivos/app/src/components/views/BackendContractView.tsx`
-- `Jesica y Agustin - Directivos/app/server.ts`
-- `Jesica y Agustin - Directivos/app/README.md`
+- `directivos-jesica-agustin/app/src/contracts/apiContract.ts`
+- `directivos-jesica-agustin/app/src/contracts/endpointsCatalog.ts`
+- `directivos-jesica-agustin/app/src/types/index.ts`
+- `directivos-jesica-agustin/app/src/context/AppContext.tsx`
+- `directivos-jesica-agustin/app/src/data/mockData.ts`
+- `directivos-jesica-agustin/app/src/components/views/BackendContractView.tsx`
+- `directivos-jesica-agustin/app/server.ts`
+- `directivos-jesica-agustin/app/README.md`
 - `docs/CONTRATO_BACKEND.md`
 - `docs/Contrato_backend_alumno_julian.md`
 - `docs/nico-contrato-backend-profesores.md`

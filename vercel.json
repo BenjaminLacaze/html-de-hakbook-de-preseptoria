@@ -1,0 +1,21 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "installCommand": "echo \"las dependencias las instala scripts/build.mjs por app\"",
+  "buildCommand": "node scripts/build.mjs",
+  "outputDirectory": "dist",
+  "redirects": [
+    { "source": "/Lucia - Alumnos/modulo alumno/modulo-alumno-documentacion/:path*", "destination": "/alumnos-lucia/documentacion/:path*", "permanent": true },
+    { "source": "/Nicolas - Profesores/:path*", "destination": "/profesores-nicolas/:path*", "permanent": true },
+    { "source": "/Julian - Alumnos/:path*", "destination": "/alumnos-julian/:path*", "permanent": true },
+    { "source": "/Lucia - Alumnos/:path*", "destination": "/alumnos-lucia/:path*", "permanent": true },
+    { "source": "/Jesica y Agustin - Directivos/:path*", "destination": "/directivos-jesica-agustin/:path*", "permanent": true },
+    { "source": "/Benjamin - Preceptoría/:path*", "destination": "/preceptoria-benjamin/:path*", "permanent": true }
+  ],
+  "rewrites": [
+    { "source": "/profesores-nicolas/app/:path*", "destination": "/profesores-nicolas/app/index.html" },
+    { "source": "/directivos-jesica-agustin/app/:path*", "destination": "/directivos-jesica-agustin/app/index.html" },
+    { "source": "/alumnos-julian/app/:path*", "destination": "/alumnos-julian/app/index.html" },
+    { "source": "/alumnos-lucia/app/:path*", "destination": "/alumnos-lucia/app/index.html" }
+  ]
+}

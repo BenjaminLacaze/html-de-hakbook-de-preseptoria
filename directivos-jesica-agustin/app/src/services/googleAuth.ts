@@ -17,8 +17,21 @@ const firebaseConfig = {
   oAuthClientId: import.meta.env.VITE_FIREBASE_OAUTH_CLIENT_ID || '',
 };
 
-const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
-export const auth = getAuth(app);
+// Firebase es opcional (solo lo usa el backup a Google Drive). Sin las
+// variables VITE_FIREBASE_* configuradas no se inicializa: si se inicializara
+// con la clave vacía, Firebase tira un error al cargar y la app entera queda
+// en blanco (pasaba en el deploy de Vercel).
+export const isFirebaseConfigured = Boolean(firebaseConfig.apiKey);
+
+const app = isFirebaseConfigured
+  ? getApps().length > 0
+    ? getApp()
+    : initializeApp(firebaseConfig)
+  : null;
+export const auth = app ? getAuth(app) : null;
+
+const NOT_CONFIGURED_MSG =
+  'El backup con Google Drive no está configurado en este despliegue (faltan las variables VITE_FIREBASE_*).';
 
 export const SCOPES = ['https://www.googleapis.com/auth/drive.file'];
 
@@ -32,6 +45,10 @@ export const initAuth = (
   onAuthSuccess?: (user: FirebaseUser, token: string) => void,
   onAuthFailure?: () => void
 ) => {
+  if (!auth) {
+    if (onAuthFailure) onAuthFailure();
+    return () => {};
+  }
   return onAuthStateChanged(auth, async (user: FirebaseUser | null) => {
     if (user) {
       if (cachedAccessToken) {
@@ -48,6 +65,7 @@ export const initAuth = (
 };
 
 export const googleSignIn = async (): Promise<{ user: FirebaseUser; accessToken: string } | null> => {
+  if (!auth) throw new Error(NOT_CONFIGURED_MSG);
   try {
     isSigningIn = true;
     const result = await signInWithPopup(auth, provider);
@@ -71,6 +89,6 @@ export const getAccessToken = async (): Promise<string | null> => {
 };
 
 export const logoutGoogle = async () => {
-  await signOut(auth);
+  if (auth) await signOut(auth);
   cachedAccessToken = null;
 };

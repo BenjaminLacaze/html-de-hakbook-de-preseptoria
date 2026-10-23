@@ -91,19 +91,14 @@
       border-radius: 14px;
       background: var(--surface);
       text-decoration: none;
-      transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+      transition: border-color 180ms ease, box-shadow 180ms ease;
     }
 
     .card:hover {
-      transform: translateY(-2px);
       border-color: #9bb6ef;
       box-shadow: 0 10px 28px rgb(23 43 77 / 8%);
     }
 
-    .card:focus-visible {
-      outline: 3px solid #2563eb;
-      outline-offset: 3px;
-    }
 
     .owner {
       margin: 0 0 .35rem;
@@ -116,11 +111,39 @@
 
     .description { margin: .65rem 0 1rem; color: var(--muted); }
 
-    .open {
+    .links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .6rem;
       margin-top: auto;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: .35rem;
+      padding: .5rem .9rem;
+      border: 1px solid var(--line);
+      border-radius: 10px;
       color: var(--accent);
       font-weight: 700;
+      text-decoration: none;
     }
+
+    .btn:hover { border-color: #9bb6ef; background: #f1f5ff; }
+
+    .btn:focus-visible {
+      outline: 3px solid #2563eb;
+      outline-offset: 2px;
+    }
+
+    .btn.primary {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .btn.primary:hover { background: #1e40af; }
 
     footer {
       padding: 1.25rem 0 2rem;
@@ -158,40 +181,56 @@
         <span class="count">5 proyectos</span>
       </div>
       <section class="grid" aria-label="Proyectos por módulo">
-        <a class="card" href="Julian%20-%20Alumnos/portal_definitivo/index.html">
+        <article class="card">
           <p class="owner">Julian</p>
-          <h3>Alumnos</h3>
+          <h3>Alumnos — Módulo Alumno</h3>
           <p class="description">Portal de consulta académica para que cada estudiante revise su información, asistencia y calificaciones.</p>
-          <span class="open">Abrir proyecto <span aria-hidden="true">→</span></span>
-        </a>
+          <div class="links">
+            <a class="btn primary" href="alumnos-julian/app/">Abrir app <span aria-hidden="true">→</span></a>
+            <a class="btn" href="alumnos-julian/portal_definitivo/index.html">Portal HTML</a>
+            <a class="btn" href="alumnos-julian/index.html">Documentación</a>
+          </div>
+        </article>
 
-        <a class="card" href="Jesica%20y%20Agustin%20-%20Directivos/index.html">
+        <article class="card">
           <p class="owner">Jesica y Agustin</p>
           <h3>Directivos</h3>
           <p class="description">Definición funcional del perfil Directivo, sus responsabilidades y herramientas de supervisión institucional.</p>
-          <span class="open">Abrir proyecto <span aria-hidden="true">→</span></span>
-        </a>
+          <div class="links">
+            <a class="btn primary" href="directivos-jesica-agustin/app/">Abrir app <span aria-hidden="true">→</span></a>
+            <a class="btn" href="directivos-jesica-agustin/index.html">Perfil Directivo</a>
+            <a class="btn" href="directivos-jesica-agustin/Handbook/index.html">Handbook</a>
+          </div>
+        </article>
 
-        <a class="card" href="Benjamin%20-%20Preceptor%C3%ADa/handbook.html">
+        <article class="card">
           <p class="owner">Benjamin</p>
           <h3>Preceptoría</h3>
           <p class="description">Handbook del prototipo para seguimiento de asistencia, justificaciones, llegadas tarde y alertas.</p>
-          <span class="open">Abrir proyecto <span aria-hidden="true">→</span></span>
-        </a>
+          <div class="links">
+            <a class="btn primary" href="preceptoria-benjamin/handbook.html">Handbook <span aria-hidden="true">→</span></a>
+          </div>
+        </article>
 
-        <a class="card" href="Lucia%20-%20Alumnos/modulo%20alumno/modulo-alumno-documentacion/informe-general.html">
+        <article class="card">
           <p class="owner">Lucia</p>
-          <h3>Alumnos</h3>
-          <p class="description">Propuesta y documentación del módulo de consulta segura de datos propios e historial de asistencia.</p>
-          <span class="open">Abrir proyecto <span aria-hidden="true">→</span></span>
-        </a>
+          <h3>Alumnos — Panel Alumno · Sistema de Asistencia Escolar</h3>
+          <p class="description">Consulta segura de datos propios e historial de asistencia, con documentación funcional y técnica.</p>
+          <div class="links">
+            <a class="btn primary" href="alumnos-lucia/app/">Abrir app <span aria-hidden="true">→</span></a>
+            <a class="btn" href="alumnos-lucia/documentacion/informe-general.html">Documentación</a>
+          </div>
+        </article>
 
-        <a class="card" href="Nicolas%20-%20Profesores/profesores.html">
+        <article class="card">
           <p class="owner">Nicolas</p>
-          <h3>Profesores</h3>
-          <p class="description">Informe del módulo docente para consultar comisiones y alumnos, y registrar asistencia.</p>
-          <span class="open">Abrir proyecto <span aria-hidden="true">→</span></span>
-        </a>
+          <h3>Profesores — Módulo Profesor</h3>
+          <p class="description">Módulo docente para consultar comisiones y alumnos, y registrar asistencia.</p>
+          <div class="links">
+            <a class="btn primary" href="profesores-nicolas/app/">Abrir app <span aria-hidden="true">→</span></a>
+            <a class="btn" href="profesores-nicolas/profesores.html">Informe</a>
+          </div>
+        </article>
       </section>
     </main>
 
