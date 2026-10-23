@@ -1,6 +1,7 @@
 # Ajustes para integrar las apps a un backend con base de datos unificada
 
-**Estado:** propuesta de trabajo — 2026-10-23
+**Estado:** propuesta de trabajo — 2026-10-23. Decisiones 1, 3 y 4 **aprobadas** el mismo día; la 2 se revisó: se integran los dos portales de Alumno (ver sección 5). Backend: Prisma + Neon, login con cuentas creadas desde Directivos.
+**Etapa 0:** tipos unificados publicados en [`shared/types.ts`](../shared/types.ts) (equivalencias con los valores viejos en [`shared/README.md`](../shared/README.md)).
 **Alcance:** las 4 apps React del repo (`profesores-nicolas`, `directivos-jesica-agustin`,
 `alumnos-julian`, `alumnos-lucia`) y el módulo de Preceptoría (`preceptoria-benjamin`, hoy sin app).
 **Base:** lectura del código actual de cada app y de los contratos en `docs/`.
@@ -247,12 +248,12 @@ llegadas tarde y consulta de asistencia por comisión.
 
 ## 5. Decisiones que tiene que tomar el equipo
 
-| # | Decisión | Recomendación |
+| # | Decisión | Recomendación / **resolución** |
 |---|---|---|
-| 1 | Modelo académico: terciario (comisiones) o secundario (divisiones) | **Terciario.** Es la realidad del instituto y 3 de 4 apps ya lo usan. |
-| 2 | ¿Un portal de Alumno o dos? | **Uno:** el de Julián como base (es el más completo y tiene capa de API), incorporando lo de Lucía. Lucía puede quedar responsable de asistencia y accesibilidad dentro del portal. |
-| 3 | Idioma de los campos de la API | **Inglés**, con traducción en la capa de servicios de Julián. |
-| 4 | Motor de base de datos | **PostgreSQL**, que es el que menciona `CONTRATO_BACKEND.md` (el `.env.example` de Julián menciona MySQL: unificar). |
+| 1 | Modelo académico: terciario (comisiones) o secundario (divisiones) | ✅ **Aprobado (2026-10-23): terciario.** |
+| 2 | ¿Un portal de Alumno o dos? | 🔄 **Revisado (2026-10-23): se integran LOS DOS** (Julián y Lucía) a la misma API y base. Después de que los prueben los alumnos se elige uno. |
+| 3 | Idioma de los campos de la API | ✅ **Aprobado (2026-10-23): inglés**, en nombres de campos y en códigos de catálogo (`PRESENT`, `MORNING`, `TEACHER`…). Los textos en español salen de las tablas `*_LABELS` de `shared/types.ts`. |
+| 4 | Motor de base de datos | ✅ **Aprobado (2026-10-23): PostgreSQL.** Corregir las menciones a MySQL del portal de Julián. |
 | 5 | Tecnología y alojamiento del backend | Pendiente. Requisitos: API REST `/api/v1`, OpenAPI publicado, sesión por cookie y migraciones versionadas. |
 | 6 | ¿La llegada tarde descuenta asistencia? ¿Cuánto? | Definir la regla institucional (hoy solo Lucía usa 0,5). |
 | 7 | Quién carga y quién aprueba justificaciones | Preceptoría carga y aprueba; Directivos supervisa. |
@@ -264,8 +265,8 @@ llegadas tarde y consulta de asistencia por comisión.
 
 ## 6. Orden de trabajo sugerido
 
-**Etapa 0 — Acuerdos (sin código).** Cerrar las decisiones 1 a 4 y 6 a 9. Publicar los tipos
-unificados en `shared/types.ts`.
+**Etapa 0 — Acuerdos.** ✅ Decisiones 1 a 4 cerradas. ✅ Tipos unificados en `shared/types.ts`, con alias
+`@shared` configurado en las 4 apps. Pendientes: decisiones 5 a 10.
 
 **Etapa 1 — Backend base.** Login y sesión (`/auth/login`, `/auth/me`, `/auth/logout`), usuarios
 y roles, estructura académica (carreras, materias, ciclos, comisiones, inscripciones) e

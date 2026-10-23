@@ -1,5 +1,31 @@
 # CHANGELOG
 
+## 2026-10-23 — Etapa 0: modelo de datos unificado (`shared/`)
+
+**Decisiones aprobadas:** modelo terciario (comisiones), API en inglés (campos y códigos) y
+PostgreSQL (Neon). Los **dos** portales de Alumno se integran; se elige uno después de que los prueben. Registradas en `docs/AJUSTES_INTEGRACION_BACKEND.md`.
+
+**Qué cambió**
+- Nuevo `shared/types.ts`: tipos y catálogos únicos (roles, turnos, estados de asistencia,
+  comisiones, inscripciones, clases, justificaciones, notas, comunicados, auditoría, errores de API
+  y pedidos del primer circuito de asistencia). Textos en español en las tablas `*_LABELS`.
+- Nuevo `shared/README.md`: cómo usarlo y **tabla de equivalencias** de los valores viejos de cada
+  app a los nuevos.
+- Alias `@shared` en las 4 apps: `vite.config.ts` (más `server.fs.allow` para el modo desarrollo)
+  y `tsconfig.json` / `tsconfig.app.json` (Profesores).
+- `scripts/build.mjs` no publica la carpeta `shared/` en el sitio.
+
+**Probado**
+- `shared/types.ts` compila en modo estricto (incluido `erasableSyntaxOnly`, que usa Profesores).
+- En las 4 apps, un archivo de prueba que importa de `@shared/types` pasa el chequeo de tipos, y un
+  valor viejo (`'PRESENTE'`) es rechazado como corresponde. El archivo de prueba se borró.
+- Servidor de desarrollo (Profesores y Julián): `shared/types.ts` responde 200 y el resto de las
+  carpetas fuera de la app sigue bloqueado (403).
+- Build completo OK.
+
+**Todavía no:** ninguna app usa estos tipos en sus pantallas; la migración de cada app es la Etapa 2.
+El sitio publicado no cambia.
+
 ## 2026-10-23 — Documento de ajustes para el backend unificado
 
 - Nuevo `docs/AJUSTES_INTEGRACION_BACKEND.md`: diagnóstico de cómo maneja los datos cada app,

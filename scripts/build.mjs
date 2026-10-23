@@ -26,7 +26,8 @@ const modulesWithApp = [
   'alumnos-lucia',
 ];
 
-const skipTop = new Set(['node_modules', '.git', 'dist', '.vercel', 'scripts']);
+// shared/ son tipos que se compilan dentro de cada app: no hace falta publicarlos sueltos.
+const skipTop = new Set(['node_modules', '.git', 'dist', '.vercel', 'scripts', 'shared']);
 const appDirs = new Set(modulesWithApp.map((m) => join(root, m, 'app')));
 
 function run(cmd, cwd) {

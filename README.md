@@ -22,6 +22,7 @@ Cada módulo tiene su carpeta, siempre con la misma forma:
 | `directivos-jesica-agustin/` | Jesica y Agustín | `/directivos-jesica-agustin/app/` | `index.html`, `Handbook/` |
 | `preceptoria-benjamin/` | Benjamín | — | `handbook.html` |
 | `profesores-nicolas/` | Nicolás | `/profesores-nicolas/app/` | `profesores.html`, `docs/` |
+| `shared/` | equipo | — | `types.ts`: modelo de datos unificado que usan todas las apps (`import … from '@shared/types'`); ver `shared/README.md` |
 | `docs/` | equipo | — | contratos de backend de todos los módulos y `AJUSTES_INTEGRACION_BACKEND.md` (qué cambiar en cada app para usar la base unificada) |
 
 La landing (`index.html` de la raíz) enlaza a todo.

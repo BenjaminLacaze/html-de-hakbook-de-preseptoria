@@ -9,9 +9,13 @@ export default defineConfig(() => {
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),
+        // Tipos compartidos del sistema (ver shared/README.md en la raíz del repo)
+        '@shared': path.resolve(__dirname, '../../shared'),
       },
     },
     server: {
+      // Permite al servidor de desarrollo leer ../../shared
+      fs: { allow: ['.', '../../shared'] },
       // HMR is disabled in AI Studio via DISABLE_HMR env var.
       // Do not modify—file watching is disabled to prevent flickering during agent edits.
       hmr: process.env.DISABLE_HMR !== 'true',
