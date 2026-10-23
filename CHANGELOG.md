@@ -45,3 +45,16 @@ con contenido en el navegador servidas desde `dist/`.
 - `directivos-jesica-agustin/app/server.ts` (API mock con Express) no corre en Vercel: la app usa
   sus datos de prueba internos. El botón "Descargar ZIP" (`/api/download-zip`) no funciona publicado.
 - El build usa `vite build` sin `tsc`: errores de tipos no frenan el deploy.
+
+**Deploy (cómo está conectado):** `sistema-gestion-i26.vercel.app` **no** se publica desde este repo,
+sino desde `mjsis20052/sistema-gestion-i26` (proyecto Vercel `mjsis20052-3236s-projects/sistema-gestion-i26`).
+- Los pushes a `main` de ese repo quedan como **Preview**; para pasarlos a producción:
+  `vercel promote <url-del-preview> --scope mjsis20052-3236s-projects --yes`.
+- Vercel (plan Hobby) **bloquea** commits cuyo autor no es `mjsis20052`
+  ("Deployment was blocked"). Los commits a ese repo tienen que ir firmados por esa cuenta.
+- 2026-10-23: publicado en producción con el contenido de `d525248`; las 4 apps verificadas en vivo.
+
+## 2026-10-23 — Redirecciones de URLs viejas
+
+Las redirecciones con espacios en el `source` no coincidían en Vercel (daban 404).
+`vercel.json` ahora usa patrones `(.*)` que cubren espacios y `%20`.

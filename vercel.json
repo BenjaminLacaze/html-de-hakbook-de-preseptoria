@@ -5,12 +5,12 @@
   "buildCommand": "node scripts/build.mjs",
   "outputDirectory": "dist",
   "redirects": [
-    { "source": "/Lucia - Alumnos/modulo alumno/modulo-alumno-documentacion/:path*", "destination": "/alumnos-lucia/documentacion/:path*", "permanent": true },
-    { "source": "/Nicolas - Profesores/:path*", "destination": "/profesores-nicolas/:path*", "permanent": true },
-    { "source": "/Julian - Alumnos/:path*", "destination": "/alumnos-julian/:path*", "permanent": true },
-    { "source": "/Lucia - Alumnos/:path*", "destination": "/alumnos-lucia/:path*", "permanent": true },
-    { "source": "/Jesica y Agustin - Directivos/:path*", "destination": "/directivos-jesica-agustin/:path*", "permanent": true },
-    { "source": "/Benjamin - Preceptoría/:path*", "destination": "/preceptoria-benjamin/:path*", "permanent": true }
+    { "source": "/Lucia(.*)Alumnos/modulo(.*)alumno/modulo-alumno-documentacion/(.*)", "destination": "/alumnos-lucia/documentacion/$3", "permanent": true },
+    { "source": "/Nicolas(.*)Profesores/(.*)", "destination": "/profesores-nicolas/$2", "permanent": true },
+    { "source": "/Julian(.*)Alumnos/(.*)", "destination": "/alumnos-julian/$2", "permanent": true },
+    { "source": "/Lucia(.*)Alumnos/(.*)", "destination": "/alumnos-lucia/$2", "permanent": true },
+    { "source": "/Jesica(.*)Directivos/(.*)", "destination": "/directivos-jesica-agustin/$2", "permanent": true },
+    { "source": "/Benjamin(.*)Preceptor(.*)/(.*)", "destination": "/preceptoria-benjamin/$3", "permanent": true }
   ],
   "rewrites": [
     { "source": "/profesores-nicolas/app/:path*", "destination": "/profesores-nicolas/app/index.html" },
