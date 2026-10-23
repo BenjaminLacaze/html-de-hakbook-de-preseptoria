@@ -48,8 +48,13 @@ con contenido en el navegador servidas desde `dist/`.
 
 **Deploy (cómo está conectado):** `sistema-gestion-i26.vercel.app` **no** se publica desde este repo,
 sino desde `mjsis20052/sistema-gestion-i26` (proyecto Vercel `mjsis20052-3236s-projects/sistema-gestion-i26`).
-- Los pushes a `main` de ese repo quedan como **Preview**; para pasarlos a producción:
-  `vercel promote <url-del-preview> --scope mjsis20052-3236s-projects --yes`.
+- Antes, los pushes a `main` de ese repo quedaban como **Preview** (la rama de producción no estaba
+  definida). Se reconectó el repo en Vercel y quedó `productionBranch = main`: probado, un push a
+  `main` ahora publica directo en producción.
+- Se intentó conectar Vercel a **este** repo (`BenjaminLacaze/...`) y falló: la app de Vercel en GitHub
+  no tiene acceso a repos de la cuenta de Benjamín. Para eso, Benjamín tiene que darle acceso
+  (o transferir/compartir el repo). Mientras tanto, los cambios de acá se publican copiándolos a
+  `mjsis20052/sistema-gestion-i26`.
 - Vercel (plan Hobby) **bloquea** commits cuyo autor no es `mjsis20052`
   ("Deployment was blocked"). Los commits a ese repo tienen que ir firmados por esa cuenta.
 - 2026-10-23: publicado en producción con el contenido de `d525248`; las 4 apps verificadas en vivo.
