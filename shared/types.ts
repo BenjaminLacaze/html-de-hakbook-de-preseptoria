@@ -305,9 +305,53 @@ export interface AuthMe {
   studentId?: ID;
   /** Presente si el usuario es docente. */
   teacherId?: ID;
-  /** Ciclo lectivo vigente, para no tener que pedirlo aparte. */
-  activeCycleId: ID;
+  /** Ciclo lectivo vigente, para no tener que pedirlo aparte. null si todavía no hay uno vigente. */
+  activeCycleId: ID | null;
+  /** true = la cuenta es nueva o se blanqueó la clave: la app debe pedir el cambio de contraseña. */
+  mustChangePassword: boolean;
 }
+
+/** Usuario tal como lo devuelve la API (nunca incluye la contraseña). */
+export type UserDTO = User & {
+  mustChangePassword: boolean;
+  studentId: ID | null;
+  teacherId: ID | null;
+};
+
+// ============================================================================
+// Acceso a cada app
+// ============================================================================
+
+/** Apps del sistema (coinciden con las carpetas del repo). */
+export const APPS = ['directivos', 'profesores', 'alumnos', 'preceptoria'] as const;
+export type AppId = (typeof APPS)[number];
+
+/**
+ * Roles que pueden entrar a cada app. Las cuentas se crean desde Directivos.
+ * SUPER_ADMIN entra a todas (soporte). El backend igual valida cada pedido:
+ * esto es solo para que la app muestre "sin acceso" en vez de pantallas vacías.
+ */
+export const APP_ACCESS: Record<AppId, readonly Role[]> = {
+  directivos: ['SUPER_ADMIN', 'DIRECTOR', 'ADMINISTRATIVE'],
+  profesores: ['SUPER_ADMIN', 'TEACHER'],
+  alumnos: ['SUPER_ADMIN', 'STUDENT'],
+  preceptoria: ['SUPER_ADMIN', 'PRECEPTOR'],
+};
+
+/** true si alguno de los roles del usuario puede entrar a la app. */
+export function canAccessApp(roles: readonly Role[], app: AppId): boolean {
+  return roles.some((r) => APP_ACCESS[app].includes(r));
+}
+
+/**
+ * Qué roles puede asignar cada rol al crear o editar cuentas desde Directivos.
+ * El backend aplica exactamente esta tabla.
+ */
+export const ASSIGNABLE_ROLES: Partial<Record<Role, readonly Role[]>> = {
+  SUPER_ADMIN: ROLES,
+  DIRECTOR: ['DIRECTOR', 'ADMINISTRATIVE', 'PRECEPTOR', 'TEACHER', 'STUDENT'],
+  ADMINISTRATIVE: ['PRECEPTOR', 'TEACHER', 'STUDENT'],
+};
 
 // ============================================================================
 // Estructura académica (modelo terciario)
@@ -645,6 +689,7 @@ export const API_ERROR_CODES = [
   'FORBIDDEN', // 403
   'NOT_FOUND', // 404
   'CONFLICT', // 409 (ej. planilla cerrada, registro duplicado)
+  'TOO_MANY_ATTEMPTS', // 429 (cuenta bloqueada unos minutos por intentos fallidos)
   'INTERNAL_ERROR', // 5xx
 ] as const;
 export type ApiErrorCode = (typeof API_ERROR_CODES)[number];
@@ -667,10 +712,21 @@ export interface Page<T> {
 
 // --- Autenticación ---
 
+/** POST /auth/login — responde AuthMe y deja la cookie de sesión. */
 export interface LoginRequest {
   email: string;
   password: string;
 }
+
+/** POST /auth/change-password */
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  /** Mínimo 8 caracteres. */
+  newPassword: string;
+}
+
+/** Largo mínimo de contraseña (lo valida también el backend). */
+export const MIN_PASSWORD_LENGTH = 8;
 
 // --- Asistencia (primer circuito real, Etapa 2) ---
 
@@ -714,11 +770,34 @@ export interface ReviewJustificationRequest {
 
 // --- Gestión (Etapa 3) ---
 
+/** POST /users (desde Directivos). */
 export interface CreateUserRequest {
   email: string;
   firstName: string;
   lastName: string;
   roles: Role[];
+  /** Vincula la cuenta con un alumno ya cargado. */
+  studentId?: ID;
+  /** Vincula la cuenta con un docente ya cargado. */
+  teacherId?: ID;
+}
+
+/**
+ * Respuesta de POST /users y POST /users/{id}/reset-password.
+ * La contraseña temporal se muestra UNA sola vez: Directivos se la pasa a la persona,
+ * que la cambia en su primer ingreso.
+ */
+export interface UserWithTemporaryPassword {
+  user: UserDTO;
+  temporaryPassword: string;
+}
+
+/** PATCH /users/{id} */
+export interface UpdateUserRequest {
+  firstName?: string;
+  lastName?: string;
+  roles?: Role[];
+  status?: UserStatus;
 }
 
 export type CreateStudentRequest = Omit<Student, 'id' | 'userId' | keyof Timestamps> & {

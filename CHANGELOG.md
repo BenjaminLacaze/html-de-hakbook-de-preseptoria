@@ -1,5 +1,48 @@
 # CHANGELOG
 
+## 2026-10-23 — Backend: base de datos, login y cuentas desde Directivos (LOCAL, sin subir)
+
+**Decisiones:** se integran los **dos** portales de Alumno (Julián y Lucía); después de que los prueben
+los alumnos se elige uno. Backend con **Prisma** sobre **PostgreSQL en Neon**, y API con **Hono** dentro
+del mismo proyecto de Vercel (mismo dominio que las apps: una sola sesión para todas). Las cuentas
+**se crean desde Directivos**; no hay registro libre.
+
+**Qué se agregó**
+- `package.json` (raíz), `prisma.config.ts`, `.env.example`.
+- `backend/prisma/schema.prisma` + migración `init`: las 23 tablas del modelo de `shared/types.ts`.
+- `backend/src/`: API `/api/v1` — `/auth/login`, `/auth/logout`, `/auth/me`, `/auth/change-password`,
+  `/users` (listar, crear con contraseña temporal, editar, blanquear). Seed de la primera cuenta.
+- `api/index.ts`: entrada de la API en Vercel.
+- `shared/api.ts`: cliente común (login, sesión, cuentas). `shared/types.ts`: `AuthMe` con
+  `mustChangePassword`, `UserDTO`, `APP_ACCESS`, `ASSIGNABLE_ROLES`, `TOO_MANY_ATTEMPTS`.
+- Directivos: nueva pantalla `AccountsView.tsx` (*Cuentas de acceso*). Con `VITE_USE_MOCK=false`
+  reemplaza a *Usuarios y Permisos*; en modo demo se sigue viendo `UsersView`.
+- `docs/LOGIN_PANTALLAS.md` (guía para el equipo) y `backend/README.md` (Neon, comandos, seguridad).
+
+**Qué cambió**
+- Puertos de desarrollo fijos: API 4000 · Directivos 5173 · Profesores 5174 · Julián 5175 · Lucía 5176
+  (antes Julián, Lucía y Directivos usaban todos el 3000). Proxy `/api` → 4000 en las 4 apps.
+- Directivos: `npm run dev` ahora es Vite; el servidor de prueba anterior quedó como `npm run dev:mock`.
+- `vercel.json`: `installCommand: npm install`, `/api/*` → función. `scripts/build.mjs` corre
+  `prisma generate` y no publica `backend/`, `api/`, `shared/` ni archivos ocultos.
+
+**Probado (en local, contra un PostgreSQL de prueba)**
+- Migración en base vacía + seed (idempotente).
+- Login, clave mala, cambio de contraseña obligatorio (la API frena todo lo demás hasta cambiarla),
+  alta de cuentas, email duplicado, validaciones por campo, permisos por rol (Secretaría no puede crear
+  Directivos ni tocar al superadmin), blanqueo (cierra las sesiones), desactivación, bloqueo tras 5
+  intentos, logout, auditoría de cada acción, nombres con acentos.
+- Directivos en el navegador (modo API): la pantalla *Cuentas de acceso* lista las cuentas, crea una y
+  muestra la contraseña temporal. La cookie de sesión no es legible desde JavaScript.
+- Build completo de las 4 apps OK; el sitio publicado sigue en modo demo.
+
+**NO probado**
+- La API desplegada en Vercel (`api/index.ts` + rewrite `/api/*`): no se subió nada.
+- Neon: falta crear la base (pasos en `backend/README.md`).
+
+**Para que ande en Vercel:** crear la base en Neon, `npm run db:deploy` + `npm run db:seed` contra Neon,
+y cargar `DATABASE_URL` (pooled) en Vercel.
+
 ## 2026-10-23 — Etapa 0: modelo de datos unificado (`shared/`)
 
 **Decisiones aprobadas:** modelo terciario (comisiones), API en inglés (campos y códigos) y

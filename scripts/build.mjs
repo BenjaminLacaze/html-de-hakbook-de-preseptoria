@@ -27,7 +27,11 @@ const modulesWithApp = [
 ];
 
 // shared/ son tipos que se compilan dentro de cada app: no hace falta publicarlos sueltos.
-const skipTop = new Set(['node_modules', '.git', 'dist', '.vercel', 'scripts', 'shared']);
+// backend/ y api/ son la API (Vercel la publica como función): no van al sitio estático.
+const skipTop = new Set([
+  'node_modules', '.git', 'dist', '.vercel', 'scripts', 'shared', 'backend', 'api',
+  'package.json', 'package-lock.json', 'prisma.config.ts', '.env', '.env.example', 'recursos',
+]);
 const appDirs = new Set(modulesWithApp.map((m) => join(root, m, 'app')));
 
 function run(cmd, cwd) {
@@ -36,12 +40,15 @@ function run(cmd, cwd) {
   if (r.status !== 0) throw new Error(`falló: ${cmd}`);
 }
 
+// Cliente de Prisma para la API (api/index.ts). No necesita conexión a la base.
+run('npx prisma generate', root);
+
 rmSync(dist, { recursive: true, force: true });
 mkdirSync(dist);
 
 // Copia estática: todo menos node_modules y el código fuente de las apps.
 for (const entry of readdirSync(root)) {
-  if (skipTop.has(entry)) continue;
+  if (skipTop.has(entry) || entry.startsWith('.')) continue; // .env, .gitignore, etc.
   cpSync(join(root, entry), join(dist, entry), {
     recursive: true,
     filter: (src) => !appDirs.has(src) && !src.split(sep).includes('node_modules'),

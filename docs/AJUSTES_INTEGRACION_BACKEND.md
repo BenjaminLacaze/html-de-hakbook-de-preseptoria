@@ -1,6 +1,7 @@
 # Ajustes para integrar las apps a un backend con base de datos unificada
 
 **Estado:** propuesta de trabajo — 2026-10-23. Decisiones 1, 3 y 4 **aprobadas** el mismo día; la 2 se revisó: se integran los dos portales de Alumno (ver sección 5). Backend: Prisma + Neon, login con cuentas creadas desde Directivos.
+**Backend (2026-10-23, local):** `backend/` con Prisma + Hono sobre PostgreSQL (Neon). Login, sesión por cookie y cuentas creadas desde Directivos funcionando en local. Guía de pantallas de login: [`LOGIN_PANTALLAS.md`](LOGIN_PANTALLAS.md).
 **Etapa 0:** tipos unificados publicados en [`shared/types.ts`](../shared/types.ts) (equivalencias con los valores viejos en [`shared/README.md`](../shared/README.md)).
 **Alcance:** las 4 apps React del repo (`profesores-nicolas`, `directivos-jesica-agustin`,
 `alumnos-julian`, `alumnos-lucia`) y el módulo de Preceptoría (`preceptoria-benjamin`, hoy sin app).

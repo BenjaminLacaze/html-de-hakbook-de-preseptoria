@@ -4,6 +4,7 @@ import { TopBar } from './components/layout/TopBar';
 import { SideBar } from './components/layout/SideBar';
 import { DashboardView } from './components/views/DashboardView';
 import { UsersView } from './components/views/UsersView';
+import { AccountsView } from './components/views/AccountsView';
 import { CoursesView } from './components/views/CoursesView';
 import { AttendanceView } from './components/views/AttendanceView';
 import { GradesView } from './components/views/GradesView';
@@ -22,6 +23,9 @@ import {
   X,
 } from 'lucide-react';
 
+// Con VITE_USE_MOCK=false la app trabaja contra la API real (cuentas de acceso, etc.).
+const USE_API = import.meta.env.VITE_USE_MOCK === 'false';
+
 const AppContent: React.FC = () => {
   const { activeSection, systemNotification } = useApp();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -31,7 +35,7 @@ const AppContent: React.FC = () => {
       case 'inicio':
         return <DashboardView />;
       case 'usuarios':
-        return <UsersView />;
+        return USE_API ? <AccountsView /> : <UsersView />;
       case 'cursos':
         return <CoursesView />;
       case 'asistencia':

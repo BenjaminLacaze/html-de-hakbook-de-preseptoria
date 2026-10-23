@@ -1,21 +1,66 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": null,
-  "installCommand": "echo \"las dependencias las instala scripts/build.mjs por app\"",
+  "installCommand": "npm install",
   "buildCommand": "node scripts/build.mjs",
   "outputDirectory": "dist",
   "redirects": [
-    { "source": "/Lucia(.*)Alumnos/modulo(.*)alumno/modulo-alumno-documentacion/(.*)", "destination": "/alumnos-lucia/documentacion/$3", "permanent": true },
-    { "source": "/Nicolas(.*)Profesores/(.*)", "destination": "/profesores-nicolas/$2", "permanent": true },
-    { "source": "/Julian(.*)Alumnos/(.*)", "destination": "/alumnos-julian/$2", "permanent": true },
-    { "source": "/Lucia(.*)Alumnos/(.*)", "destination": "/alumnos-lucia/$2", "permanent": true },
-    { "source": "/Jesica(.*)Directivos/(.*)", "destination": "/directivos-jesica-agustin/$2", "permanent": true },
-    { "source": "/Benjamin(.*)Preceptor(.*)/(.*)", "destination": "/preceptoria-benjamin/$3", "permanent": true }
+    {
+      "source": "/Lucia(.*)Alumnos/modulo(.*)alumno/modulo-alumno-documentacion/(.*)",
+      "destination": "/alumnos-lucia/documentacion/$3",
+      "permanent": true
+    },
+    {
+      "source": "/Nicolas(.*)Profesores/(.*)",
+      "destination": "/profesores-nicolas/$2",
+      "permanent": true
+    },
+    {
+      "source": "/Julian(.*)Alumnos/(.*)",
+      "destination": "/alumnos-julian/$2",
+      "permanent": true
+    },
+    {
+      "source": "/Lucia(.*)Alumnos/(.*)",
+      "destination": "/alumnos-lucia/$2",
+      "permanent": true
+    },
+    {
+      "source": "/Jesica(.*)Directivos/(.*)",
+      "destination": "/directivos-jesica-agustin/$2",
+      "permanent": true
+    },
+    {
+      "source": "/Benjamin(.*)Preceptor(.*)/(.*)",
+      "destination": "/preceptoria-benjamin/$3",
+      "permanent": true
+    }
   ],
   "rewrites": [
-    { "source": "/profesores-nicolas/app/:path*", "destination": "/profesores-nicolas/app/index.html" },
-    { "source": "/directivos-jesica-agustin/app/:path*", "destination": "/directivos-jesica-agustin/app/index.html" },
-    { "source": "/alumnos-julian/app/:path*", "destination": "/alumnos-julian/app/index.html" },
-    { "source": "/alumnos-lucia/app/:path*", "destination": "/alumnos-lucia/app/index.html" }
-  ]
+    {
+      "source": "/api/(.*)",
+      "destination": "/api"
+    },
+    {
+      "source": "/profesores-nicolas/app/:path*",
+      "destination": "/profesores-nicolas/app/index.html"
+    },
+    {
+      "source": "/directivos-jesica-agustin/app/:path*",
+      "destination": "/directivos-jesica-agustin/app/index.html"
+    },
+    {
+      "source": "/alumnos-julian/app/:path*",
+      "destination": "/alumnos-julian/app/index.html"
+    },
+    {
+      "source": "/alumnos-lucia/app/:path*",
+      "destination": "/alumnos-lucia/app/index.html"
+    }
+  ],
+  "functions": {
+    "api/index.ts": {
+      "maxDuration": 15
+    }
+  }
 }

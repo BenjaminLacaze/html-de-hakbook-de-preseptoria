@@ -1,0 +1,32 @@
+{
+  "name": "sistema-gestion-i26",
+  "private": true,
+  "type": "module",
+  "description": "Sistema de Gestión ISFDyT N.° 26: API (backend/) + build de las apps (scripts/build.mjs)",
+  "scripts": {
+    "dev:api": "tsx watch backend/src/dev.ts",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:deploy": "prisma migrate deploy",
+    "db:seed": "tsx backend/src/seed.ts",
+    "typecheck": "tsc -p backend/tsconfig.json",
+    "build": "node scripts/build.mjs"
+  },
+  "dependencies": {
+    "@hono/node-server": "2.1.5",
+    "@prisma/adapter-pg": "7.10.1",
+    "@prisma/client": "7.10.1",
+    "bcryptjs": "3.0.3",
+    "dotenv": "17.2.3",
+    "hono": "4.13.13",
+    "pg": "8.16.3",
+    "zod": "4.1.12"
+  },
+  "devDependencies": {
+    "@types/node": "24.10.1",
+    "@types/pg": "8.15.6",
+    "prisma": "7.10.1",
+    "tsx": "4.20.6",
+    "typescript": "5.9.3"
+  }
+}

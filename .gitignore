@@ -4,3 +4,6 @@ dist/
 .env
 .env.*
 !.env.example
+
+# Cliente de Prisma generado (se regenera con npm run db:generate / en el build)
+backend/src/generated/

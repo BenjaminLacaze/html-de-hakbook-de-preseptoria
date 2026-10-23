@@ -1,0 +1,561 @@
+// Esquema de la base de datos unificada — Sistema de Gestión ISFDyT N.° 26
+//
+// Es el reflejo en tablas de shared/types.ts (mismos nombres y códigos).
+// Si cambiás algo acá, actualizá también shared/types.ts.
+//
+// Comandos (desde la raíz del repo):
+//   npm run db:migrate   crea una migración nueva en local (prisma migrate dev)
+//   npm run db:deploy    aplica las migraciones en Neon (prisma migrate deploy)
+//   npm run db:generate  regenera el cliente de Prisma
+
+generator client {
+  provider               = "prisma-client"
+  output                 = "../src/generated/prisma"
+  moduleFormat           = "esm"
+  importFileExtension    = "js"
+  generatedFileExtension = "ts"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================================================
+// Catálogos
+// ============================================================================
+
+enum Role {
+  SUPER_ADMIN
+  DIRECTOR
+  ADMINISTRATIVE
+  PRECEPTOR
+  TEACHER
+  STUDENT
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum Shift {
+  MORNING
+  AFTERNOON
+  EVENING
+}
+
+enum AcademicPeriod {
+  FIRST_TERM
+  SECOND_TERM
+  ANNUAL
+}
+
+enum CycleStatus {
+  PLANNED
+  ACTIVE
+  CLOSED
+}
+
+enum StudentStatus {
+  ACTIVE
+  INACTIVE
+  GRADUATED
+  WITHDRAWN
+}
+
+enum TeacherStatus {
+  ACTIVE
+  ON_LEAVE
+  INACTIVE
+}
+
+enum EnrollmentCondition {
+  IN_PROGRESS
+  REGULAR
+  FREE
+  PROMOTED
+  PASSED
+  DROPPED
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+}
+
+enum AttendanceSource {
+  TEACHER
+  PRECEPTOR
+  QR
+  IMPORT
+}
+
+enum SessionStatus {
+  OPEN
+  CLOSED
+}
+
+enum JustificationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum AssessmentType {
+  PARTIAL
+  MAKEUP
+  ASSIGNMENT
+  COLLOQUIUM
+  FINAL_EXAM
+}
+
+enum ObservationCategory {
+  PEDAGOGICAL_FOLLOW_UP
+  PARTICIPATION
+  SUPPORT_ADJUSTMENT
+  GENERAL
+}
+
+enum NoticeStatus {
+  DRAFT
+  PUBLISHED
+  EXPIRED
+  ARCHIVED
+}
+
+enum NoticeCategory {
+  URGENT
+  INSTITUTIONAL
+  PEDAGOGICAL
+  ACADEMIC
+}
+
+enum EventType {
+  INSTITUTIONAL_DAY
+  CEREMONY
+  EXAM_PERIOD
+  GRADES_DEADLINE
+  HOLIDAY
+  CLASS
+  OTHER
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  STATUS_CHANGE
+  DELETE
+  SETTINGS_CHANGE
+  EXPORT
+  LOGIN
+  SESSION_REOPEN
+}
+
+// ============================================================================
+// Identidad y acceso
+// ============================================================================
+
+/// Cuenta de ingreso. Las crea el panel de Directivos (no hay registro libre).
+model User {
+  id                 String     @id @default(uuid()) @db.Uuid
+  /// Se guarda en minúsculas.
+  email              String     @unique
+  firstName          String
+  lastName           String
+  roles              Role[]
+  status             UserStatus @default(ACTIVE)
+  passwordHash       String
+  /// true al crear la cuenta o al blanquear la contraseña: el usuario debe cambiarla al entrar.
+  mustChangePassword Boolean    @default(true)
+  failedLoginCount   Int        @default(0)
+  lockedUntil        DateTime?
+  lastLoginAt        DateTime?
+  createdById        String?    @db.Uuid
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
+
+  sessions AuthSession[]
+  student  Student?
+  teacher  Teacher?
+
+  @@map("users")
+}
+
+/// Sesión de ingreso. El navegador guarda un token en una cookie HttpOnly;
+/// acá se guarda solo su hash (SHA-256), nunca el token.
+model AuthSession {
+  id         String   @id // hash del token
+  userId     String   @db.Uuid
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+  expiresAt  DateTime
+  lastSeenAt DateTime @default(now())
+  userAgent  String?
+  ip         String?
+
+  @@index([userId])
+  @@map("auth_sessions")
+}
+
+// ============================================================================
+// Estructura académica (modelo terciario)
+// ============================================================================
+
+model Career {
+  id            String      @id @default(uuid()) @db.Uuid
+  code          String      @unique
+  name          String
+  durationYears Int
+  active        Boolean     @default(true)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  plans         StudyPlan[]
+  students      Student[]
+
+  @@map("careers")
+}
+
+model StudyPlan {
+  id        String    @id @default(uuid()) @db.Uuid
+  careerId  String    @db.Uuid
+  career    Career    @relation(fields: [careerId], references: [id])
+  code      String    @unique
+  name      String
+  startYear Int
+  active    Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  subjects  Subject[]
+  students  Student[]
+
+  @@map("study_plans")
+}
+
+model Subject {
+  id            String         @id @default(uuid()) @db.Uuid
+  planId        String         @db.Uuid
+  plan          StudyPlan      @relation(fields: [planId], references: [id])
+  code          String
+  name          String
+  year          Int
+  period        AcademicPeriod
+  weeklyHours   Int?
+  /// Correlativas: materias que hay que tener antes.
+  prerequisites Subject[]      @relation("Prerequisites")
+  requiredBy    Subject[]      @relation("Prerequisites")
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  commissions   Commission[]
+
+  @@unique([planId, code])
+  @@map("subjects")
+}
+
+model AcademicCycle {
+  id               String       @id @default(uuid()) @db.Uuid
+  year             Int          @unique
+  status           CycleStatus  @default(PLANNED)
+  startDate        DateTime     @db.Date
+  endDate          DateTime     @db.Date
+  firstTermEndDate DateTime?    @db.Date
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  commissions      Commission[]
+  notices          Notice[]
+  events           SchoolEvent[]
+
+  @@map("academic_cycles")
+}
+
+model Commission {
+  id              String              @id @default(uuid()) @db.Uuid
+  code            String
+  cycleId         String              @db.Uuid
+  cycle           AcademicCycle       @relation(fields: [cycleId], references: [id])
+  subjectId       String              @db.Uuid
+  subject         Subject             @relation(fields: [subjectId], references: [id])
+  period          AcademicPeriod
+  shift           Shift
+  preceptorUserId String?             @db.Uuid
+  /// ScheduleSlot[] de shared/types.ts
+  schedule        Json                @default("[]")
+  capacity        Int?
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  teachers        CommissionTeacher[]
+  enrollments     Enrollment[]
+  sessions        ClassSession[]
+  observations    Observation[]
+  events          SchoolEvent[]
+
+  @@unique([cycleId, code])
+  @@map("commissions")
+}
+
+/// Docentes de una comisión; position 0 = titular.
+model CommissionTeacher {
+  commissionId String     @db.Uuid
+  commission   Commission @relation(fields: [commissionId], references: [id], onDelete: Cascade)
+  teacherId    String     @db.Uuid
+  teacher      Teacher    @relation(fields: [teacherId], references: [id])
+  position     Int        @default(0)
+
+  @@id([commissionId, teacherId])
+  @@map("commission_teachers")
+}
+
+// ============================================================================
+// Personas
+// ============================================================================
+
+model Student {
+  id             String                @id @default(uuid()) @db.Uuid
+  userId         String?               @unique @db.Uuid
+  user           User?                 @relation(fields: [userId], references: [id])
+  fileNumber     String                @unique
+  dni            String                @unique
+  firstName      String
+  lastName       String
+  email          String
+  phone          String?
+  careerId       String                @db.Uuid
+  career         Career                @relation(fields: [careerId], references: [id])
+  planId         String                @db.Uuid
+  plan           StudyPlan             @relation(fields: [planId], references: [id])
+  admissionDate  DateTime              @db.Date
+  status         StudentStatus         @default(ACTIVE)
+  createdAt      DateTime              @default(now())
+  updatedAt      DateTime              @updatedAt
+  sensitive      StudentSensitiveData?
+  enrollments    Enrollment[]
+  attendance     AttendanceRecord[]
+  justifications Justification[]
+  observations   Observation[]
+
+  @@map("students")
+}
+
+/// Datos sensibles (Ley 25.326): tabla aparte, acceso solo para roles autorizados.
+model StudentSensitiveData {
+  studentId             String    @id @db.Uuid
+  student               Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  birthDate             DateTime? @db.Date
+  address               String?
+  emergencyContactName  String?
+  emergencyContactPhone String?
+  emergencyContactEmail String?
+  healthNotes           String?
+  updatedAt             DateTime  @updatedAt
+
+  @@map("student_sensitive_data")
+}
+
+model Teacher {
+  id          String              @id @default(uuid()) @db.Uuid
+  userId      String?             @unique @db.Uuid
+  user        User?               @relation(fields: [userId], references: [id])
+  fileNumber  String              @unique
+  dni         String              @unique
+  firstName   String
+  lastName    String
+  email       String
+  phone       String?
+  title       String?
+  status      TeacherStatus       @default(ACTIVE)
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  commissions CommissionTeacher[]
+
+  @@map("teachers")
+}
+
+// ============================================================================
+// Inscripciones, asistencia, notas
+// ============================================================================
+
+model Enrollment {
+  id                 String              @id @default(uuid()) @db.Uuid
+  studentId          String              @db.Uuid
+  student            Student             @relation(fields: [studentId], references: [id])
+  commissionId       String              @db.Uuid
+  commission         Commission          @relation(fields: [commissionId], references: [id])
+  condition          EnrollmentCondition @default(IN_PROGRESS)
+  enrolledAt         DateTime            @default(now()) @db.Date
+  conditionChangedAt DateTime?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  grades             Grade[]
+
+  @@unique([studentId, commissionId])
+  @@map("enrollments")
+}
+
+model ClassSession {
+  id           String             @id @default(uuid()) @db.Uuid
+  commissionId String             @db.Uuid
+  commission   Commission         @relation(fields: [commissionId], references: [id])
+  date         DateTime           @db.Date
+  topic        String?
+  status       SessionStatus      @default(OPEN)
+  closedAt     DateTime?
+  closedBy     String?            @db.Uuid
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+  records      AttendanceRecord[]
+
+  @@index([commissionId, date])
+  @@map("class_sessions")
+}
+
+model AttendanceRecord {
+  id          String           @id @default(uuid()) @db.Uuid
+  sessionId   String           @db.Uuid
+  session     ClassSession     @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  studentId   String           @db.Uuid
+  student     Student          @relation(fields: [studentId], references: [id])
+  status      AttendanceStatus
+  minutesLate Int?
+  notes       String?
+  source      AttendanceSource
+  recordedBy  String           @db.Uuid
+  recordedAt  DateTime         @default(now())
+
+  @@unique([sessionId, studentId])
+  @@index([studentId])
+  @@map("attendance_records")
+}
+
+model Justification {
+  id          String              @id @default(uuid()) @db.Uuid
+  studentId   String              @db.Uuid
+  student     Student             @relation(fields: [studentId], references: [id])
+  fromDate    DateTime            @db.Date
+  toDate      DateTime            @db.Date
+  reason      String
+  documentUrl String?
+  status      JustificationStatus @default(PENDING)
+  createdBy   String              @db.Uuid
+  reviewedBy  String?             @db.Uuid
+  reviewedAt  DateTime?
+  reviewNotes String?
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  @@index([studentId, fromDate, toDate])
+  @@map("justifications")
+}
+
+model Grade {
+  id           String         @id @default(uuid()) @db.Uuid
+  enrollmentId String         @db.Uuid
+  enrollment   Enrollment     @relation(fields: [enrollmentId], references: [id])
+  type         AssessmentType
+  instance     Int            @default(1)
+  date         DateTime       @db.Date
+  value        Decimal?       @db.Decimal(4, 2)
+  absent       Boolean        @default(false)
+  published    Boolean        @default(false)
+  publishedAt  DateTime?
+  notes        String?
+  recordedBy   String         @db.Uuid
+  recordedAt   DateTime       @default(now())
+
+  @@unique([enrollmentId, type, instance])
+  @@map("grades")
+}
+
+model Observation {
+  id           String              @id @default(uuid()) @db.Uuid
+  commissionId String              @db.Uuid
+  commission   Commission          @relation(fields: [commissionId], references: [id])
+  studentId    String              @db.Uuid
+  student      Student             @relation(fields: [studentId], references: [id])
+  date         DateTime            @db.Date
+  category     ObservationCategory
+  content      String
+  createdBy    String              @db.Uuid
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+
+  @@map("observations")
+}
+
+// ============================================================================
+// Comunicación y control institucional
+// ============================================================================
+
+model Notice {
+  id          String         @id @default(uuid()) @db.Uuid
+  cycleId     String         @db.Uuid
+  cycle       AcademicCycle  @relation(fields: [cycleId], references: [id])
+  title       String
+  content     String
+  category    NoticeCategory
+  /// NoticeAudience de shared/types.ts
+  audience    Json           @default("{}")
+  status      NoticeStatus   @default(DRAFT)
+  pinned      Boolean        @default(false)
+  publishedAt DateTime?
+  expiresAt   DateTime?
+  createdBy   String         @db.Uuid
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  @@map("notices")
+}
+
+model SchoolEvent {
+  id           String        @id @default(uuid()) @db.Uuid
+  cycleId      String        @db.Uuid
+  cycle        AcademicCycle @relation(fields: [cycleId], references: [id])
+  type         EventType
+  title        String
+  description  String?
+  startDate    DateTime      @db.Date
+  endDate      DateTime?     @db.Date
+  commissionId String?       @db.Uuid
+  commission   Commission?   @relation(fields: [commissionId], references: [id])
+  mandatory    Boolean       @default(false)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@map("school_events")
+}
+
+/// Lo escribe solo el backend.
+model AuditLog {
+  id            String      @id @default(uuid()) @db.Uuid
+  at            DateTime    @default(now())
+  userId        String?     @db.Uuid
+  userName      String
+  action        AuditAction
+  entity        String
+  entityId      String
+  summary       String
+  previousValue Json?
+  newValue      Json?
+  ip            String?
+
+  @@index([entity, entityId])
+  @@index([at])
+  @@map("audit_logs")
+}
+
+/// Fila única (id = 1).
+model InstitutionSettings {
+  id                             Int      @id @default(1)
+  name                           String
+  shortName                      String
+  cue                            String?
+  city                           String
+  district                       String
+  timezone                       String   @default("America/Argentina/Buenos_Aires")
+  minAttendancePercent           Int      @default(75)
+  /// PENDIENTE de decisión institucional (decisión 6).
+  lateArrivalAbsenceWeight       Decimal  @default(0) @db.Decimal(3, 2)
+  attendanceRiskThresholdPercent Int      @default(80)
+  updatedAt                      DateTime @updatedAt
+
+  @@map("institution_settings")
+}

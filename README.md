@@ -22,6 +22,7 @@ Cada módulo tiene su carpeta, siempre con la misma forma:
 | `directivos-jesica-agustin/` | Jesica y Agustín | `/directivos-jesica-agustin/app/` | `index.html`, `Handbook/` |
 | `preceptoria-benjamin/` | Benjamín | — | `handbook.html` |
 | `profesores-nicolas/` | Nicolás | `/profesores-nicolas/app/` | `profesores.html`, `docs/` |
+| `backend/` + `api/` | equipo | API en `/api/v1` | `backend/README.md` (base Neon, login, cuentas) |
 | `shared/` | equipo | — | `types.ts`: modelo de datos unificado que usan todas las apps (`import … from '@shared/types'`); ver `shared/README.md` |
 | `docs/` | equipo | — | contratos de backend de todos los módulos y `AJUSTES_INTEGRACION_BACKEND.md` (qué cambiar en cada app para usar la base unificada) |
 
@@ -44,12 +45,18 @@ node scripts/build.mjs
 npx serve dist
 ```
 
+## Login y API
+
+- Las cuentas se crean desde **Directivos → Usuarios y Permisos**. Guía para las pantallas de login: `docs/LOGIN_PANTALLAS.md`.
+- API y base de datos: `backend/README.md`. En local: `npm install` y `npm run dev:api` en la raíz (puerto 4000).
+- Cada app usa la API con `VITE_USE_MOCK="false"` en `.env.development.local`; sin eso sigue en modo demo.
+
 ## Trabajar en tu app
 
 ```bash
 cd profesores-nicolas/app
 npm install --legacy-peer-deps
-npm run dev
+npm run dev      # Directivos 5173 · Profesores 5174 · Julián 5175 · Lucía 5176
 ```
 
 ## Sumar un módulo o una app nueva

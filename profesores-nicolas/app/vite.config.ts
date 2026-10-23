@@ -14,5 +14,8 @@ export default defineConfig({
   server: {
     // Permite al servidor de desarrollo leer ../../shared
     fs: { allow: ['.', '../../shared'] },
+    // /api va a la API local (npm run dev:api en la raíz del repo)
+    proxy: { '/api': 'http://localhost:4000' },
+    port: 5174,
   },
 })
