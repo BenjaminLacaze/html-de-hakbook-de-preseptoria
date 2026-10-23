@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## 2026-10-23 — Documento de ajustes para el backend unificado
+
+- Nuevo `docs/AJUSTES_INTEGRACION_BACKEND.md`: diagnóstico de cómo maneja los datos cada app,
+  modelo de datos unificado (catálogos que hoy no coinciden), login y API comunes, ajustes por app
+  con archivos concretos, decisiones pendientes del equipo y orden de trabajo por etapas.
+- Hallazgos principales: Directivos modela secundaria (divisiones/trimestres) y el resto terciario
+  (comisiones/cuatrimestres); hay 4 catálogos distintos de estado de asistencia; hay dos portales de
+  Alumno (Julián y Lucía); Preceptoría no tiene app.
+- Solo documentación: no se cambió código.
+
 ## 2026-10-23 — Reorganización y publicación de las apps
 
 **Problema:** en Vercel solo andaban los informes HTML. Las 4 apps React
