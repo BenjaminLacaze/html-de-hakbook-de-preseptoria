@@ -10,7 +10,9 @@
     "db:deploy": "prisma migrate deploy",
     "db:seed": "tsx backend/src/seed.ts",
     "typecheck": "tsc -p backend/tsconfig.json",
-    "build": "node scripts/build.mjs"
+    "build": "node scripts/build.mjs",
+    "db:test-users": "tsx backend/src/test-users.ts",
+    "db:test-users:off": "tsx backend/src/test-users.ts --off"
   },
   "dependencies": {
     "@hono/node-server": "2.1.5",

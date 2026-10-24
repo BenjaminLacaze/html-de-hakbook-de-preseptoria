@@ -145,6 +145,62 @@ function App() {
 Si `getMe()` falla por algo que no es "sin sesión" (servidor caído, sin internet), lanza un
 error: mostrar "No se pudo conectar" con un botón **Reintentar**.
 
+## Usuarios de prueba (mostrarlos en el login)
+
+Hay un usuario de prueba por app, ya creado en la base (Neon). La lista y la contraseña están en
+`shared/testUsers.ts`:
+
+| App | Rol | Email |
+|---|---|---|
+| Directivos | Directivo | `prueba.directivo@isfdyt26.edu.ar` |
+| Directivos | Secretaría (no puede crear directivos) | `prueba.secretaria@isfdyt26.edu.ar` |
+| Preceptoría | Preceptor/a | `prueba.preceptor@isfdyt26.edu.ar` |
+| Profesores | Profesor/a | `prueba.profesor@isfdyt26.edu.ar` |
+| Alumnos (Julián y Lucía) | Alumno/a | `prueba.alumno@isfdyt26.edu.ar` |
+
+La contraseña es la misma para todos: `TEST_USERS_PASSWORD` en `shared/testUsers.ts`. No piden
+cambiarla al entrar. Si alguien la cambia, `npm run db:test-users` en la raíz la vuelve a dejar igual.
+
+**Cada pantalla de ingreso tiene que mostrarlos**, pero **solo si `SHOW_TEST_USERS` es `true`**, o sea
+en `npm run dev` o con `VITE_SHOW_TEST_USERS="true"`. En el sitio publicado no aparecen.
+
+> El repo es público: esa contraseña la puede leer cualquiera. Por eso ningún usuario de prueba es
+> superadministrador, y antes de usar el sistema con datos reales se desactivan todos con
+> `npm run db:test-users:off`.
+
+Componente para pegar en tu app (por ejemplo `src/auth/TestUsersHint.tsx`) y poner debajo del
+formulario de ingreso:
+
+```tsx
+import { SHOW_TEST_USERS, TEST_USERS_PASSWORD, testUsersFor } from '@shared/testUsers';
+import type { AppId } from '@shared/types';
+
+/** Muestra los usuarios de prueba de esta app; un clic completa email y contraseña. */
+export function TestUsersHint({ app, onPick }: { app: AppId; onPick: (email: string, password: string) => void }) {
+  if (!SHOW_TEST_USERS) return null;
+  const users = testUsersFor(app);
+  if (!users.length) return null;
+  return (
+    <div style={{ marginTop: 16, padding: 12, border: '1px dashed #AF9B63', borderRadius: 8, fontSize: 12 }}>
+      <strong>Usuarios de prueba</strong> (solo en desarrollo) — clic para completar:
+      <ul style={{ margin: '8px 0 0', padding: 0, listStyle: 'none' }}>
+        {users.map((u) => (
+          <li key={u.email}>
+            <button type="button" onClick={() => onPick(u.email, TEST_USERS_PASSWORD)} style={{ textAlign: 'left' }}>
+              {u.label}: <code>{u.email}</code>
+            </button>
+          </li>
+        ))}
+      </ul>
+      <div style={{ marginTop: 6 }}>Contraseña: <code>{TEST_USERS_PASSWORD}</code></div>
+    </div>
+  );
+}
+```
+
+Uso: `<TestUsersHint app="profesores" onPick={(e, p) => { setEmail(e); setPassword(p); }} />`.
+Los dos portales de Alumno usan `app="alumnos"`.
+
 ## Modo demo
 
 Con `VITE_USE_MOCK` distinto de `"false"` (es lo que tiene hoy el sitio publicado), la app
@@ -153,13 +209,13 @@ integramos.
 
 ## Cómo probarlo en tu máquina
 
-1. En la raíz del repo, la primera vez: `npm install`, copiar `.env.example` a `.env` y
-   completarlo (ver `backend/README.md`), y después `npm run db:deploy` y `npm run db:seed`.
+1. En la raíz del repo, la primera vez: `npm install` y crear el `.env` copiando `.env.example`. La base ya
+   está creada en Neon: pedile `DATABASE_URL` a Mauricio por privado (no está en el repo). No hace falta `db:deploy` ni `db:seed`.
 2. API: `npm run dev:api` (queda en `http://localhost:4000`).
 3. En tu app, crear `.env.development.local` con `VITE_USE_MOCK="false"`, y correr `npm run dev`.
    El proxy de Vite manda `/api` a la API local.
-4. Para tener cuentas de prueba: entrar a Directivos (`http://localhost:5173`) con la cuenta del
-   seed y crearlas en *Usuarios y Permisos*.
+4. Para entrar, usar los **usuarios de prueba** (sección de arriba). Para crear más cuentas, entrar a
+   Directivos (`http://localhost:5173`) con `prueba.directivo@isfdyt26.edu.ar` e ir a *Usuarios y Permisos*.
 
 | App | Puerto local |
 |---|---|

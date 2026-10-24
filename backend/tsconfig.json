@@ -13,5 +13,5 @@
     "allowImportingTsExtensions": false,
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["src", "../api", "../shared/types.ts"]
+  "include": ["src", "../api", "../shared/types.ts", "../shared/testUsers.ts"]
 }

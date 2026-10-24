@@ -1,5 +1,40 @@
 # CHANGELOG
 
+## 2026-10-24 — Base en Neon, usuarios de prueba y documentación de la integración
+
+**Base de datos (Neon `neondb`, us-east-1, PostgreSQL 18)**
+- Migración `20261023234548_init` aplicada con `prisma migrate deploy` (23 tablas). `prisma migrate status`:
+  "Database schema is up to date". No se usó SQL a mano.
+- Institución cargada; cuenta `direccion@isfdyt26.edu.ar` (Superadministrador + Directivo) con contraseña
+  temporal y cambio obligatorio al entrar.
+- 5 usuarios de prueba (Directivo, Secretaría, Preceptor, Profesor, Alumno), definidos en `shared/testUsers.ts`.
+  Comandos: `npm run db:test-users` / `npm run db:test-users:off`.
+
+**Agregado**
+- `shared/testUsers.ts` y `backend/src/test-users.ts`. La guía de login suma el componente `TestUsersHint`
+  (los muestra solo en desarrollo o con `VITE_SHOW_TEST_USERS="true"`).
+- `docs/INTEGRACION_TECNICA.md`: arquitectura, modelo, autenticación, API, entornos, base, deploy, seguridad
+  y problemas frecuentes.
+- `docs/BACKLOG_INTEGRACION.md`: 68 tareas (INT-01 a INT-84) con estado, responsable y prioridad, y las
+  decisiones pendientes.
+- `.env.example` y `backend/README.md` actualizados (Neon ya creada, `sslmode=verify-full`).
+
+**Probado**
+- Login de los 5 usuarios de prueba contra Neon (API local): 200, sin cambio obligatorio, y cada uno con
+  acceso solo a su app.
+- La cuenta de dirección quedó con los roles correctos y la contraseña temporal coincide (verificado con bcrypt,
+  sin iniciar sesión).
+- `npm run typecheck` OK.
+
+**Riesgos abiertos (ver backlog)**
+- El `.env` local apunta a la base de **producción** (INT-23: crear una branch `dev` en Neon).
+- La contraseña de Neon se compartió por chat: rotarla (INT-24).
+- Los usuarios de prueba tienen una contraseña pública (el repo es público): desactivarlos antes de usar datos
+  reales (INT-25).
+- La API todavía no está publicada en Vercel (INT-20 a INT-22).
+
+**Para trabajar en local:** `npm install` en la raíz y un `.env` con `DATABASE_URL` (pedírsela a Mauricio).
+
 ## 2026-10-23 — Backend: base de datos, login y cuentas desde Directivos
 
 **Decisiones:** se integran los **dos** portales de Alumno (Julián y Lucía); después de que los prueben

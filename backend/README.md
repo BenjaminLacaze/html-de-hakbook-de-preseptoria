@@ -37,8 +37,17 @@ Probar: `http://localhost:4000/api/v1/health` tiene que responder `{"ok":true,鈥
 | `npm run db:seed` | Primera cuenta e instituci贸n. Se puede repetir: no pisa nada |
 | `npm run db:generate` | Regenera el cliente de Prisma (el build lo hace solo) |
 | `npm run typecheck` | Chequeo de tipos del backend |
+| `npm run db:test-users` | Crea o reactiva los usuarios de prueba (uno por app, ver `shared/testUsers.ts`) |
+| `npm run db:test-users:off` | Desactiva los usuarios de prueba (antes de usar datos reales) |
 
-## Crear la base en Neon (una sola vez)
+## Base en Neon
+
+**Ya est谩 creada (2026-10-24):** proyecto Neon, base `neondb`, regi贸n us-east-1, migraci贸n `init`
+aplicada, instituci贸n cargada, cuenta `direccion@isfdyt26.edu.ar` y usuarios de prueba
+(`npm run db:test-users`). Para trabajar en local: pedirle las cadenas de conexi贸n a Mauricio.
+Los pasos de abajo son por si hay que crearla de nuevo (por ejemplo, una base de pruebas).
+
+### Crear la base desde cero
 
 1. En <https://neon.tech>, crear el proyecto `sistema-gestion-i26`. Regi贸n: **AWS S茫o Paulo
    (sa-east-1)**, la m谩s cercana.
