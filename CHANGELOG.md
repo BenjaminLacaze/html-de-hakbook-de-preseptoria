@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## 2026-10-23 — Backend: base de datos, login y cuentas desde Directivos (LOCAL, sin subir)
+## 2026-10-23 — Backend: base de datos, login y cuentas desde Directivos
 
 **Decisiones:** se integran los **dos** portales de Alumno (Julián y Lucía); después de que los prueben
 los alumnos se elige uno. Backend con **Prisma** sobre **PostgreSQL en Neon**, y API con **Hono** dentro
@@ -37,7 +37,7 @@ del mismo proyecto de Vercel (mismo dominio que las apps: una sola sesión para 
 - Build completo de las 4 apps OK; el sitio publicado sigue en modo demo.
 
 **NO probado**
-- La API desplegada en Vercel (`api/index.ts` + rewrite `/api/*`): no se subió nada.
+- La API desplegada en Vercel (`api/index.ts` + rewrite `/api/*`): subido al repo del equipo, pero NO a `mjsis20052/sistema-gestion-i26` (el que publica Vercel): el sitio no cambió.
 - Neon: falta crear la base (pasos en `backend/README.md`).
 
 **Para que ande en Vercel:** crear la base en Neon, `npm run db:deploy` + `npm run db:seed` contra Neon,
