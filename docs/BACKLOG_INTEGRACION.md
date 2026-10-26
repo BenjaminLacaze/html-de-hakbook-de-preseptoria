@@ -1,6 +1,6 @@
 # Backlog de la integración
 
-**Actualizado:** 2026-10-24. **Cómo se usa:** cuando alguien empieza una tarea, pone su nombre en
+**Actualizado:** 2026-10-26. **Cómo se usa:** cuando alguien empieza una tarea, pone su nombre en
 *Responsable* y la pasa a 🟡. Cuando termina, la pasa a ✅ y anota el cambio en el `CHANGELOG.md`.
 Las tareas nuevas van al final de su bloque, con el número siguiente.
 
@@ -19,8 +19,8 @@ Referencias: [documentación técnica](INTEGRACION_TECNICA.md) · [ajustes por a
 | A. Organización y publicación del sitio | 6 | 0 | 0 |
 | B. Modelo de datos y base | 6 | 0 | 0 |
 | C. Login y cuentas | 7 | 1 | 1 |
-| D. Publicación de la API | 0 | 0 | 3 |
-| E. Seguridad y operación | 0 | 0 | 6 |
+| D. Publicación de la API | 3 | 0 | 0 |
+| E. Seguridad y operación | 0 | 0 | 7 |
 | F. API de estructura académica | 0 | 0 | 6 |
 | G. API de asistencia (primer circuito real) | 0 | 0 | 6 |
 | H. Integración de cada app | 0 | 1 | 15 |
@@ -74,9 +74,9 @@ Referencias: [documentación técnica](INTEGRACION_TECNICA.md) · [ajustes por a
 
 | # | Tarea | Estado | Responsable | Prioridad | Notas |
 |---|---|---|---|---|---|
-| INT-20 | Cargar `DATABASE_URL` (pooled, `sslmode=verify-full`) en Vercel | ⬜ | Mauricio | P1 | Esperando OK para tocar Vercel |
-| INT-21 | Copiar el repo del equipo al de deploy (commit firmado por `mjsis20052`) y publicar | ⬜ | Claude | P1 | Depende de INT-20 |
-| INT-22 | Verificar en producción: `/api/v1/health`, login, cookie `Secure` | ⬜ | Claude | P1 | Primera prueba real de `api/index.ts` en Vercel |
+| INT-20 | `DATABASE_URL` en Vercel | ✅ | Claude | P1 | Ya la había cargado la integración Neon↔Vercel (variable sensible, no legible). Confirmado en INT-22: un usuario que solo existe en nuestra base entra en producción |
+| INT-21 | Copiar el repo del equipo al de deploy (commit firmado por `mjsis20052`) y publicar | ✅ | Claude | P1 | 2026-10-26: `mjsis20052/sistema-gestion-i26@d44d715` = equipo `1c28474` |
+| INT-22 | Verificar en producción: `/api/v1/health`, login, cookie `Secure` | ✅ | Claude | P1 | health 200, login 200, cookie `HttpOnly; Secure; SameSite=Lax`, 403 por rol, logout, 404 JSON |
 
 ## E. Seguridad y operación
 
@@ -87,6 +87,7 @@ Referencias: [documentación técnica](INTEGRACION_TECNICA.md) · [ajustes por a
 | INT-25 | Desactivar los usuarios de prueba antes de cargar datos reales | ⬜ | Mauricio | P1 | `npm run db:test-users:off` |
 | INT-26 | Límite de intentos por IP en `/auth/login` | ⬜ | — | P2 | Hoy el bloqueo es por cuenta |
 | INT-27 | Limpieza de sesiones vencidas (tarea programada) | ⬜ | — | P3 | `auth_sessions` con `expiresAt` pasado |
+| INT-29 | Que las rutas inexistentes del sitio den 404 (hoy devuelven la landing con 200) | ⬜ | — | P3 | No expone nada: es la misma página para cualquier ruta |
 | INT-28 | Registrar en auditoría los ingresos fallidos y los bloqueos | ⬜ | — | P3 | Hoy se auditan solo los ingresos exitosos; los fallidos solo suman a `failedLoginCount` |
 
 ## F. API de estructura académica (etapa 1)

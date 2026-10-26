@@ -1,8 +1,8 @@
 # Documentación técnica de la integración
 
 **Sistema de Gestión ISFDyT N.° 26** — cómo están conectadas las apps, la API y la base de datos.
-**Actualizado:** 2026-10-24. **Estado:** base de datos y login funcionando; API todavía sin publicar
-en Vercel (ver sección 9).
+**Actualizado:** 2026-10-26. **Estado:** base de datos, login y API **publicados en producción**
+(`https://sistema-gestion-i26.vercel.app/api/v1`). Las apps publicadas siguen en modo demo.
 
 | Documento | Para qué |
 |---|---|
@@ -271,10 +271,11 @@ commits de otros autores. Un push a `main` de ese repo publica directo en produc
 5. Vercel publica `dist/` y la función `api/index.ts`. `/api/*` va a la función, y las rutas de
    cada app a su `index.html`.
 
-**Antes de publicar la API por primera vez** (backlog INT-20 a INT-22):
+**Primera publicación de la API: hecha el 2026-10-26** (INT-20 a INT-22). Los pasos, por si hay que repetirlos:
 
-1. Cargar `DATABASE_URL` (pooled, `sslmode=verify-full`) en Vercel → *Settings → Environment
-   Variables*.
+1. `DATABASE_URL` en Vercel → *Settings → Environment Variables*. Hoy la carga la integración
+   Neon↔Vercel (junto con `POSTGRES_*`, `PG*`, etc.). Si se cambia la contraseña de Neon (INT-24),
+   revisar que la integración la actualice.
 2. Copiar el repo del equipo al de deploy y publicar.
 3. Verificar `https://sistema-gestion-i26.vercel.app/api/v1/health` y un login.
 4. Las apps publicadas siguen en modo demo mientras no se compilen con `VITE_USE_MOCK=false`.

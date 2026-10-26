@@ -1,5 +1,30 @@
 # CHANGELOG
 
+## 2026-10-26 — API publicada en producción (INT-20 a INT-22)
+
+**Qué se hizo**
+- Se copió el repo del equipo (`1c28474`) al repo de deploy: `mjsis20052/sistema-gestion-i26@d44d715`, commit
+  firmado por `mjsis20052`, sin forzar. Antes se verificó que lo que estaba publicado (`37485ab`) estuviera
+  completo en la historia del equipo (coincide con `3e7f9cd`): no se perdió nada.
+- `DATABASE_URL` no se tocó en Vercel: ya la había cargado la integración Neon↔Vercel. Como es una variable
+  sensible y no se puede leer, se confirmó por comportamiento: un usuario de prueba, que solo existe en nuestra
+  base, entra en producción.
+
+**Probado en producción** (`https://sistema-gestion-i26.vercel.app/api/v1`)
+- `/health` 200 · `/auth/me` sin sesión 401 · clave mala 401 · login de `prueba.profesor` 200.
+- Cookie: `sga_session=…; Max-Age=43200; Path=/; HttpOnly; Secure; SameSite=Lax`.
+- `/auth/me` con sesión 200 · profesor en `/users` 403 · logout 204 · `/auth/me` después 401 · ruta inexistente
+  404 con JSON.
+- Landing y las 4 apps cargan con contenido y sin errores (en modo demo); `/alumnos-julian/app/materias` 200;
+  la redirección de la URL vieja de Nicolás responde 308.
+
+**Observado**
+- Cualquier ruta inexistente del sitio (por ejemplo `/.env` o `/package.json`) devuelve la landing con 200. **No
+  expone archivos**: son los mismos 7167 bytes de `index.html` para todas. Queda anotado como INT-29.
+
+**Sigue pendiente:** las apps publicadas no usan la API todavía (falta el login de cada una y compilarlas con
+`VITE_USE_MOCK=false`); INT-23, 24 y 25 (branch `dev`, rotar la clave de Neon, desactivar los usuarios de prueba).
+
 ## 2026-10-24 — Base en Neon, usuarios de prueba y documentación de la integración
 
 **Base de datos (Neon `neondb`, us-east-1, PostgreSQL 18)**
