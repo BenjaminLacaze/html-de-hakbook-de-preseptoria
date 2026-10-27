@@ -31,6 +31,8 @@ enum Role {
   PRECEPTOR
   TEACHER
   STUDENT
+  STAFF
+  STUDENT_REP
 }
 
 enum UserStatus {
@@ -179,6 +181,12 @@ model User {
   student  Student?
   teacher  Teacher?
 
+  repThreads       RepThread[]
+  repReplies       RepReply[]
+  repAnnouncements RepAnnouncement[]
+  repClaims        RepClaim[]            @relation("ClaimAuthor")
+  repEvents        RepEventParticipant[]
+
   @@map("users")
 }
 
@@ -208,6 +216,8 @@ model Career {
   name          String
   durationYears Int
   active        Boolean     @default(true)
+  /// true = dato de ejemplo (npm run db:demo-data); se borra con db:demo-data:off
+  demo          Boolean     @default(false)
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
   plans         StudyPlan[]
@@ -253,14 +263,14 @@ model Subject {
 }
 
 model AcademicCycle {
-  id               String       @id @default(uuid()) @db.Uuid
-  year             Int          @unique
-  status           CycleStatus  @default(PLANNED)
-  startDate        DateTime     @db.Date
-  endDate          DateTime     @db.Date
-  firstTermEndDate DateTime?    @db.Date
-  createdAt        DateTime     @default(now())
-  updatedAt        DateTime     @updatedAt
+  id               String        @id @default(uuid()) @db.Uuid
+  year             Int           @unique
+  status           CycleStatus   @default(PLANNED)
+  startDate        DateTime      @db.Date
+  endDate          DateTime      @db.Date
+  firstTermEndDate DateTime?     @db.Date
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
   commissions      Commission[]
   notices          Notice[]
   events           SchoolEvent[]
@@ -325,6 +335,7 @@ model Student {
   plan           StudyPlan             @relation(fields: [planId], references: [id])
   admissionDate  DateTime              @db.Date
   status         StudentStatus         @default(ACTIVE)
+  demo           Boolean               @default(false)
   createdAt      DateTime              @default(now())
   updatedAt      DateTime              @updatedAt
   sensitive      StudentSensitiveData?
@@ -363,6 +374,7 @@ model Teacher {
   phone       String?
   title       String?
   status      TeacherStatus       @default(ACTIVE)
+  demo        Boolean             @default(false)
   createdAt   DateTime            @default(now())
   updatedAt   DateTime            @updatedAt
   commissions CommissionTeacher[]
@@ -558,4 +570,231 @@ model InstitutionSettings {
   updatedAt                      DateTime @updatedAt
 
   @@map("institution_settings")
+}
+
+// ============================================================================
+// Auxiliares (maestranza / mantenimiento del edificio)
+// ============================================================================
+
+enum StaffTaskType {
+  CLEANING
+  MAINTENANCE
+  ROUTINE
+}
+
+enum StaffTaskStatus {
+  PENDING
+  DONE
+}
+
+enum InstallationStatus {
+  OK
+  MAINTENANCE
+  OUT_OF_SERVICE
+}
+
+enum IncidentPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum IncidentStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+}
+
+model StaffTask {
+  id               String          @id @default(uuid()) @db.Uuid
+  date             DateTime        @db.Date
+  startTime        String
+  title            String
+  type             StaffTaskType
+  status           StaffTaskStatus @default(PENDING)
+  location         String
+  details          String?
+  assignedToUserId String?         @db.Uuid
+  completedAt      DateTime?
+  completedBy      String?         @db.Uuid
+  createdBy        String          @db.Uuid
+  demo             Boolean         @default(false)
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  @@index([date])
+  @@map("staff_tasks")
+}
+
+model Installation {
+  id              String             @id @default(uuid()) @db.Uuid
+  name            String             @unique
+  status          InstallationStatus @default(OK)
+  /// { col, row, colSpan, rowSpan } en el plano del edificio
+  layout          Json
+  lastCleanedAt   DateTime?
+  nextTask        String?
+  notes           String?
+  demo            Boolean            @default(false)
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  incidents       Incident[]
+  maintenanceLogs MaintenanceLog[]
+
+  @@map("installations")
+}
+
+model Incident {
+  id             String           @id @default(uuid()) @db.Uuid
+  description    String
+  priority       IncidentPriority
+  sector         String
+  installationId String?          @db.Uuid
+  installation   Installation?    @relation(fields: [installationId], references: [id])
+  imageUrl       String?
+  status         IncidentStatus   @default(OPEN)
+  reportedBy     String           @db.Uuid
+  resolvedAt     DateTime?
+  resolvedBy     String?          @db.Uuid
+  demo           Boolean          @default(false)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  @@index([status])
+  @@map("incidents")
+}
+
+model MaintenanceLog {
+  id             String        @id @default(uuid()) @db.Uuid
+  date           DateTime      @db.Date
+  task           String
+  responsible    String
+  installationId String?       @db.Uuid
+  installation   Installation? @relation(fields: [installationId], references: [id])
+  recordedBy     String        @db.Uuid
+  demo           Boolean       @default(false)
+  createdAt      DateTime      @default(now())
+
+  @@map("maintenance_logs")
+}
+
+// ============================================================================
+// Centro de Estudiantes
+// ============================================================================
+
+enum RepEventType {
+  ACADEMIC
+  CULTURAL
+  SPORTS
+  MEETING
+}
+
+enum RepForumCategory {
+  GENERAL
+  PROPOSALS
+  EVENTS
+}
+
+enum RepClaimCategory {
+  ACADEMIC
+  INFRASTRUCTURE
+  ADMINISTRATIVE
+  SUGGESTION
+}
+
+enum RepClaimStatus {
+  PENDING
+  IN_REVIEW
+  RESOLVED
+  ARCHIVED
+}
+
+model RepEvent {
+  id           String                @id @default(uuid()) @db.Uuid
+  title        String
+  date         DateTime              @db.Date
+  time         String?
+  location     String?
+  description  String
+  type         RepEventType
+  organizer    String
+  createdBy    String                @db.Uuid
+  demo         Boolean               @default(false)
+  createdAt    DateTime              @default(now())
+  updatedAt    DateTime              @updatedAt
+  participants RepEventParticipant[]
+
+  @@index([date])
+  @@map("rep_events")
+}
+
+model RepEventParticipant {
+  eventId  String   @db.Uuid
+  event    RepEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  userId   String   @db.Uuid
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  joinedAt DateTime @default(now())
+
+  @@id([eventId, userId])
+  @@map("rep_event_participants")
+}
+
+model RepThread {
+  id        String           @id @default(uuid()) @db.Uuid
+  authorId  String           @db.Uuid
+  author    User             @relation(fields: [authorId], references: [id])
+  title     String
+  content   String
+  category  RepForumCategory
+  pinned    Boolean          @default(false)
+  demo      Boolean          @default(false)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  replies   RepReply[]
+
+  @@map("rep_threads")
+}
+
+model RepReply {
+  id        String    @id @default(uuid()) @db.Uuid
+  threadId  String    @db.Uuid
+  thread    RepThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  authorId  String    @db.Uuid
+  author    User      @relation(fields: [authorId], references: [id])
+  content   String
+  createdAt DateTime  @default(now())
+
+  @@map("rep_replies")
+}
+
+model RepAnnouncement {
+  id          String    @id @default(uuid()) @db.Uuid
+  title       String
+  content     String
+  authorId    String    @db.Uuid
+  author      User      @relation(fields: [authorId], references: [id])
+  pinned      Boolean   @default(false)
+  publishDate DateTime? @db.Date
+  demo        Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("rep_announcements")
+}
+
+model RepClaim {
+  id          String           @id @default(uuid()) @db.Uuid
+  authorId    String           @db.Uuid
+  author      User             @relation("ClaimAuthor", fields: [authorId], references: [id])
+  category    RepClaimCategory
+  description String
+  status      RepClaimStatus   @default(PENDING)
+  response    String?
+  responderId String?          @db.Uuid
+  demo        Boolean          @default(false)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@index([status])
+  @@map("rep_claims")
 }

@@ -51,6 +51,8 @@ export const ROLES = [
   'PRECEPTOR',
   'TEACHER',
   'STUDENT',
+  'STAFF', // auxiliar / maestranza
+  'STUDENT_REP', // Centro de Estudiantes
 ] as const;
 export type Role = (typeof ROLES)[number];
 export const ROLE_LABELS: Record<Role, string> = {
@@ -60,6 +62,8 @@ export const ROLE_LABELS: Record<Role, string> = {
   PRECEPTOR: 'Preceptor/a',
   TEACHER: 'Profesor/a',
   STUDENT: 'Alumno/a',
+  STAFF: 'Auxiliar',
+  STUDENT_REP: 'Centro de Estudiantes',
 };
 
 export const USER_STATUSES = ['ACTIVE', 'INACTIVE'] as const;
@@ -323,7 +327,8 @@ export type UserDTO = User & {
 // ============================================================================
 
 /** Apps del sistema (coinciden con las carpetas del repo). */
-export const APPS = ['directivos', 'profesores', 'alumnos', 'preceptoria'] as const;
+/** 'preceptoria', 'auxiliares' y 'centro' viven en la app consolidacion/ (consolidacion/app). */
+export const APPS = ['directivos', 'profesores', 'alumnos', 'preceptoria', 'auxiliares', 'centro'] as const;
 export type AppId = (typeof APPS)[number];
 
 /**
@@ -336,6 +341,8 @@ export const APP_ACCESS: Record<AppId, readonly Role[]> = {
   profesores: ['SUPER_ADMIN', 'TEACHER'],
   alumnos: ['SUPER_ADMIN', 'STUDENT'],
   preceptoria: ['SUPER_ADMIN', 'PRECEPTOR'],
+  auxiliares: ['SUPER_ADMIN', 'STAFF'],
+  centro: ['SUPER_ADMIN', 'STUDENT_REP'],
 };
 
 /** true si alguno de los roles del usuario puede entrar a la app. */
@@ -349,8 +356,8 @@ export function canAccessApp(roles: readonly Role[], app: AppId): boolean {
  */
 export const ASSIGNABLE_ROLES: Partial<Record<Role, readonly Role[]>> = {
   SUPER_ADMIN: ROLES,
-  DIRECTOR: ['DIRECTOR', 'ADMINISTRATIVE', 'PRECEPTOR', 'TEACHER', 'STUDENT'],
-  ADMINISTRATIVE: ['PRECEPTOR', 'TEACHER', 'STUDENT'],
+  DIRECTOR: ['DIRECTOR', 'ADMINISTRATIVE', 'PRECEPTOR', 'TEACHER', 'STUDENT', 'STAFF', 'STUDENT_REP'],
+  ADMINISTRATIVE: ['PRECEPTOR', 'TEACHER', 'STUDENT', 'STAFF', 'STUDENT_REP'],
 };
 
 // ============================================================================
@@ -530,9 +537,13 @@ export interface AttendanceRecord extends RecordedBy {
 export interface AttendanceRecordView extends AttendanceRecord {
   date: ISODate;
   commissionId: ID;
+  subjectId: ID;
   subjectName: string;
   studentName: string;
   studentFileNumber: string;
+  /** Justificación que cubre esta fecha, si hay (aprobada, pendiente o rechazada). */
+  justificationId?: ID;
+  justificationStatus?: JustificationStatus;
 }
 
 /** Justificación de inasistencias (la carga y aprueba Preceptoría). */
@@ -820,3 +831,237 @@ export type CreateObservationRequest = Pick<
   Observation,
   'commissionId' | 'studentId' | 'date' | 'category' | 'content'
 >;
+
+// ============================================================================
+// Asistencia: pedidos y vistas de la toma de asistencia unificada
+// (Preceptoría carga por materia y fecha; Profesores por comisión y clase:
+//  las dos escriben en la misma planilla, class_sessions + attendance_records)
+// ============================================================================
+
+/** POST /attendance/by-subject — toma de asistencia del preceptor (materia + fecha). */
+export interface SaveSubjectAttendanceRequest {
+  subjectId: ID;
+  date: ISODate;
+  records: { studentId: ID; status: AttendanceStatus; minutesLate?: number; notes?: string }[];
+}
+
+/** Filtros de GET /attendance. */
+export interface AttendanceQuery {
+  careerId?: ID;
+  year?: number;
+  subjectId?: ID;
+  commissionId?: ID;
+  studentId?: ID;
+  from?: ISODate;
+  to?: ISODate;
+}
+
+/** Justificación con datos para mostrar (lectura). */
+export interface JustificationView extends Justification {
+  studentName: string;
+  studentFileNumber: string;
+}
+
+/** Alumno con su carrera y años de cursada (para listados de preceptoría). */
+export interface StudentView extends Student {
+  careerCode: string;
+  /** Años de la carrera en los que tiene materias en el ciclo vigente. */
+  years: number[];
+}
+
+/** Materia con su carrera (catálogo). */
+export interface SubjectView extends Subject {
+  careerId: ID;
+  careerCode: string;
+}
+
+/** Datos para armar la pantalla del preceptor: sus comisiones, materias y alumnos. */
+export interface PreceptorScope {
+  careers: Pick<Career, 'id' | 'code' | 'name'>[];
+  /** Años de cursada que tiene asignados (por carrera). */
+  years: { careerId: ID; years: number[] }[];
+  subjects: SubjectView[];
+  students: StudentView[];
+}
+
+// ============================================================================
+// Auxiliares (maestranza / mantenimiento del edificio)
+// ============================================================================
+
+export const STAFF_TASK_TYPES = ['CLEANING', 'MAINTENANCE', 'ROUTINE'] as const;
+export type StaffTaskType = (typeof STAFF_TASK_TYPES)[number];
+export const STAFF_TASK_TYPE_LABELS: Record<StaffTaskType, string> = {
+  CLEANING: 'Limpieza',
+  MAINTENANCE: 'Mantenimiento',
+  ROUTINE: 'Rutina',
+};
+
+export const STAFF_TASK_STATUSES = ['PENDING', 'DONE'] as const;
+export type StaffTaskStatus = (typeof STAFF_TASK_STATUSES)[number];
+export const STAFF_TASK_STATUS_LABELS: Record<StaffTaskStatus, string> = { PENDING: 'Pendiente', DONE: 'Completada' };
+
+export interface StaffTask extends Timestamps {
+  id: ID;
+  date: ISODate;
+  startTime: TimeOfDay;
+  title: string;
+  type: StaffTaskType;
+  status: StaffTaskStatus;
+  location: string;
+  details?: string;
+  assignedToUserId?: ID;
+  completedAt?: ISODateTime;
+  completedBy?: ID;
+}
+
+export const INSTALLATION_STATUSES = ['OK', 'MAINTENANCE', 'OUT_OF_SERVICE'] as const;
+export type InstallationStatus = (typeof INSTALLATION_STATUSES)[number];
+export const INSTALLATION_STATUS_LABELS: Record<InstallationStatus, string> = {
+  OK: 'Operativa',
+  MAINTENANCE: 'En mantenimiento',
+  OUT_OF_SERVICE: 'Fuera de servicio',
+};
+
+export interface Installation extends Timestamps {
+  id: ID;
+  name: string;
+  status: InstallationStatus;
+  /** Ubicación en el plano del edificio (grilla). */
+  layout: { col: number; row: number; colSpan: number; rowSpan: number };
+  lastCleanedAt?: ISODateTime;
+  nextTask?: string;
+  notes?: string;
+}
+
+export const INCIDENT_PRIORITIES = ['LOW', 'MEDIUM', 'HIGH'] as const;
+export type IncidentPriority = (typeof INCIDENT_PRIORITIES)[number];
+export const INCIDENT_PRIORITY_LABELS: Record<IncidentPriority, string> = { LOW: 'Baja', MEDIUM: 'Media', HIGH: 'Alta' };
+
+export const INCIDENT_STATUSES = ['OPEN', 'IN_PROGRESS', 'RESOLVED'] as const;
+export type IncidentStatus = (typeof INCIDENT_STATUSES)[number];
+export const INCIDENT_STATUS_LABELS: Record<IncidentStatus, string> = {
+  OPEN: 'Abierta',
+  IN_PROGRESS: 'En progreso',
+  RESOLVED: 'Resuelta',
+};
+
+export interface Incident extends Timestamps {
+  id: ID;
+  description: string;
+  priority: IncidentPriority;
+  /** Sector o instalación, en texto (puede no estar en el plano). */
+  sector: string;
+  installationId?: ID;
+  imageUrl?: string;
+  status: IncidentStatus;
+  reportedBy: ID;
+  resolvedAt?: ISODateTime;
+  resolvedBy?: ID;
+}
+
+export interface MaintenanceLog {
+  id: ID;
+  date: ISODate;
+  task: string;
+  responsible: string;
+  installationId?: ID;
+  recordedBy: ID;
+  createdAt: ISODateTime;
+}
+
+// ============================================================================
+// Centro de Estudiantes
+// ============================================================================
+
+export const REP_EVENT_TYPES = ['ACADEMIC', 'CULTURAL', 'SPORTS', 'MEETING'] as const;
+export type RepEventType = (typeof REP_EVENT_TYPES)[number];
+export const REP_EVENT_TYPE_LABELS: Record<RepEventType, string> = {
+  ACADEMIC: 'Académico',
+  CULTURAL: 'Cultural',
+  SPORTS: 'Deportivo',
+  MEETING: 'Reunión',
+};
+
+export interface RepEvent extends Timestamps {
+  id: ID;
+  title: string;
+  date: ISODate;
+  time?: TimeOfDay;
+  location?: string;
+  description: string;
+  type: RepEventType;
+  organizer: string;
+  createdBy: ID;
+  /** Cantidad de inscriptos (lo calcula el backend). */
+  participantCount: number;
+  /** true si el usuario de la sesión ya se anotó. */
+  joined: boolean;
+}
+
+export const REP_FORUM_CATEGORIES = ['GENERAL', 'PROPOSALS', 'EVENTS'] as const;
+export type RepForumCategory = (typeof REP_FORUM_CATEGORIES)[number];
+export const REP_FORUM_CATEGORY_LABELS: Record<RepForumCategory, string> = {
+  GENERAL: 'General',
+  PROPOSALS: 'Propuestas',
+  EVENTS: 'Eventos',
+};
+
+export interface RepThread extends Timestamps {
+  id: ID;
+  authorId: ID;
+  authorName: string;
+  title: string;
+  content: string;
+  category: RepForumCategory;
+  pinned: boolean;
+  replyCount: number;
+}
+
+export interface RepReply {
+  id: ID;
+  threadId: ID;
+  authorId: ID;
+  authorName: string;
+  content: string;
+  createdAt: ISODateTime;
+}
+
+export interface RepAnnouncement extends Timestamps {
+  id: ID;
+  title: string;
+  content: string;
+  authorId: ID;
+  authorName: string;
+  pinned: boolean;
+  publishDate?: ISODate;
+}
+
+export const REP_CLAIM_CATEGORIES = ['ACADEMIC', 'INFRASTRUCTURE', 'ADMINISTRATIVE', 'SUGGESTION'] as const;
+export type RepClaimCategory = (typeof REP_CLAIM_CATEGORIES)[number];
+export const REP_CLAIM_CATEGORY_LABELS: Record<RepClaimCategory, string> = {
+  ACADEMIC: 'Académico',
+  INFRASTRUCTURE: 'Infraestructura',
+  ADMINISTRATIVE: 'Administrativo',
+  SUGGESTION: 'Sugerencia',
+};
+
+export const REP_CLAIM_STATUSES = ['PENDING', 'IN_REVIEW', 'RESOLVED', 'ARCHIVED'] as const;
+export type RepClaimStatus = (typeof REP_CLAIM_STATUSES)[number];
+export const REP_CLAIM_STATUS_LABELS: Record<RepClaimStatus, string> = {
+  PENDING: 'Pendiente',
+  IN_REVIEW: 'En revisión',
+  RESOLVED: 'Resuelto',
+  ARCHIVED: 'Archivado',
+};
+
+export interface RepClaim extends Timestamps {
+  id: ID;
+  authorId: ID;
+  /** El Centro ve el nombre; cada alumno ve solo sus propios reclamos. */
+  authorName: string;
+  category: RepClaimCategory;
+  description: string;
+  status: RepClaimStatus;
+  response?: string;
+  responderId?: ID;
+}

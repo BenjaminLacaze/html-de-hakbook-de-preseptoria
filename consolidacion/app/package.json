@@ -1,0 +1,30 @@
+{
+  "name": "consolidacion-i26",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Consolidación: Preceptoría, Centro de Estudiantes y Auxiliares (rescatadas de la app completa de Julián)",
+  "scripts": {
+    "dev": "vite --port=5177",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit -p ."
+  },
+  "dependencies": {
+    "jspdf": "2.5.2",
+    "jspdf-autotable": "3.8.4",
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.5",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "5.2.0",
+    "autoprefixer": "10.6.2",
+    "postcss": "8.5.32",
+    "tailwindcss": "3.4.19",
+    "typescript": "5.8.3",
+    "vite": "6.4.5"
+  }
+}

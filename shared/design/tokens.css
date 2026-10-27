@@ -1,0 +1,123 @@
+/*
+ * Diseño unificado — Sistema de Gestión ISFDyT N.° 26
+ *
+ * Colores del manual de marca del instituto (tomados de profesores-nicolas/app/src/styles/tokens.css,
+ * con contraste verificado) + tipografía + estados de asistencia + componentes base.
+ *
+ * Uso:
+ *   - Apps Vite:   import '@shared/design/tokens.css';
+ *   - Landing:     <link rel="stylesheet" href="shared/design/tokens.css">
+ * Guía: docs/DISENO_UNIFICADO.md
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700&display=swap');
+
+:root {
+  /* ---- Marca (manual ISFDyT N.° 26) ---- */
+  --i26-blue: #14214f;          /* Azul institucional principal */
+  --i26-blue-dark: #0a122e;     /* Encabezados, sombras */
+  --i26-blue-hover: #1e3172;    /* Hover */
+  --i26-sky: #3f78b6;           /* Azul cielo: enlaces, información */
+  --i26-sky-light: #eaf2f9;
+  --i26-gold: #89743a;          /* Dorado ocre: acentos */
+  --i26-gold-text: #6b5b2e;     /* Dorado accesible para texto sobre blanco (AAA) */
+  --i26-sand: #af9b63;          /* Arena dorada: bordes y detalles */
+  --i26-sand-light: #f9f6ee;
+  --i26-sand-border: #d8cca9;
+
+  /* ---- Superficies y texto ---- */
+  --i26-bg: #f4f6f9;
+  --i26-surface: #ffffff;
+  --i26-surface-hover: #f8fafc;
+  --i26-border: #e2e8f0;
+  --i26-border-strong: #cbd5e1;
+  --i26-text: #0f172a;          /* 14:1 sobre blanco */
+  --i26-text-secondary: #334155;
+  --i26-text-muted: #475569;    /* 4.8:1, mínimo AA */
+  --i26-text-inverted: #ffffff;
+
+  /* ---- Estados de asistencia (mismos colores en todas las apps) ---- */
+  --i26-present-bg: #ecfdf5;  --i26-present-text: #065f46;  --i26-present: #10b981;
+  --i26-absent-bg: #fef2f2;   --i26-absent-text: #991b1b;   --i26-absent: #ef4444;
+  --i26-late-bg: #fffbeb;     --i26-late-text: #92400e;     --i26-late: #f59e0b;
+  --i26-justified-bg: #eff6ff; --i26-justified-text: #1e40af; --i26-justified: #3b82f6;
+
+  /* ---- Tipografía ----
+     El manual pide Cocomat Pro / Hussar Bold (comerciales): se usan sustitutas libres. */
+  --i26-font-heading: 'Outfit', 'Inter', system-ui, sans-serif;
+  --i26-font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  /* ---- Forma ---- */
+  --i26-radius-sm: 6px;
+  --i26-radius: 10px;
+  --i26-radius-lg: 14px;
+  --i26-shadow: 0 1px 2px rgb(15 23 42 / 6%), 0 4px 12px rgb(15 23 42 / 6%);
+  --i26-shadow-hover: 0 10px 28px rgb(20 33 79 / 12%);
+  --i26-focus: 0 0 0 3px rgb(63 120 182 / 45%);
+}
+
+/* ---------------------------------------------------------------------------
+ * Componentes base (prefijo i26- para no chocar con los estilos propios de cada app)
+ * ------------------------------------------------------------------------- */
+
+.i26-card {
+  background: var(--i26-surface);
+  border: 1px solid var(--i26-border);
+  border-radius: var(--i26-radius-lg);
+  box-shadow: var(--i26-shadow);
+}
+
+.i26-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.55rem 1rem;
+  border: 1px solid transparent;
+  border-radius: var(--i26-radius);
+  font: 600 0.9rem/1.2 var(--i26-font-body);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
+}
+.i26-btn:focus-visible { outline: none; box-shadow: var(--i26-focus); }
+.i26-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+.i26-btn-primary { background: var(--i26-blue); color: var(--i26-text-inverted); }
+.i26-btn-primary:hover:not(:disabled) { background: var(--i26-blue-hover); }
+.i26-btn-secondary { background: var(--i26-surface); color: var(--i26-blue); border-color: var(--i26-border-strong); }
+.i26-btn-secondary:hover:not(:disabled) { border-color: var(--i26-sand); background: var(--i26-sand-light); }
+
+.i26-input {
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--i26-border-strong);
+  border-radius: var(--i26-radius);
+  background: var(--i26-surface);
+  color: var(--i26-text);
+  font: 400 0.95rem/1.4 var(--i26-font-body);
+}
+.i26-input:focus { outline: none; border-color: var(--i26-blue); box-shadow: var(--i26-focus); }
+
+.i26-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  font: 600 0.75rem/1.4 var(--i26-font-body);
+}
+.i26-badge-present { background: var(--i26-present-bg); color: var(--i26-present-text); }
+.i26-badge-absent { background: var(--i26-absent-bg); color: var(--i26-absent-text); }
+.i26-badge-late { background: var(--i26-late-bg); color: var(--i26-late-text); }
+.i26-badge-justified { background: var(--i26-justified-bg); color: var(--i26-justified-text); }
+
+.i26-eyebrow {
+  color: var(--i26-gold-text);
+  font: 700 0.78rem/1.2 var(--i26-font-body);
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .i26-btn { transition: none; }
+}

@@ -1,0 +1,42 @@
+/* Estilos de la app consolidada.
+ * 1. Diseño unificado del sistema (colores del manual de marca, componentes i26-*).
+ * 2. Tema original de las pantallas rescatadas (variables --color-*, .glass-card, .btn…).
+ * 3. Tailwind 3 (antes se cargaba desde un CDN en tiempo de ejecución).
+ * 4. Tema "institucional": mapea las variables de las pantallas rescatadas a los colores de marca. */
+@import '@shared/design/tokens.css';
+@import './legacy/legacy-theme.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+[data-theme='institucional'] {
+  --color-primary: var(--i26-surface);
+  --color-secondary: #eef2f7;
+  --color-accent: var(--i26-gold);
+  --color-accent-hover: var(--i26-gold-text);
+  --color-text-primary: var(--i26-text);
+  --color-text-secondary: var(--i26-text-muted);
+  --color-border: var(--i26-border);
+  --color-background: var(--i26-bg);
+  --color-header-bg: rgb(255 255 255 / 85%);
+  --color-glass-bg: rgb(255 255 255 / 92%);
+  --color-glass-border: var(--i26-border);
+  --color-shadow-rgb: 20, 33, 79;
+}
+
+[data-font-style='institucional'] {
+  --font-heading: var(--i26-font-heading);
+  --font-body: var(--i26-font-body);
+}
+
+/* Barra superior común de la app consolidada */
+.consolidacion-bar {
+  background: var(--i26-blue);
+  color: var(--i26-text-inverted);
+  font: 500 0.85rem/1.3 var(--i26-font-body);
+}
+.consolidacion-bar a,
+.consolidacion-bar button {
+  color: inherit;
+}

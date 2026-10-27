@@ -1,5 +1,47 @@
 # CHANGELOG
 
+## 2026-10-27 — Consolidación: Preceptoría, Auxiliares y Centro + asistencia unificada + diseño común
+
+**Pedido:** rescatar Preceptoría, Centro de Estudiantes y Auxiliares de la app completa de Julián, integrarlas a la
+toma de asistencia, sumarlas a la landing, unificar el diseño, carpeta `consolidacion/`, y backend y base
+centralizados para todas las apps. Las pantallas de login quedan para el próximo paso.
+
+**Agregado**
+- `consolidacion/app`: las 3 secciones rescatadas (`src/legacy/`, casi sin cambios) + `App.tsx` nuevo + capa
+  traductora `useApiAttendance.ts`. Modo demo (por defecto) y modo API. README en `consolidacion/README.md`.
+- API: `backend/src/routes/academic.ts`, `attendance.ts`, `staff.ts`, `centro.ts` y `scope.ts` (alcance por rol).
+- Base: migración `20261027003910_consolidacion_auxiliares_centro` (10 tablas, roles `STAFF` y `STUDENT_REP`,
+  columna `demo`). Solo agrega. **Aplicada en Neon.**
+- `backend/src/demo-data.ts` + `npm run db:demo-data` / `:off`. **Cargado en Neon.**
+- Usuarios de prueba `prueba.auxiliar@…` y `prueba.centro@…` (ahora son 7). **Creados en Neon.**
+- `shared/types.ts`: roles, `APPS`/`APP_ACCESS` (`auxiliares`, `centro`), tipos de asistencia, Auxiliares y Centro.
+- Diseño unificado: `shared/design/tokens.css` + `docs/DISENO_UNIFICADO.md`. La landing ya lo usa (azul y dorado
+  institucional, Inter/Outfit, barra superior), y tiene la tarjeta nueva.
+- `scripts/build.mjs` y `vercel.json`: compilan y publican `consolidacion/app` y los tokens de diseño.
+
+**Seguridad**
+- No se rescataron el login con contraseñas escritas en el código ni los códigos de registro fijos de la app original.
+- El "Análisis con IA" llamaba a Gemini desde el navegador, con la clave expuesta: queda desactivado (`aiStub.ts`).
+
+**Probado**
+- Base descartable: 36 de 37 pruebas de API OK. La restante era un error de la prueba: el profesor recibe 403 al
+  aprobar una justificación, que es lo correcto.
+- La integración: lo que carga el preceptor por materia lo ve el profesor en su clase, y al revés. La planilla
+  cerrada no se puede modificar, salvo Directivos. Los permisos por rol funcionan.
+- Navegador (modo API): el preceptor tomó asistencia desde la pantalla; en la base quedaron 7 presentes, 1 ausente
+  y 1 justificado, igual que lo marcado.
+- Navegador (modo demo): las 3 secciones abren sin errores. Build completo de las 5 apps OK.
+- Neon: `migrate deploy` OK; lecturas de cada rol OK con la API local.
+
+**Problema abierto:** la API **publicada** (versión anterior) responde 500 al listar cuentas y en el login de Auxiliar
+y Centro, porque la base ya tiene esos roles. Se resuelve publicando esta versión. Hoy no afecta a nadie: las apps
+publicadas están en modo demo.
+
+**Fuera de git, a propósito:** `julian appcompleta/` (original de Julián, con un .zip de 800 KB) y `recursos/`.
+
+**Para que ande en otra máquina:** `git pull`, `npm install` en la raíz y en `consolidacion/app`
+(`--legacy-peer-deps`), y `npm run dev` (puerto 5177).
+
 ## 2026-10-26 — API publicada en producción (INT-20 a INT-22)
 
 **Qué se hizo**

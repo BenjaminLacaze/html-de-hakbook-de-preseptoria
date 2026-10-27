@@ -24,6 +24,7 @@ const modulesWithApp = [
   'directivos-jesica-agustin',
   'alumnos-julian',
   'alumnos-lucia',
+  'consolidacion', // Preceptoría, Auxiliares y Centro de Estudiantes
 ];
 
 // shared/ son tipos que se compilan dentro de cada app: no hace falta publicarlos sueltos.
@@ -31,6 +32,7 @@ const modulesWithApp = [
 const skipTop = new Set([
   'node_modules', '.git', 'dist', '.vercel', 'scripts', 'shared', 'backend', 'api',
   'package.json', 'package-lock.json', 'prisma.config.ts', '.env', '.env.example', 'recursos',
+  'julian appcompleta', // copia original de Julián (no se publica; ver consolidacion/README.md)
 ]);
 const appDirs = new Set(modulesWithApp.map((m) => join(root, m, 'app')));
 
@@ -54,6 +56,10 @@ for (const entry of readdirSync(root)) {
     filter: (src) => !appDirs.has(src) && !src.split(sep).includes('node_modules'),
   });
 }
+
+// Diseño unificado: la landing lo carga desde shared/design/tokens.css.
+mkdirSync(join(dist, 'shared', 'design'), { recursive: true });
+cpSync(join(root, 'shared', 'design', 'tokens.css'), join(dist, 'shared', 'design', 'tokens.css'));
 
 const failed = [];
 for (const mod of modulesWithApp) {

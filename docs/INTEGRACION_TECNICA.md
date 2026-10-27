@@ -1,7 +1,7 @@
 # Documentación técnica de la integración
 
 **Sistema de Gestión ISFDyT N.° 26** — cómo están conectadas las apps, la API y la base de datos.
-**Actualizado:** 2026-10-26. **Estado:** base de datos, login y API **publicados en producción**
+**Actualizado:** 2026-10-27 (consolidación: Preceptoría, Auxiliares y Centro; asistencia unificada; ver sección 12). **Estado:** base de datos, login y API **publicados en producción**
 (`https://sistema-gestion-i26.vercel.app/api/v1`). Las apps publicadas siguen en modo demo.
 
 | Documento | Para qué |
@@ -95,7 +95,7 @@ Fuente única: **`shared/types.ts`** (lo que ven las apps) ↔ **`backend/prisma
 - IDs: UUID generados por la base.
 - Fechas: `YYYY-MM-DD`. Fecha y hora: ISO 8601. Zona: `America/Argentina/Buenos_Aires`.
 
-**Tablas (23):**
+**Tablas (33; en la sección 12, las 10 que se sumaron el 2026-10-27):**
 
 | Dominio | Tablas |
 |---|---|
@@ -162,6 +162,8 @@ mismo.
 | `PRECEPTOR` | Preceptoría | — |
 | `TEACHER` | Profesores | — |
 | `STUDENT` | Alumnos (los dos portales) | — |
+| `STAFF` | Consolidación → Auxiliares | — |
+| `STUDENT_REP` | Consolidación → Centro de Estudiantes | — |
 
 Para modificar una cuenta, quien la modifica tiene que poder asignar **todos** los roles que esa
 cuenta ya tiene. Así, Secretaría no puede tocar a un Directivo. Nadie puede desactivarse ni
@@ -309,3 +311,62 @@ commits de otros autores. Un push a `main` de ese repo publica directo en produc
 | Directivos: `npm run dev` ya no levanta el servidor de prueba | Ahora `dev` es Vite | El servidor de prueba es `npm run dev:mock` |
 | Vercel: "Deployment was blocked" | Commit de otro autor en el repo de deploy | Commit firmado por `mjsis20052` |
 | Acentos raros al probar con curl en Windows | curl manda los acentos en otra codificación | Probar desde la app o con `fetch` de Node |
+
+## 12. Consolidación y API ampliada (2026-10-27)
+
+**Qué se sumó**
+
+- App `consolidacion/app` (`/consolidacion/app/`), con Preceptoría, Auxiliares y Centro de
+  Estudiantes, rescatadas de la app completa de Julián. Detalle en
+  [`consolidacion/README.md`](../consolidacion/README.md).
+- Roles `STAFF` (Auxiliar) y `STUDENT_REP` (Centro de Estudiantes). Directivo y Administrativo los
+  pueden asignar.
+- Migración `20261027003910_consolidacion_auxiliares_centro`: suma 10 tablas (`staff_tasks`,
+  `installations`, `incidents`, `maintenance_logs`, `rep_events`, `rep_event_participants`,
+  `rep_threads`, `rep_replies`, `rep_announcements`, `rep_claims`) y la columna `demo` en
+  `careers`, `students` y `teachers`. **Solo agrega; no borra nada.**
+- Diseño unificado: [`shared/design/tokens.css`](../shared/design/tokens.css) y
+  [`DISENO_UNIFICADO.md`](DISENO_UNIFICADO.md). Lo usan la landing y la app de consolidación.
+
+**Toma de asistencia unificada**
+
+Preceptoría carga por **materia y fecha**; Profesores, por **comisión y clase**. Las dos escriben
+en la misma planilla (`class_sessions` + `attendance_records`): una clase por comisión y fecha, y
+un registro por alumno. El origen queda en `source` (`PRECEPTOR` / `TEACHER`). Una planilla
+cerrada solo la corrige Directivos.
+
+**Alcance por rol** (`backend/src/scope.ts`):
+
+| Rol | Ve y carga asistencia de |
+|---|---|
+| Directivo, Administrativo, Superadmin | todas las comisiones del ciclo vigente (Administrativo solo lee) |
+| Preceptor | las comisiones donde es el preceptor asignado |
+| Profesor | las comisiones que dicta |
+| Auxiliar, Centro, Alumno | nada (el alumno, su resumen propio) |
+
+**Endpoints nuevos**
+
+| Grupo | Rutas |
+|---|---|
+| Académico | `GET /academic/cycles/active`, `/academic/careers`, `/academic/subjects`, `/academic/scope` |
+| Asistencia | `GET /attendance`, `POST /attendance/by-subject`, `GET /attendance/summary`, `POST /attendance/commissions/{id}/sessions`, `GET`/`PUT /attendance/sessions/{id}` |
+| Justificaciones | `GET`/`POST /attendance/justifications`, `PATCH /attendance/justifications/{id}` |
+| Auxiliares | `/staff/tasks`, `/staff/installations`, `/staff/incidents`, `/staff/maintenance` |
+| Centro | `/centro/events` (+ `/join`), `/centro/threads` (+ `/replies`), `/centro/announcements`, `/centro/claims` |
+
+**Datos de ejemplo:** `npm run db:demo-data` carga 2 carreras, 18 materias y comisiones, 60 alumnos,
+asistencias, justificaciones, instalaciones, tareas, eventos y reclamos. `npm run db:demo-data:off`
+los borra (todo lo marcado `demo`). Asignaciones: `prueba.preceptor` → carrera "dev";
+`prueba.profesor` → 2.º año de "dev"; `prueba.alumno` → un alumno de 1.º.
+
+**Probado (2026-10-27)**
+
+- Base descartable: 36 de 37 pruebas de API OK. La que no pasó era un error de la prueba: un
+  profesor que intenta aprobar una justificación recibe 403, que es lo correcto.
+- Navegador: la pantalla del preceptor guardó 9 registros (7 presentes, 1 ausente, 1 justificado) y la
+  API devolvió exactamente eso.
+- Neon: migración aplicada; lecturas de cada rol OK.
+
+**Ojo:** mientras no se publique esta versión, la API publicada (la anterior) **falla con 500** al
+listar cuentas y en el ingreso de Auxiliar y Centro, porque en la base ya existen esos roles nuevos.
+

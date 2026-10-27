@@ -56,6 +56,10 @@
     {
       "source": "/alumnos-lucia/app/:path*",
       "destination": "/alumnos-lucia/app/index.html"
+    },
+    {
+      "source": "/consolidacion/app/:path*",
+      "destination": "/consolidacion/app/index.html"
     }
   ],
   "functions": {

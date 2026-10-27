@@ -4,7 +4,11 @@ import { randomUUID } from 'node:crypto';
 import { Hono } from 'hono';
 import type { AppEnv } from './auth/middleware.js';
 import { AppError } from './errors.js';
+import { academicRoutes } from './routes/academic.js';
+import { attendanceRoutes } from './routes/attendance.js';
 import { authRoutes } from './routes/auth.js';
+import { centroRoutes } from './routes/centro.js';
+import { staffRoutes } from './routes/staff.js';
 import { userRoutes } from './routes/users.js';
 
 export const app = new Hono<AppEnv>().basePath('/api/v1');
@@ -29,6 +33,10 @@ app.use(async (c, next) => {
 app.get('/health', (c) => c.json({ ok: true, time: new Date().toISOString() }));
 app.route('/auth', authRoutes);
 app.route('/users', userRoutes);
+app.route('/academic', academicRoutes);
+app.route('/attendance', attendanceRoutes);
+app.route('/staff', staffRoutes);
+app.route('/centro', centroRoutes);
 
 app.notFound((c) => c.json(new AppError('NOT_FOUND', 'Ruta inexistente.').toBody(c.get('traceId')), 404));
 

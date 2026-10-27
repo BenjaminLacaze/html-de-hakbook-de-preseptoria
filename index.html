@@ -3,18 +3,21 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#f8fafc">
+  <meta name="theme-color" content="#14214f">
   <meta name="description" content="Proyectos de los módulos del sistema de gestión y asistencia escolar.">
   <title>Proyectos | Sistema de Gestión Escolar</title>
+  <!-- Diseño unificado del sistema (colores del manual de marca ISFDyT N.° 26): docs/DISENO_UNIFICADO.md -->
+  <link rel="stylesheet" href="shared/design/tokens.css">
   <style>
     :root {
       color-scheme: light;
-      --ink: #172b4d;
-      --muted: #52647b;
-      --accent: #1d4ed8;
-      --line: #dbe4ef;
-      --surface: #fff;
-      --background: #f8fafc;
+      --ink: var(--i26-text, #0f172a);
+      --muted: var(--i26-text-muted, #475569);
+      --accent: var(--i26-blue, #14214f);
+      --gold: var(--i26-gold-text, #6b5b2e);
+      --line: var(--i26-border, #e2e8f0);
+      --surface: var(--i26-surface, #fff);
+      --background: var(--i26-bg, #f4f6f9);
     }
 
     * { box-sizing: border-box; }
@@ -23,7 +26,7 @@
       margin: 0;
       background: var(--background);
       color: var(--ink);
-      font-family: "Atkinson Hyperlegible", "Segoe UI", sans-serif;
+      font-family: var(--i26-font-body, "Segoe UI", sans-serif);
       font-size: 1rem;
       line-height: 1.6;
     }
@@ -39,12 +42,14 @@
 
     .eyebrow {
       margin: 0 0 .75rem;
-      color: var(--accent);
+      color: var(--gold);
       font-size: .82rem;
       font-weight: 700;
       letter-spacing: .09em;
       text-transform: uppercase;
     }
+
+    h1, h2, h3 { font-family: var(--i26-font-heading, inherit); }
 
     h1 {
       max-width: 15ch;
@@ -95,14 +100,14 @@
     }
 
     .card:hover {
-      border-color: #9bb6ef;
+      border-color: var(--i26-sand, #af9b63);
       box-shadow: 0 10px 28px rgb(23 43 77 / 8%);
     }
 
 
     .owner {
       margin: 0 0 .35rem;
-      color: var(--accent);
+      color: var(--gold);
       font-size: .85rem;
       font-weight: 700;
     }
@@ -130,7 +135,7 @@
       text-decoration: none;
     }
 
-    .btn:hover { border-color: #9bb6ef; background: #f1f5ff; }
+    .btn:hover { border-color: var(--i26-sand, #af9b63); background: var(--i26-sand-light, #f9f6ee); }
 
     .btn:focus-visible {
       outline: 3px solid #2563eb;
@@ -143,7 +148,11 @@
       color: #fff;
     }
 
-    .btn.primary:hover { background: #1e40af; }
+    .btn.primary:hover { background: var(--i26-blue-hover, #1e3172); }
+
+    .topbar { background: var(--accent); color: #fff; font-size: .85rem; }
+    .topbar .wrap { display: flex; justify-content: space-between; gap: 1rem; padding: .55rem 0; }
+    .topbar strong { color: var(--i26-sand, #af9b63); }
 
     footer {
       padding: 1.25rem 0 2rem;
@@ -168,6 +177,7 @@
   </style>
 </head>
 <body>
+  <div class="topbar"><div class="wrap"><span><strong>ISFDyT N.° 26</strong> · Dolores</span><span>Sistema de Gestión</span></div></div>
   <div class="wrap">
     <header>
       <p class="eyebrow">Sistema de gestión escolar</p>
@@ -178,7 +188,7 @@
     <main>
       <div class="section-heading">
         <h2>Módulos del equipo</h2>
-        <span class="count">5 proyectos</span>
+        <span class="count">6 proyectos</span>
       </div>
       <section class="grid" aria-label="Proyectos por módulo">
         <article class="card">
@@ -229,6 +239,15 @@
           <div class="links">
             <a class="btn primary" href="profesores-nicolas/app/">Abrir app <span aria-hidden="true">→</span></a>
             <a class="btn" href="profesores-nicolas/profesores.html">Informe</a>
+          </div>
+        </article>
+        <article class="card">
+          <p class="owner">Consolidación · rescatado de la app completa de Julián</p>
+          <h3>Preceptoría, Auxiliares y Centro de Estudiantes</h3>
+          <p class="description">Toma de asistencia unificada con Profesores, justificaciones, mantenimiento del edificio y la comunidad estudiantil.</p>
+          <div class="links">
+            <a class="btn primary" href="consolidacion/app/">Abrir app <span aria-hidden="true">→</span></a>
+            <a class="btn" href="consolidacion/README.md">Qué incluye</a>
           </div>
         </article>
       </section>

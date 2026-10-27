@@ -39,6 +39,8 @@ Probar: `http://localhost:4000/api/v1/health` tiene que responder `{"ok":true,�
 | `npm run typecheck` | Chequeo de tipos del backend |
 | `npm run db:test-users` | Crea o reactiva los usuarios de prueba (uno por app, ver `shared/testUsers.ts`) |
 | `npm run db:test-users:off` | Desactiva los usuarios de prueba (antes de usar datos reales) |
+| `npm run db:demo-data` | Carga los datos de ejemplo (carreras, alumnos, asistencias, Auxiliares, Centro) |
+| `npm run db:demo-data:off` | Borra los datos de ejemplo (todo lo marcado `demo`) |
 
 ## Base en Neon
 
@@ -86,6 +88,11 @@ Prefijo: `/api/v1`. Respuestas en JSON; errores con la forma `ApiError` de `shar
 
 Qué roles puede asignar cada uno: `ASSIGNABLE_ROLES` en `shared/types.ts`. Ejemplo: Secretaría
 crea preceptores, profesores y alumnos, pero no directivos.
+
+### Endpoints agregados el 2026-10-27
+
+Académico (`/academic/*`), asistencia unificada y justificaciones (`/attendance/*`), Auxiliares (`/staff/*`)
+y Centro de Estudiantes (`/centro/*`). Tabla completa en `docs/INTEGRACION_TECNICA.md`, sección 12.
 
 ## Seguridad (lo que ya está hecho)
 

@@ -12,7 +12,9 @@
     "typecheck": "tsc -p backend/tsconfig.json",
     "build": "node scripts/build.mjs",
     "db:test-users": "tsx backend/src/test-users.ts",
-    "db:test-users:off": "tsx backend/src/test-users.ts --off"
+    "db:test-users:off": "tsx backend/src/test-users.ts --off",
+    "db:demo-data": "tsx backend/src/demo-data.ts",
+    "db:demo-data:off": "tsx backend/src/demo-data.ts --off"
   },
   "dependencies": {
     "@hono/node-server": "2.1.5",

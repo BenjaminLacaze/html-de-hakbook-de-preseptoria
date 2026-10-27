@@ -3,8 +3,12 @@
     "target": "ES2022",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
-    "lib": ["ES2023"],
-    "types": ["node"],
+    "lib": [
+      "ES2023"
+    ],
+    "types": [
+      "node"
+    ],
     "strict": true,
     "noEmit": true,
     "skipLibCheck": true,
@@ -13,5 +17,13 @@
     "allowImportingTsExtensions": false,
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["src", "../api", "../shared/types.ts", "../shared/testUsers.ts"]
+  "include": [
+    "src",
+    "../api",
+    "../shared/types.ts",
+    "../shared/testUsers.ts"
+  ],
+  "exclude": [
+    "src/demo-data.ts"
+  ]
 }

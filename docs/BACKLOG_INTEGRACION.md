@@ -1,6 +1,6 @@
 # Backlog de la integración
 
-**Actualizado:** 2026-10-26. **Cómo se usa:** cuando alguien empieza una tarea, pone su nombre en
+**Actualizado:** 2026-10-27. **Cómo se usa:** cuando alguien empieza una tarea, pone su nombre en
 *Responsable* y la pasa a 🟡. Cuando termina, la pasa a ✅ y anota el cambio en el `CHANGELOG.md`.
 Las tareas nuevas van al final de su bloque, con el número siguiente.
 
@@ -21,11 +21,12 @@ Referencias: [documentación técnica](INTEGRACION_TECNICA.md) · [ajustes por a
 | C. Login y cuentas | 7 | 1 | 1 |
 | D. Publicación de la API | 3 | 0 | 0 |
 | E. Seguridad y operación | 0 | 0 | 7 |
-| F. API de estructura académica | 0 | 0 | 6 |
-| G. API de asistencia (primer circuito real) | 0 | 0 | 6 |
+| F. API de estructura académica | 0 | 1 | 5 |
+| G. API de asistencia (primer circuito real) | 4 | 1 | 1 |
 | H. Integración de cada app | 0 | 1 | 15 |
-| I. Preceptoría | 0 | 0 | 2 |
+| I. Preceptoría | 1 | 1 | 0 |
 | J. Resto de funciones (etapa 4) | 0 | 0 | 5 |
+| K. Consolidación (Auxiliares y Centro) | 4 | 0 | 8 |
 
 ---
 
@@ -94,7 +95,7 @@ Referencias: [documentación técnica](INTEGRACION_TECNICA.md) · [ajustes por a
 
 | # | Tarea | Estado | Responsable | Prioridad | Ref. |
 |---|---|---|---|---|---|
-| INT-30 | CRUD de carreras, planes y materias (con correlativas) | ⬜ | — | P1 | 2.1 |
+| INT-30 | CRUD de carreras, planes y materias (con correlativas) | 🟡 | Claude | P1 | 2.1 — lecturas listas (`/academic/careers`, `/academic/subjects`, `/academic/scope`); falta crear/editar |
 | INT-31 | Ciclos lectivos (crear, activar, cerrar) | ⬜ | — | P1 | |
 | INT-32 | Comisiones: alta, docentes, preceptor, horarios (`CommissionView`) | ⬜ | — | P1 | D3 |
 | INT-33 | Alumnos y docentes (con datos sensibles aparte) + vincular a la cuenta | ⬜ | — | P1 | D9 |
@@ -105,12 +106,12 @@ Referencias: [documentación técnica](INTEGRACION_TECNICA.md) · [ajustes por a
 
 | # | Tarea | Estado | Responsable | Prioridad | Ref. |
 |---|---|---|---|---|---|
-| INT-40 | Clases: `POST /commissions/{id}/sessions`, listar | ⬜ | — | P1 | P1 |
-| INT-41 | Planilla: `GET/PUT /sessions/{id}/attendance`, cerrar y reabrir con auditoría | ⬜ | — | P1 | P5 |
-| INT-42 | Resumen de asistencia calculado en el backend (`AttendanceSummary`) | ⬜ | — | P1 | 2.3 |
-| INT-43 | Justificaciones: cargar, aprobar o rechazar | ⬜ | — | P2 | 2.3 |
+| INT-40 | Clases: `POST /attendance/commissions/{id}/sessions` (abre o reutiliza la del día) | ✅ | Claude | P1 | P1 — 2026-10-27 |
+| INT-41 | Planilla: `GET/PUT /attendance/sessions/{id}` y cierre, con auditoría; + `POST /attendance/by-subject` (Preceptoría) sobre la misma planilla | ✅ | Claude | P1 | P5 — falta "reabrir" (hoy solo Directivos corrige una planilla cerrada) |
+| INT-42 | Resumen de asistencia calculado en el backend (`GET /attendance/summary`) | ✅ | Claude | P1 | 2.3 — usa `minAttendancePercent` y `lateArrivalAbsenceWeight` |
+| INT-43 | Justificaciones: cargar, aprobar o rechazar (`/attendance/justifications`) | ✅ | Claude | P2 | 2.3 |
 | INT-44 | Lecturas del alumno: `/alumnos/me`, `/alumnos/me/asistencias`, `/materias` | ⬜ | — | P1 | J1 |
-| INT-45 | Reporte de asistencia por comisión para Directivos | ⬜ | — | P2 | D4 |
+| INT-45 | Reporte de asistencia por comisión para Directivos | 🟡 | — | P2 | D4 — `GET /attendance?commissionId=` ya sirve de base |
 
 **Criterio de "listo" del circuito:** el profesor toma asistencia, el alumno la ve en su portal,
 Directivos la ve en el reporte, y al recargar no se pierde nada.
@@ -140,8 +141,8 @@ Directivos la ve en el reporte, y al recargar no se pierde nada.
 
 | # | Tarea | Estado | Responsable | Prioridad | Notas |
 |---|---|---|---|---|---|
-| INT-70 | App de Preceptoría en `preceptoria-benjamin/app` (React + Vite + `@shared`) | ⬜ | Benjamín | P2 | Agregarla a `modulesWithApp` y a `vercel.json` |
-| INT-71 | Pantallas: alertas, justificaciones, llegadas tarde, asistencia por comisión | ⬜ | Benjamín | P2 | Depende de INT-43 |
+| INT-70 | App de Preceptoría | ✅ | Claude | P2 | Resuelto con `consolidacion/app` (sección Preceptoría rescatada de la app completa de Julián). Benjamín puede tomarla como base |
+| INT-71 | Pantallas: alertas, justificaciones, llegadas tarde, asistencia por comisión | 🟡 | — | P2 | Asistencia y justificaciones contra la API ✅; falta mostrar "llegada tarde" (hoy se ve como presente) |
 
 ## J. Resto de funciones (etapa 4)
 
@@ -152,6 +153,25 @@ Directivos la ve en el reporte, y al recargar no se pierde nada.
 | INT-82 | Comunicados con destinatarios (`NoticeAudience`) | ⬜ | — | P3 |
 | INT-83 | Agenda / eventos | ⬜ | — | P3 |
 | INT-84 | Exportaciones (CSV/PDF) desde el backend | ⬜ | — | P3 |
+
+## K. Consolidación: Preceptoría, Auxiliares y Centro de Estudiantes
+
+Rescatadas de la app completa de Julián (`julian appcompleta`, 26/10/2026). Ver `consolidacion/README.md`.
+
+| # | Tarea | Estado | Responsable | Prioridad | Notas |
+|---|---|---|---|---|---|
+| INT-86 | App `consolidacion/app` con las 3 secciones, diseño institucional y tarjeta en la landing | ✅ | Claude | P1 | 2026-10-27 |
+| INT-87 | Roles `STAFF` (Auxiliar) y `STUDENT_REP` (Centro) + 10 tablas nuevas (migración aplicada en Neon) | ✅ | Claude | P1 | |
+| INT-88 | API `/staff/*` y `/centro/*` | ✅ | Claude | P1 | Probada contra base local y Neon |
+| INT-89 | Datos de ejemplo removibles (`npm run db:demo-data` / `:off`) | ✅ | Claude | P1 | Cargados en Neon |
+| INT-90 | "Análisis con IA" del preceptor desde el backend (hoy desactivado: exponía la clave de Gemini) | ⬜ | — | P3 | |
+| INT-91 | Asistencia por QR (hoy solo demostración) | ⬜ | — | P3 | Decisión 8 |
+| INT-92 | Login de la app de consolidación | ⬜ | — | P1 | Próximo paso (pedido del 27/10) |
+| INT-93 | Conectar la pantalla de Auxiliares a `/staff/*` | ⬜ | — | P2 | Hoy usa datos en memoria |
+| INT-94 | Conectar la pantalla del Centro a `/centro/*` | ⬜ | — | P2 | Hoy usa datos en memoria |
+| INT-95 | Comunicados, foros, mensajes y agenda del preceptor contra la API | ⬜ | — | P3 | |
+| INT-96 | Carreras reales en la pantalla del preceptor (hoy reconoce solo las de ejemplo: `LEGACY_CAREER`) | ⬜ | — | P1 | Antes de cargar datos reales |
+| INT-97 | Que Directivos, Profesores y los portales de Alumno adopten `shared/design/tokens.css` | ⬜ | cada equipo | P3 | `docs/DISENO_UNIFICADO.md` |
 
 ---
 
@@ -165,3 +185,4 @@ Directivos la ve en el reporte, y al recargar no se pierde nada.
 | 8 | ¿El alumno puede justificar, usar QR o publicar en foros? | INT-59 | Equipo (propuesta: no en la etapa 1) |
 | 9 | Formato de la planilla de importación inicial | INT-35 | Secretaría |
 | 10 | ¿Entra el rol Orientación Escolar? | — | Institución |
+| 11 | Qué hacer con la carpeta original `julian appcompleta` (hoy fuera de git): guardarla en `alumnos-julian/`, o dejarla solo en la máquina de Julián | — | Mauricio / Julián |

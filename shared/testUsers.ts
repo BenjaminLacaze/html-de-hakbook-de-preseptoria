@@ -59,6 +59,22 @@ export const TEST_USERS: readonly TestUser[] = [
     lastName: 'Prueba',
   },
   {
+    app: 'auxiliares',
+    role: 'STAFF',
+    label: 'Auxiliar',
+    email: 'prueba.auxiliar@isfdyt26.edu.ar',
+    firstName: 'Auxiliar',
+    lastName: 'Prueba',
+  },
+  {
+    app: 'centro',
+    role: 'STUDENT_REP',
+    label: 'Centro de Estudiantes',
+    email: 'prueba.centro@isfdyt26.edu.ar',
+    firstName: 'Centro',
+    lastName: 'Prueba',
+  },
+  {
     app: 'alumnos',
     role: 'STUDENT',
     label: 'Alumno/a',
