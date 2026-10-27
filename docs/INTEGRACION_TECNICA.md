@@ -400,6 +400,8 @@ Todo lo que las apps guardaban en memoria y es de interés común ahora vive en 
 **Auxiliares** (tareas, instalaciones, incidencias, mantenimiento) y **Centro** (eventos, foro, comunicados,
 reclamos). Directivos, Profesores y los portales de Alumno tienen la API lista, y cada equipo las conecta (INT-107).
 
+**Publicado en producción el 2026-10-27** (`53af151`); 30 lecturas verificadas en producción.
+
 **Probado:** más de 60 pruebas de API en una base descartable, todas OK. Hubo dos que fallaron, y eran errores
 de la prueba; repetidas con los datos correctos, la API respondió lo esperado. Desde el navegador: Auxiliares carga
 desde la base y completar una tarea llega a la API; el Centro carga desde la base.

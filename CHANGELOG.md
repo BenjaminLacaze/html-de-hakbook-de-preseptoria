@@ -1,5 +1,20 @@
 # CHANGELOG
 
+## 2026-10-27 (noche) — Publicada la API de datos compartidos
+
+**Publicado:** repo de deploy `53af151` = equipo `f4c3986` (commit firmado por `mjsis20052`, sin forzar; antes se verificó
+que lo publicado coincidía con `29ba221`). Vercel: "Deployment has completed".
+
+**Probado en producción (solo lecturas, para no dejar datos de prueba en la base real): 30 de 30 OK.**
+- Login de los 7 usuarios de prueba.
+- `/structure`: 18 comisiones, 60 alumnos, docentes, ciclos; el profesor ve solo sus comisiones y no ve datos sensibles (403).
+- `/records`: comunicados, configuración, eventos, auditoría (directivo sí, preceptor 403).
+- `/me`: el alumno ve sus 3 materias con porcentaje de asistencia, registros y notas; el profesor recibe 403.
+- `/social`: directorio (8 personas), notificaciones, foro, conversaciones.
+- `/staff` y `/centro` (incluidos los participantes de un evento). Landing y `/consolidacion/app/` responden 200.
+
+**No probado en producción:** las escrituras de las rutas nuevas (sí probadas en la base descartable).
+
 ## 2026-10-27 (tarde) — Publicación de la consolidación + datos compartidos por API
 
 **Publicado en producción:** repo de deploy `a8397ee` = equipo `29ba221` (commit firmado por `mjsis20052`, sin forzar;
