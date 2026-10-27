@@ -623,6 +623,8 @@ export interface Observation extends Timestamps {
 export interface NoticeAudience {
   roles?: Role[];
   careerIds?: ID[];
+  /** Años de cursada (ej. anuncio del preceptor a 2.º año). */
+  years?: number[];
   commissionIds?: ID[];
 }
 
@@ -1065,3 +1067,190 @@ export interface RepClaim extends Timestamps {
   response?: string;
   responderId?: ID;
 }
+
+// ============================================================================
+// Datos compartidos entre apps (2026-10-27): directorio, perfil, notas, mensajes,
+// foro académico moderado y notificaciones
+// ============================================================================
+
+/** Entrada del directorio (lo mínimo para mostrar y escribirle a alguien). */
+export interface DirectoryEntry {
+  id: ID; // User.id
+  firstName: string;
+  lastName: string;
+  roles: Role[];
+  avatarUrl?: string;
+  position?: string;
+}
+
+export interface UserProfile {
+  userId: ID;
+  bio?: string;
+  phone?: string;
+  avatarUrl?: string;
+  bannerUrl?: string;
+  accentColor?: string;
+  /** Cargo en el Centro de Estudiantes, si corresponde. */
+  position?: string;
+  links: { id: string; url: string; label: string }[];
+  /** Horarios de atención o consulta. 1 = lunes. */
+  availability: { id: string; dayOfWeek: number; startTime: TimeOfDay; endTime: TimeOfDay }[];
+  updatedAt?: ISODateTime;
+}
+
+export type UpdateProfileRequest = Partial<Omit<UserProfile, 'userId' | 'updatedAt'>>;
+
+export interface UserNote extends Timestamps {
+  id: ID;
+  title: string;
+  content: string;
+  color: string;
+  pinned: boolean;
+}
+
+export interface PrivateMessage {
+  id: ID;
+  senderId: ID;
+  receiverId: ID;
+  text: string;
+  readAt?: ISODateTime;
+  createdAt: ISODateTime;
+}
+
+/** Resumen de una conversación (GET /social/messages/conversations). */
+export interface Conversation {
+  with: DirectoryEntry;
+  lastMessage: PrivateMessage;
+  unreadCount: number;
+}
+
+export const FORUM_THREAD_STATUSES = ['PENDING', 'APPROVED', 'REJECTED', 'NEEDS_REVISION'] as const;
+export type ForumThreadStatus = (typeof FORUM_THREAD_STATUSES)[number];
+export const FORUM_THREAD_STATUS_LABELS: Record<ForumThreadStatus, string> = {
+  PENDING: 'Pendiente de revisión',
+  APPROVED: 'Aprobado',
+  REJECTED: 'Rechazado',
+  NEEDS_REVISION: 'Necesita cambios',
+};
+
+/** Foro académico moderado por Preceptoría (distinto del foro del Centro, RepThread). */
+export interface ForumThread extends Timestamps {
+  id: ID;
+  authorId: ID;
+  authorName: string;
+  title: string;
+  content: string;
+  careerId?: ID;
+  year?: number;
+  commissionId?: ID;
+  status: ForumThreadStatus;
+  rejectionReason?: string;
+  locked: boolean;
+  replyCount: number;
+}
+
+export interface ForumReply {
+  id: ID;
+  threadId: ID;
+  authorId: ID;
+  authorName: string;
+  content: string;
+  createdAt: ISODateTime;
+}
+
+export const NOTIFICATION_TYPES = [
+  'ANNOUNCEMENT',
+  'ABSENCE',
+  'JUSTIFICATION_REQUEST',
+  'JUSTIFICATION_APPROVED',
+  'JUSTIFICATION_REJECTED',
+  'MESSAGE',
+  'FORUM',
+  'EVENT',
+  'CLAIM',
+  'GENERAL',
+] as const;
+export type NotificationType = (typeof NOTIFICATION_TYPES)[number];
+
+export interface AppNotification {
+  id: ID;
+  type: NotificationType;
+  text: string;
+  details?: string;
+  link?: string;
+  readAt?: ISODateTime;
+  createdAt: ISODateTime;
+}
+
+// ============================================================================
+// Portal del alumno: GET /me/*
+// ============================================================================
+
+/** Una materia que cursa el alumno, con su comisión y condición. */
+export interface MySubject {
+  enrollmentId: ID;
+  commission: CommissionView;
+  condition: EnrollmentCondition;
+  attendance: AttendanceSummary;
+}
+
+/** Nota publicada, tal como la ve el alumno. */
+export interface MyGrade {
+  id: ID;
+  subjectName: string;
+  commissionId: ID;
+  type: AssessmentType;
+  instance: number;
+  date: ISODate;
+  value: number | null;
+  absent: boolean;
+  notes?: string;
+}
+
+// ============================================================================
+// Pedidos de escritura de la estructura académica (Directivos / Secretaría)
+// ============================================================================
+
+export interface CreateCareerRequest {
+  code: string;
+  name: string;
+  durationYears: number;
+}
+export interface CreateStudyPlanRequest {
+  careerId: ID;
+  code: string;
+  name: string;
+  startYear: number;
+}
+export interface CreateSubjectRequest {
+  planId: ID;
+  code: string;
+  name: string;
+  year: number;
+  period: AcademicPeriod;
+  weeklyHours?: number;
+  prerequisiteSubjectIds?: ID[];
+}
+export interface CreateCycleRequest {
+  year: number;
+  startDate: ISODate;
+  endDate: ISODate;
+  firstTermEndDate?: ISODate;
+}
+export type CreateTeacherRequest = Omit<Teacher, 'id' | 'userId' | 'status' | keyof Timestamps>;
+
+/** Comunicado institucional (o anuncio del preceptor a su curso). */
+export type CreateNoticeRequest = Pick<Notice, 'title' | 'content' | 'category' | 'audience'> & {
+  publish?: boolean;
+  pinned?: boolean;
+  expiresAt?: ISODateTime;
+};
+
+export type CreateEventRequest = Omit<SchoolEvent, 'id' | 'cycleId' | keyof Timestamps>;
+
+export type UpdateSettingsRequest = Partial<
+  Pick<
+    InstitutionSettings,
+    'name' | 'shortName' | 'cue' | 'city' | 'district' | 'minAttendancePercent' | 'lateArrivalAbsenceWeight' | 'attendanceRiskThresholdPercent'
+  >
+>;

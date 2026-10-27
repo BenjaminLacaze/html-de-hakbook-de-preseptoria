@@ -21,7 +21,7 @@ import {
 import { audit } from '../audit.js';
 import { requireAuth, requireRoles, type AppEnv } from '../auth/middleware.js';
 import { prisma } from '../db.js';
-import { notFound } from '../errors.js';
+import { AppError, notFound } from '../errors.js';
 import type { Prisma } from '../generated/prisma/client.js';
 import { parseDate, toISO, toISODate } from '../scope.js';
 import { parseBody } from '../validation.js';
@@ -118,10 +118,43 @@ export const staffRoutes = new Hono<AppEnv>()
     return c.json(taskDTO(u));
   })
 
+  .delete('/tasks/:id', async (c) => {
+    const r = await prisma.staffTask.deleteMany({ where: { id: c.req.param('id') } });
+    if (!r.count) throw notFound('No existe la tarea.');
+    return c.body(null, 204);
+  })
+
   // ---------------------------------------------------------- instalaciones
   .get('/installations', async (c) => {
     const rows = await prisma.installation.findMany({ orderBy: { name: 'asc' } });
     return c.json(rows.map(installationDTO));
+  })
+  .post('/installations', async (c) => {
+    const user = c.get('user');
+    const b = await parseBody(
+      c,
+      z.object({
+        name: z.string().trim().min(1).max(120),
+        status: z.enum(INSTALLATION_STATUSES).default('OK'),
+        layout: z.object({ col: z.number().int().min(1), row: z.number().int().min(1), colSpan: z.number().int().min(1), rowSpan: z.number().int().min(1) }),
+        nextTask: z.string().max(200).optional(),
+        notes: z.string().max(1000).optional(),
+      }),
+    );
+    const exists = await prisma.installation.findUnique({ where: { name: b.name } });
+    if (exists) throw new AppError('CONFLICT', 'Ya existe un sector con ese nombre.');
+    const i = await prisma.installation.create({ data: b });
+    await audit(c, user, { action: 'CREATE', entity: 'Installation', entityId: i.id, summary: `Sector: ${i.name}` });
+    return c.json(installationDTO(i), 201);
+  })
+  .delete('/installations/:id', requireRoles('DIRECTOR', 'ADMINISTRATIVE', 'SUPER_ADMIN', 'STAFF'), async (c) => {
+    const user = c.get('user');
+    const i = await prisma.installation.findUnique({ where: { id: c.req.param('id') }, include: { _count: { select: { incidents: true } } } });
+    if (!i) throw notFound('No existe el sector.');
+    if (i._count.incidents > 0) throw new AppError('CONFLICT', 'El sector tiene incidencias registradas: no se puede borrar.');
+    await prisma.installation.delete({ where: { id: i.id } });
+    await audit(c, user, { action: 'DELETE', entity: 'Installation', entityId: i.id, summary: `Sector eliminado: ${i.name}` });
+    return c.body(null, 204);
   })
   .patch('/installations/:id', async (c) => {
     const user = c.get('user');
@@ -129,6 +162,8 @@ export const staffRoutes = new Hono<AppEnv>()
       c,
       z
         .object({
+          name: z.string().trim().min(1).max(120),
+          layout: z.object({ col: z.number().int().min(1), row: z.number().int().min(1), colSpan: z.number().int().min(1), rowSpan: z.number().int().min(1) }),
           status: z.enum(INSTALLATION_STATUSES),
           nextTask: z.string().max(200).nullable(),
           notes: z.string().max(1000).nullable(),

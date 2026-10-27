@@ -187,6 +187,14 @@ model User {
   repClaims        RepClaim[]            @relation("ClaimAuthor")
   repEvents        RepEventParticipant[]
 
+  profile          UserProfile?
+  notes            UserNote[]
+  messagesSent     PrivateMessage[] @relation("MessagesSent")
+  messagesReceived PrivateMessage[] @relation("MessagesReceived")
+  forumThreads     ForumThread[]    @relation("ForumAuthor")
+  forumReplies     ForumReply[]     @relation("ForumReplyAuthor")
+  notifications    Notification[]
+
   @@map("users")
 }
 
@@ -797,4 +805,132 @@ model RepClaim {
 
   @@index([status])
   @@map("rep_claims")
+}
+
+// ============================================================================
+// Datos compartidos entre apps (perfil, notas, mensajes, foro, notificaciones)
+// ============================================================================
+
+/// Perfil visible de cada cuenta (lo ven las otras apps). Los datos sensibles del alumno
+/// siguen en student_sensitive_data.
+model UserProfile {
+  userId       String   @id @db.Uuid
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bio          String?
+  phone        String?
+  avatarUrl    String?
+  bannerUrl    String?
+  accentColor  String?
+  /// Cargo en el Centro de Estudiantes, si corresponde
+  position     String?
+  /// [{ id, url, label }]
+  links        Json     @default("[]")
+  /// [{ id, dayOfWeek, startTime, endTime }] — horarios de atención/consulta
+  availability Json     @default("[]")
+  updatedAt    DateTime @updatedAt
+
+  @@map("user_profiles")
+}
+
+/// Notas personales (solo las ve su dueño).
+model UserNote {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  content   String
+  color     String   @default("yellow")
+  pinned    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@map("user_notes")
+}
+
+model PrivateMessage {
+  id         String    @id @default(uuid()) @db.Uuid
+  senderId   String    @db.Uuid
+  sender     User      @relation("MessagesSent", fields: [senderId], references: [id], onDelete: Cascade)
+  receiverId String    @db.Uuid
+  receiver   User      @relation("MessagesReceived", fields: [receiverId], references: [id], onDelete: Cascade)
+  text       String
+  readAt     DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@index([senderId, receiverId])
+  @@index([receiverId, readAt])
+  @@map("private_messages")
+}
+
+enum ForumThreadStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  NEEDS_REVISION
+}
+
+/// Foro académico moderado (lo modera Preceptoría). El del Centro de Estudiantes es rep_threads.
+model ForumThread {
+  id              String            @id @default(uuid()) @db.Uuid
+  authorId        String            @db.Uuid
+  author          User              @relation("ForumAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  title           String
+  content         String
+  careerId        String?           @db.Uuid
+  year            Int?
+  commissionId    String?           @db.Uuid
+  status          ForumThreadStatus @default(PENDING)
+  rejectionReason String?
+  locked          Boolean           @default(false)
+  moderatedBy     String?           @db.Uuid
+  moderatedAt     DateTime?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  replies         ForumReply[]
+
+  @@index([status])
+  @@map("forum_threads")
+}
+
+model ForumReply {
+  id        String      @id @default(uuid()) @db.Uuid
+  threadId  String      @db.Uuid
+  thread    ForumThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  authorId  String      @db.Uuid
+  author    User        @relation("ForumReplyAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  content   String
+  createdAt DateTime    @default(now())
+
+  @@map("forum_replies")
+}
+
+enum NotificationType {
+  ANNOUNCEMENT
+  ABSENCE
+  JUSTIFICATION_REQUEST
+  JUSTIFICATION_APPROVED
+  JUSTIFICATION_REJECTED
+  MESSAGE
+  FORUM
+  EVENT
+  CLAIM
+  GENERAL
+}
+
+/// Avisos por usuario. Los genera el backend (ej. al aprobar una justificación).
+model Notification {
+  id        String           @id @default(uuid()) @db.Uuid
+  userId    String           @db.Uuid
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      NotificationType
+  text      String
+  details   String?
+  /// Ruta o recurso relacionado (ej. "/attendance/justifications/<id>")
+  link      String?
+  readAt    DateTime?
+  createdAt DateTime         @default(now())
+
+  @@index([userId, readAt])
+  @@map("notifications")
 }

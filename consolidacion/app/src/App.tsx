@@ -15,6 +15,8 @@ import { StudentRepDashboard } from './legacy/components/StudentRepDashboard';
 import { CLASS_SCHEDULE, SUBJECTS } from './legacy/constants';
 import { ForumThreadStatus, Role, type StudentRepClaim, type User } from './legacy/types';
 import { useApiAttendance } from './data/useApiAttendance';
+import { useApiCentro } from './data/useApiCentro';
+import { useApiStaff } from './data/useApiStaff';
 import { useLegacyStore, type LegacyStore } from './data/useLegacyStore';
 
 export const USE_API = import.meta.env.VITE_USE_MOCK === 'false';
@@ -117,6 +119,8 @@ const SectionView: React.FC<{ section: Section; store: LegacyStore; me: AuthMe |
   // Usuario de ejemplo de esa sección (modo demo). En modo API, el preceptor se arma desde la sesión.
   const demoUser = store.users.find((u) => u.role === def.legacyRole) as User;
   const api = useApiAttendance(section === 'preceptoria' && USE_API ? me : null);
+  const staffApi = useApiStaff(section === 'auxiliares' && USE_API ? me : null);
+  const centroApi = useApiCentro(section === 'centro' && USE_API ? me : null);
 
   if (section === 'preceptoria') {
     if (USE_API && api.state !== 'ready') {
@@ -197,6 +201,25 @@ const SectionView: React.FC<{ section: Section; store: LegacyStore; me: AuthMe |
   }
 
   if (section === 'auxiliares') {
+    // Modo API: tareas, instalaciones, incidencias y mantenimiento se leen y guardan en la base.
+    if (USE_API) {
+      if (staffApi.state !== 'ready') {
+        return <CenteredMessage title={staffApi.state === 'error' ? 'No se pudieron cargar los datos' : 'Cargando…'} detail={staffApi.error} />;
+      }
+      return (
+        <StaffDashboard
+          {...store.commonProps(staffApi.user!, onLeave)}
+          dailyTasks={staffApi.tasks!.list}
+          onUpdateTasks={staffApi.tasks!.update}
+          maintenanceHistory={staffApi.maintenance!.list}
+          onUpdateMaintenanceHistory={staffApi.maintenance!.update}
+          installations={staffApi.installations!.list}
+          onUpdateInstallations={staffApi.installations!.update}
+          incidents={staffApi.incidents!.list}
+          onUpdateIncidents={staffApi.incidents!.update}
+        />
+      );
+    }
     return (
       <StaffDashboard
         {...store.commonProps(demoUser, onLeave)}
@@ -212,6 +235,29 @@ const SectionView: React.FC<{ section: Section; store: LegacyStore; me: AuthMe |
     );
   }
 
+  // Centro de Estudiantes. Modo API: eventos, foro, comunicados y reclamos en la base.
+  if (USE_API) {
+    if (centroApi.state !== 'ready') {
+      return <CenteredMessage title={centroApi.state === 'error' ? 'No se pudieron cargar los datos' : 'Cargando…'} detail={centroApi.error} />;
+    }
+    return (
+      <StudentRepDashboard
+        {...store.commonProps(centroApi.user!, onLeave)}
+        allUsers={centroApi.allUsers!}
+        studentRepEvents={centroApi.events!.list}
+        onUpdateStudentRepEvents={centroApi.events!.update}
+        studentRepThreads={centroApi.threads!.list}
+        onUpdateStudentRepThreads={centroApi.threads!.update}
+        studentRepReplies={centroApi.replies!.list}
+        onUpdateStudentRepReplies={centroApi.replies!.update}
+        studentRepAnnouncements={centroApi.announcements!.list}
+        onUpdateStudentRepAnnouncements={centroApi.announcements!.update}
+        studentRepClaims={centroApi.claims!.list}
+        onUpdateStudentRepClaims={centroApi.claims!.update}
+        eventParticipants={centroApi.participants!}
+      />
+    );
+  }
   return (
     <StudentRepDashboard
       {...store.commonProps(demoUser, onLeave)}

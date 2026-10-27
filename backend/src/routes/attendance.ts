@@ -28,6 +28,8 @@ import { prisma } from '../db.js';
 import { AppError, forbidden, notFound } from '../errors.js';
 import type { Prisma } from '../generated/prisma/client.js';
 import { commissionScope, hasRole, isManagement, parseDate, toISO, toISODate } from '../scope.js';
+import { notify } from '../notify.js';
+import { attendanceSummary } from '../summary.js';
 import { parseBody } from '../validation.js';
 
 const READERS = ['SUPER_ADMIN', 'DIRECTOR', 'ADMINISTRATIVE', 'PRECEPTOR', 'TEACHER'] as const;
@@ -220,48 +222,7 @@ export const attendanceRoutes = new Hono<AppEnv>()
     const visible = hasRole(user, 'STUDENT') && studentId === user.studentId ? 'all' : await visibleStudentIds(user);
     if (visible !== 'all' && !visible.includes(studentId)) throw notFound();
 
-    const settings = await prisma.institutionSettings.findUnique({ where: { id: 1 } });
-    const min = settings?.minAttendancePercent ?? 75;
-    const lateWeight = Number(settings?.lateArrivalAbsenceWeight ?? 0);
-    const riskAt = settings?.attendanceRiskThresholdPercent ?? 80;
-
-    const records = await prisma.attendanceRecord.findMany({
-      where: { studentId, ...(commissionId ? { session: { commissionId } } : {}) },
-      include: { session: true },
-    });
-    const justs = records.length
-      ? await justificationsFor([studentId], new Date(Math.min(...records.map((r) => r.session.date.getTime()))), new Date())
-      : [];
-    const isJustified = (d: Date) => justs.some((j) => j.status === 'APPROVED' && j.fromDate <= d && j.toDate >= d);
-
-    let present = 0, absent = 0, late = 0, justified = 0;
-    for (const r of records) {
-      if (r.status === 'PRESENT') present++;
-      else if (r.status === 'LATE') late++;
-      else if (isJustified(r.session.date)) justified++;
-      else absent++;
-    }
-    const total = records.length;
-    // Las faltas justificadas no cuentan en contra; la llegada tarde descuenta lateArrivalAbsenceWeight.
-    const counted = total - justified;
-    const attendedUnits = present + late * (1 - lateWeight);
-    const percentage = counted > 0 ? Math.round((attendedUnits / counted) * 1000) / 10 : 100;
-    const allowedAbsences = Math.floor(counted * (1 - min / 100));
-    const usedAbsences = absent + late * lateWeight;
-    const summary: AttendanceSummary = {
-      studentId,
-      commissionId,
-      totalSessions: total,
-      presentCount: present,
-      absentCount: absent,
-      lateCount: late,
-      justifiedAbsenceCount: justified,
-      percentage,
-      minimumRequired: min,
-      risk: percentage < min ? 'BELOW_MINIMUM' : percentage < riskAt ? 'AT_RISK' : 'OK',
-      remainingAbsencesAllowed: Math.max(0, Math.floor(allowedAbsences - usedAbsences)),
-    };
-    return c.json(summary);
+    return c.json(await attendanceSummary(studentId, commissionId));
   })
 
   // ---------------------------------------------- Profesores: comisión + clase
@@ -382,6 +343,13 @@ export const attendanceRoutes = new Hono<AppEnv>()
     const updated = await prisma.justification.update({
       where: { id: j.id },
       data: { status: body.status, reviewNotes: body.reviewNotes, reviewedBy: user.id, reviewedAt: new Date() },
+    });
+    const st = await prisma.student.findUnique({ where: { id: j.studentId }, select: { userId: true } });
+    await notify([st?.userId], {
+      type: body.status === 'APPROVED' ? 'JUSTIFICATION_APPROVED' : 'JUSTIFICATION_REJECTED',
+      text: body.status === 'APPROVED' ? 'Te aprobaron una justificación' : 'Te rechazaron una justificación',
+      details: body.reviewNotes,
+      link: '/me/justifications',
     });
     await audit(c, user, {
       action: 'STATUS_CHANGE',

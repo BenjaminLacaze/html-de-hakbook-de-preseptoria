@@ -9,8 +9,8 @@ Publicada en: `/consolidacion/app/` (tarjeta "Preceptoría, Auxiliares y Centro 
 | Sección | Rol que entra | Qué tiene | Estado de integración |
 |---|---|---|---|
 | **Preceptoría** | Preceptor/a | Toma de asistencia por materia y fecha, justificaciones, historial, alumnos en riesgo, comunicados, foros, agenda | ✅ **Asistencia y justificaciones contra la API** (misma planilla que Profesores). El resto, en memoria |
-| **Auxiliares** | Auxiliar | Tareas del día, plano de instalaciones, incidencias, mantenimiento, turnos | 🟡 API lista (`/staff/*`); la pantalla todavía usa datos de ejemplo en memoria |
-| **Centro de Estudiantes** | Centro de Estudiantes | Eventos e inscripción, comunicados, foro de la comunidad, reclamos | 🟡 API lista (`/centro/*`); la pantalla todavía usa datos de ejemplo en memoria |
+| **Auxiliares** | Auxiliar | Tareas del día, plano de instalaciones, incidencias, mantenimiento, turnos | ✅ Tareas, instalaciones, incidencias y mantenimiento contra la API (`useApiStaff.ts`). Turnos, en memoria |
+| **Centro de Estudiantes** | Centro de Estudiantes | Eventos e inscripción, comunicados, foro de la comunidad, reclamos | ✅ Eventos, foro, comunicados y reclamos contra la API (`useApiCentro.ts`) |
 
 ## Cómo funciona
 
@@ -19,7 +19,10 @@ consolidacion/app/src/
 ├── App.tsx                  elige la sección (demo) o usa la sesión (API)
 ├── data/
 │   ├── useLegacyStore.ts    estado en memoria (igual que la App original de Julián)
-│   └── useApiAttendance.ts  "traductor" entre la pantalla de Preceptoría y la API
+│   ├── useApiAttendance.ts  traductor Preceptoría ↔ API
+│   ├── useApiStaff.ts       traductor Auxiliares ↔ API
+│   ├── useApiCentro.ts      traductor Centro ↔ API
+│   └── sync.ts              herramientas comunes (ids, diferencias de listas)
 ├── legacy/                  pantallas rescatadas, casi sin cambios (ver abajo)
 └── styles.css               diseño unificado + tema original + tema "institucional"
 ```
@@ -81,9 +84,8 @@ Las pantallas de inicio de sesión de esta app son el próximo paso.
 
 ## Pendiente (backlog)
 
-- INT-93: conectar Auxiliares a `/staff/*`.
-- INT-94: conectar Centro de Estudiantes a `/centro/*`.
-- INT-95: comunicados, foros, mensajes y agenda del preceptor siguen en memoria.
+- INT-95: comunicados, foros, mensajes y agenda del preceptor siguen en memoria (la API ya existe: `/records/notices`, `/social/*`).
+- INT-106: perfil, notas y notificaciones de las tres secciones siguen en memoria (API lista en `/social/*`).
 - INT-96: la pantalla del preceptor reconoce solo las carreras de ejemplo (`LEGACY_CAREER` en
   `useApiAttendance.ts`); con carreras reales hay que traer la lista desde la API.
 - INT-90: análisis con IA desde el backend.

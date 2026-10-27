@@ -8,6 +8,10 @@ import { academicRoutes } from './routes/academic.js';
 import { attendanceRoutes } from './routes/attendance.js';
 import { authRoutes } from './routes/auth.js';
 import { centroRoutes } from './routes/centro.js';
+import { meRoutes } from './routes/me.js';
+import { recordsRoutes } from './routes/records.js';
+import { socialRoutes } from './routes/social.js';
+import { structureRoutes } from './routes/structure.js';
 import { staffRoutes } from './routes/staff.js';
 import { userRoutes } from './routes/users.js';
 
@@ -37,6 +41,10 @@ app.route('/academic', academicRoutes);
 app.route('/attendance', attendanceRoutes);
 app.route('/staff', staffRoutes);
 app.route('/centro', centroRoutes);
+app.route('/structure', structureRoutes);
+app.route('/records', recordsRoutes);
+app.route('/me', meRoutes);
+app.route('/social', socialRoutes);
 
 app.notFound((c) => c.json(new AppError('NOT_FOUND', 'Ruta inexistente.').toBody(c.get('traceId')), 404));
 

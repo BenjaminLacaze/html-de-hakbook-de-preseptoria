@@ -95,7 +95,7 @@ Fuente única: **`shared/types.ts`** (lo que ven las apps) ↔ **`backend/prisma
 - IDs: UUID generados por la base.
 - Fechas: `YYYY-MM-DD`. Fecha y hora: ISO 8601. Zona: `America/Argentina/Buenos_Aires`.
 
-**Tablas (33; en la sección 12, las 10 que se sumaron el 2026-10-27):**
+**Tablas (39; en la sección 12, las 10 que se sumaron el 2026-10-27):**
 
 | Dominio | Tablas |
 |---|---|
@@ -370,3 +370,36 @@ los borra (todo lo marcado `demo`). Asignaciones: `prueba.preceptor` → carrera
 **Ojo:** mientras no se publique esta versión, la API publicada (la anterior) **falla con 500** al
 listar cuentas y en el ingreso de Auxiliar y Centro, porque en la base ya existen esos roles nuevos.
 
+## 13. Datos compartidos: todo consultable por API (2026-10-27, tarde)
+
+Todo lo que las apps guardaban en memoria y es de interés común ahora vive en la base y se consulta por API.
+
+**Migración `20261027154747_datos_compartidos`** (solo agrega, aplicada en Neon): `user_profiles`,
+`user_notes`, `private_messages`, `forum_threads`, `forum_replies`, `notifications`. Total: **39 tablas**.
+
+| Grupo | Rutas | Quién |
+|---|---|---|
+| Estructura y personas | `/structure/careers`, `/plans`, `/subjects`, `/cycles`, `/commissions`, `/students` (+ `/sensitive`), `/teachers`, `/enrollments` | Escriben Directivo, Secretaría y Superadmin; Preceptor y Profesor leen lo suyo |
+| Registros | `/records/grades` (+ `/publish`), `/records/observations`, `/records/notices`, `/records/events`, `/records/audit`, `/records/settings` | Notas: el docente de la comisión. Comunicados: gestión a todos; preceptor solo a sus carreras o comisiones |
+| Portal del alumno | `/me/student`, `/me/subjects`, `/me/attendance`, `/me/summary`, `/me/grades`, `/me/justifications` | Alumno (y Centro). Siempre lo propio, resuelto desde la sesión |
+| Compartido | `/social/directory`, `/social/profiles`, `/social/notes`, `/social/messages`, `/social/forum`, `/social/notifications` | Cualquier persona con sesión |
+| Auxiliares | además: `POST`/`DELETE /staff/installations`, `DELETE /staff/tasks/{id}` | |
+| Centro | además: `GET /centro/events/{id}/participants` | Centro |
+
+**Reglas que aplica la API:**
+
+- Datos sensibles del alumno: solo Directivo, Secretaría, Superadmin y Preceptor (este último, de sus alumnos).
+- Foro académico: lo que publica un alumno queda **pendiente** hasta que Preceptoría lo aprueba. Si el autor lo
+  edita, vuelve a revisión. Un tema cerrado no admite respuestas.
+- Notas: solo las carga el docente de esa comisión (o Directivos). El alumno ve solo las **publicadas**.
+- El porcentaje de asistencia sale de una sola función (`backend/src/summary.ts`), la misma para el preceptor y el alumno.
+- Notificaciones automáticas al resolver una justificación, responder un reclamo, recibir un mensaje, moderar o
+  responder un tema del foro, y publicar notas.
+
+**Pantallas conectadas** (app de consolidación, modo API): Preceptoría (asistencia y justificaciones),
+**Auxiliares** (tareas, instalaciones, incidencias, mantenimiento) y **Centro** (eventos, foro, comunicados,
+reclamos). Directivos, Profesores y los portales de Alumno tienen la API lista, y cada equipo las conecta (INT-107).
+
+**Probado:** más de 60 pruebas de API en una base descartable, todas OK. Hubo dos que fallaron, y eran errores
+de la prueba; repetidas con los datos correctos, la API respondió lo esperado. Desde el navegador: Auxiliares carga
+desde la base y completar una tarea llega a la API; el Centro carga desde la base.

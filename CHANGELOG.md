@@ -1,5 +1,46 @@
 # CHANGELOG
 
+## 2026-10-27 (tarde) — Publicación de la consolidación + datos compartidos por API
+
+**Publicado en producción:** repo de deploy `a8397ee` = equipo `29ba221` (commit firmado por `mjsis20052`, sin forzar;
+antes se verificó que lo publicado coincidía con `1c28474`). En producción: los 7 usuarios de prueba entran; lecturas de
+cada rol OK; quedaron resueltos los 500 de la versión anterior (listado de cuentas y login de Auxiliar y Centro); landing
+con 6 tarjetas y el diseño unificado; `/consolidacion/app/` abre sin errores.
+
+**Pedido:** crear los campos en la base y unificar todo para que los datos se compartan y se consulten por API.
+
+**Base** — migración `20261027154747_datos_compartidos` (solo agrega; **aplicada en Neon**): `user_profiles`, `user_notes`,
+`private_messages`, `forum_threads`, `forum_replies`, `notifications`. Total: 39 tablas.
+
+**API nueva**
+- `/structure/*`: carreras, planes, materias (con correlativas), ciclos, comisiones, alumnos (+ datos sensibles aparte),
+  docentes e inscripciones.
+- `/records/*`: notas (carga, corrección, publicación), observaciones, comunicados con destinatarios, eventos, auditoría y
+  configuración institucional.
+- `/me/*`: portal del alumno (ficha, materias con asistencia, registros, resumen, notas publicadas, justificaciones).
+- `/social/*`: directorio, perfil, notas personales, mensajes, foro académico moderado y notificaciones.
+- Auxiliares: alta y baja de sectores, baja de tareas. Centro: participantes de un evento.
+- Notificaciones automáticas (`backend/src/notify.ts`); cálculo único de asistencia (`backend/src/summary.ts`).
+- `shared/types.ts`: tipos de todo lo nuevo; `NoticeAudience.years`.
+
+**App de consolidación:** Auxiliares (`useApiStaff.ts`) y Centro (`useApiCentro.ts`) leen y guardan en la API en modo API;
+herramientas comunes en `sync.ts`.
+
+**Probado**
+- Base descartable: más de 60 pruebas de API. Fallaron 2, y eran errores de la prueba: en una, la comisión creada sí era
+  del profesor; en la otra, un título de 1 letra se rechazaba antes por dato inválido. Repetidas con datos correctos: 403 y
+  404, como corresponde.
+- Navegador: Auxiliares carga desde la base y "Completar" tarea llega a la API (`PATCH` 200, sin recargas en bucle). El
+  Centro carga desde la base (último comunicado y eventos).
+- Neon: `migrate deploy` OK, "Database schema is up to date".
+
+**No probado:** las acciones del Centro hechas desde los botones de su pantalla (solo por API); la API nueva en producción
+(esta versión todavía no está publicada).
+
+**Pendiente:** conectar Directivos, Profesores y portales de Alumno a las rutas nuevas (INT-107); perfil, notas y
+notificaciones de las pantallas rescatadas (INT-106); planificaciones, material didáctico y turnos de auxiliares (INT-108,
+INT-109).
+
 ## 2026-10-27 — Consolidación: Preceptoría, Auxiliares y Centro + asistencia unificada + diseño común
 
 **Pedido:** rescatar Preceptoría, Centro de Estudiantes y Auxiliares de la app completa de Julián, integrarlas a la

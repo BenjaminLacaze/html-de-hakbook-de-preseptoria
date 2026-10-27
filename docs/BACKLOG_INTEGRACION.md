@@ -1,6 +1,6 @@
 # Backlog de la integración
 
-**Actualizado:** 2026-10-27. **Cómo se usa:** cuando alguien empieza una tarea, pone su nombre en
+**Actualizado:** 2026-10-27 (tarde: datos compartidos). **Cómo se usa:** cuando alguien empieza una tarea, pone su nombre en
 *Responsable* y la pasa a 🟡. Cuando termina, la pasa a ✅ y anota el cambio en el `CHANGELOG.md`.
 Las tareas nuevas van al final de su bloque, con el número siguiente.
 
@@ -21,12 +21,13 @@ Referencias: [documentación técnica](INTEGRACION_TECNICA.md) · [ajustes por a
 | C. Login y cuentas | 7 | 1 | 1 |
 | D. Publicación de la API | 3 | 0 | 0 |
 | E. Seguridad y operación | 0 | 0 | 7 |
-| F. API de estructura académica | 0 | 1 | 5 |
-| G. API de asistencia (primer circuito real) | 4 | 1 | 1 |
+| F. API de estructura académica | 5 | 0 | 1 |
+| G. API de asistencia (primer circuito real) | 5 | 1 | 0 |
 | H. Integración de cada app | 0 | 1 | 15 |
 | I. Preceptoría | 1 | 1 | 0 |
-| J. Resto de funciones (etapa 4) | 0 | 0 | 5 |
-| K. Consolidación (Auxiliares y Centro) | 4 | 0 | 8 |
+| J. Resto de funciones (etapa 4) | 4 | 0 | 1 |
+| K. Consolidación (Auxiliares y Centro) | 5 | 2 | 5 |
+| L. Datos compartidos entre apps | 6 | 0 | 4 |
 
 ---
 
@@ -95,11 +96,11 @@ Referencias: [documentación técnica](INTEGRACION_TECNICA.md) · [ajustes por a
 
 | # | Tarea | Estado | Responsable | Prioridad | Ref. |
 |---|---|---|---|---|---|
-| INT-30 | CRUD de carreras, planes y materias (con correlativas) | 🟡 | Claude | P1 | 2.1 — lecturas listas (`/academic/careers`, `/academic/subjects`, `/academic/scope`); falta crear/editar |
-| INT-31 | Ciclos lectivos (crear, activar, cerrar) | ⬜ | — | P1 | |
-| INT-32 | Comisiones: alta, docentes, preceptor, horarios (`CommissionView`) | ⬜ | — | P1 | D3 |
-| INT-33 | Alumnos y docentes (con datos sensibles aparte) + vincular a la cuenta | ⬜ | — | P1 | D9 |
-| INT-34 | Inscripciones a comisiones | ⬜ | — | P1 | |
+| INT-30 | CRUD de carreras, planes y materias (con correlativas) | ✅ | Claude | P1 | 2.1 — `/structure/careers`, `/plans`, `/subjects` (2026-10-27) |
+| INT-31 | Ciclos lectivos (crear, activar, cerrar) | ✅ | Claude | P1 | `/structure/cycles`: al activar uno se cierra el vigente |
+| INT-32 | Comisiones: alta, docentes, preceptor, horarios (`CommissionView`) | ✅ | Claude | P1 | D3 — `/structure/commissions` |
+| INT-33 | Alumnos y docentes (con datos sensibles aparte) + vincular a la cuenta | ✅ | Claude | P1 | D9 — `/structure/students` (+ `/sensitive`), `/structure/teachers`; se vincula con `userId` |
+| INT-34 | Inscripciones a comisiones | ✅ | Claude | P1 | `/structure/enrollments` (condición la cambian gestión y el docente) |
 | INT-35 | Importación CSV de carreras, materias, alumnos y docentes | ⬜ | — | P1 | Decisión 9: nunca cargar los `mockData` |
 
 ## G. API de asistencia — primer circuito real (etapa 2)
@@ -110,7 +111,7 @@ Referencias: [documentación técnica](INTEGRACION_TECNICA.md) · [ajustes por a
 | INT-41 | Planilla: `GET/PUT /attendance/sessions/{id}` y cierre, con auditoría; + `POST /attendance/by-subject` (Preceptoría) sobre la misma planilla | ✅ | Claude | P1 | P5 — falta "reabrir" (hoy solo Directivos corrige una planilla cerrada) |
 | INT-42 | Resumen de asistencia calculado en el backend (`GET /attendance/summary`) | ✅ | Claude | P1 | 2.3 — usa `minAttendancePercent` y `lateArrivalAbsenceWeight` |
 | INT-43 | Justificaciones: cargar, aprobar o rechazar (`/attendance/justifications`) | ✅ | Claude | P2 | 2.3 |
-| INT-44 | Lecturas del alumno: `/alumnos/me`, `/alumnos/me/asistencias`, `/materias` | ⬜ | — | P1 | J1 |
+| INT-44 | Lecturas del alumno | ✅ | Claude | P1 | J1 — `/me/student`, `/me/subjects`, `/me/attendance`, `/me/summary`, `/me/grades`, `/me/justifications` |
 | INT-45 | Reporte de asistencia por comisión para Directivos | 🟡 | — | P2 | D4 — `GET /attendance?commissionId=` ya sirve de base |
 
 **Criterio de "listo" del circuito:** el profesor toma asistencia, el alumno la ve en su portal,
@@ -148,10 +149,10 @@ Directivos la ve en el reporte, y al recargar no se pierde nada.
 
 | # | Tarea | Estado | Responsable | Prioridad |
 |---|---|---|---|---|
-| INT-80 | Calificaciones (carga, publicación al alumno) | ⬜ | — | P3 |
-| INT-81 | Observaciones pedagógicas | ⬜ | — | P3 |
-| INT-82 | Comunicados con destinatarios (`NoticeAudience`) | ⬜ | — | P3 |
-| INT-83 | Agenda / eventos | ⬜ | — | P3 |
+| INT-80 | Calificaciones (carga, publicación al alumno) | ✅ | Claude | P3 — API `/records/grades` (falta conectar pantallas) |
+| INT-81 | Observaciones pedagógicas | ✅ | Claude | P3 — API `/records/observations` |
+| INT-82 | Comunicados con destinatarios (`NoticeAudience`) | ✅ | Claude | P3 — API `/records/notices` (carrera, año, comisión o rol) |
+| INT-83 | Agenda / eventos | ✅ | Claude | P3 — API `/records/events` |
 | INT-84 | Exportaciones (CSV/PDF) desde el backend | ⬜ | — | P3 |
 
 ## K. Consolidación: Preceptoría, Auxiliares y Centro de Estudiantes
@@ -167,11 +168,26 @@ Rescatadas de la app completa de Julián (`julian appcompleta`, 26/10/2026). Ver
 | INT-90 | "Análisis con IA" del preceptor desde el backend (hoy desactivado: exponía la clave de Gemini) | ⬜ | — | P3 | |
 | INT-91 | Asistencia por QR (hoy solo demostración) | ⬜ | — | P3 | Decisión 8 |
 | INT-92 | Login de la app de consolidación | ⬜ | — | P1 | Próximo paso (pedido del 27/10) |
-| INT-93 | Conectar la pantalla de Auxiliares a `/staff/*` | ⬜ | — | P2 | Hoy usa datos en memoria |
-| INT-94 | Conectar la pantalla del Centro a `/centro/*` | ⬜ | — | P2 | Hoy usa datos en memoria |
-| INT-95 | Comunicados, foros, mensajes y agenda del preceptor contra la API | ⬜ | — | P3 | |
+| INT-93 | Conectar la pantalla de Auxiliares a `/staff/*` | ✅ | Claude | P2 | `useApiStaff.ts`; probado desde la pantalla (completar tarea) |
+| INT-94 | Conectar la pantalla del Centro a `/centro/*` | 🟡 | Claude | P2 | `useApiCentro.ts`: carga desde la base verificada; las acciones se probaron por API, no con los botones de la pantalla |
+| INT-95 | Comunicados, foros, mensajes y agenda del preceptor contra la API | 🟡 | — | P3 | API lista (`/records/notices`, `/social/forum`, `/social/messages`); falta conectar la pantalla |
 | INT-96 | Carreras reales en la pantalla del preceptor (hoy reconoce solo las de ejemplo: `LEGACY_CAREER`) | ⬜ | — | P1 | Antes de cargar datos reales |
 | INT-97 | Que Directivos, Profesores y los portales de Alumno adopten `shared/design/tokens.css` | ⬜ | cada equipo | P3 | `docs/DISENO_UNIFICADO.md` |
+
+## L. Datos compartidos entre apps (perfil, notas, mensajes, foro, notificaciones)
+
+| # | Tarea | Estado | Responsable | Prioridad | Notas |
+|---|---|---|---|---|---|
+| INT-100 | Tablas `user_profiles`, `user_notes`, `private_messages`, `forum_threads`, `forum_replies`, `notifications` (aplicadas en Neon) | ✅ | Claude | P1 | Migración `datos_compartidos` |
+| INT-101 | API `/social/*`: directorio, perfil, notas, mensajes, foro moderado, notificaciones | ✅ | Claude | P1 | |
+| INT-102 | Notificaciones automáticas: justificación resuelta, respuesta a reclamo, mensaje, foro, notas publicadas | ✅ | Claude | P2 | |
+| INT-103 | API de escritura de estructura y personas (`/structure/*`) | ✅ | Claude | P1 | Ver bloque F |
+| INT-104 | API de notas, observaciones, comunicados, eventos, auditoría y configuración (`/records/*`) | ✅ | Claude | P2 | Ver bloque J |
+| INT-105 | Portal del alumno (`/me/*`) | ✅ | Claude | P1 | Ver INT-44 |
+| INT-106 | Conectar perfil, notas y notificaciones de las pantallas rescatadas a `/social/*` | ⬜ | — | P3 | Hoy siguen en memoria |
+| INT-107 | Conectar Directivos, Profesores y los portales de Alumno a `/structure`, `/records` y `/me` | ⬜ | cada equipo | P1 | Ver bloque H |
+| INT-108 | Planificaciones y material didáctico (estaban en el panel de profesor de la app de Julián) | ⬜ | — | P3 | Sin tablas todavía |
+| INT-109 | Turnos y cambios de turno de Auxiliares | ⬜ | — | P3 | Sin tablas todavía |
 
 ---
 

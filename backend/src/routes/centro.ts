@@ -5,7 +5,7 @@
 // el foro y presentar reclamos: alumnos y Centro.
 //
 //   GET /centro/events            POST /centro/events          PATCH|DELETE /centro/events/:id
-//   POST|DELETE /centro/events/:id/join
+//   POST|DELETE /centro/events/:id/join   GET /centro/events/:id/participants (Centro)
 //   GET /centro/threads           POST /centro/threads         PATCH /centro/threads/:id (fijar)
 //   GET /centro/threads/:id/replies                            POST /centro/threads/:id/replies
 //   GET /centro/announcements     POST /centro/announcements   PATCH|DELETE /centro/announcements/:id
@@ -28,6 +28,7 @@ import { requireAuth, requireRoles, type AppEnv } from '../auth/middleware.js';
 import { prisma } from '../db.js';
 import { notFound } from '../errors.js';
 import { hasRole, parseDate, toISODate } from '../scope.js';
+import { notify } from '../notify.js';
 import { parseBody } from '../validation.js';
 
 const MANAGE = ['STUDENT_REP', 'SUPER_ADMIN'] as const;
@@ -101,6 +102,15 @@ export const centroRoutes = new Hono<AppEnv>()
     await prisma.repEvent.delete({ where: { id: e.id } });
     await audit(c, me, { action: 'DELETE', entity: 'RepEvent', entityId: e.id, summary: `Evento eliminado: ${e.title}` });
     return c.body(null, 204);
+  })
+  /** Quiénes se anotaron (para el Centro). */
+  .get('/events/:id/participants', requireRoles(...MANAGE), async (c) => {
+    const rows = await prisma.repEventParticipant.findMany({
+      where: { eventId: c.req.param('id') },
+      include: { user: { select: { id: true, firstName: true, lastName: true, roles: true } } },
+      orderBy: { joinedAt: 'asc' },
+    });
+    return c.json(rows.map((r) => ({ ...r.user, joinedAt: r.joinedAt.toISOString() })));
   })
   .post('/events/:id/join', requireRoles(...PARTICIPATE), async (c) => {
     const me = c.get('user');
@@ -268,6 +278,9 @@ export const centroRoutes = new Hono<AppEnv>()
       where: { id: r.id },
       data: { ...b, ...(b.response ? { responderId: me.id } : {}) },
     });
+    if (b.response || (b.status && b.status !== r.status)) {
+      await notify([r.authorId], { type: 'CLAIM', text: 'El Centro de Estudiantes respondió tu reclamo', details: b.response, link: '/centro/claims' });
+    }
     if (b.status && b.status !== r.status) {
       await audit(c, me, { action: 'STATUS_CHANGE', entity: 'RepClaim', entityId: r.id, summary: `Reclamo ${r.status} → ${b.status}` });
     }

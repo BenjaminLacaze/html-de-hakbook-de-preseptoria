@@ -91,8 +91,10 @@ crea preceptores, profesores y alumnos, pero no directivos.
 
 ### Endpoints agregados el 2026-10-27
 
-Académico (`/academic/*`), asistencia unificada y justificaciones (`/attendance/*`), Auxiliares (`/staff/*`)
-y Centro de Estudiantes (`/centro/*`). Tabla completa en `docs/INTEGRACION_TECNICA.md`, sección 12.
+Académico (`/academic/*`), asistencia unificada y justificaciones (`/attendance/*`), Auxiliares (`/staff/*`),
+Centro de Estudiantes (`/centro/*`), estructura y personas (`/structure/*`), notas, comunicados, eventos,
+auditoría y configuración (`/records/*`), portal del alumno (`/me/*`) y datos compartidos (`/social/*`).
+Tablas completas en `docs/INTEGRACION_TECNICA.md`, secciones 12 y 13.
 
 ## Seguridad (lo que ya está hecho)
 
