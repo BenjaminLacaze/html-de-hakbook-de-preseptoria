@@ -6,7 +6,7 @@
 
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { calculateAttendanceStatistics, formatDateDisplay } from '../../services/attendanceService';
+import { calculateAttendanceStatistics, statisticsFromSummary, formatDateDisplay } from '../../services/attendanceService';
 import { StatCard } from '../common/StatCard';
 import { StatusBadge } from '../common/StatusBadge';
 import { RecordDetailModal } from '../modals/RecordDetailModal';
@@ -29,7 +29,7 @@ interface HomeViewProps {
 }
 
 export const HomeView: React.FC<HomeViewProps> = ({ onNavigate }) => {
-  const { student, records } = useAuth();
+  const { student, records, summary, settings, notices } = useAuth();
   const [selectedPeriod, setSelectedPeriod] = useState<'ALL' | '1C' | '2C'>('ALL');
   const [selectedRecordForModal, setSelectedRecordForModal] = useState<AttendanceRecord | null>(null);
 
@@ -40,7 +40,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate }) => {
     return true;
   });
 
-  const stats = calculateAttendanceStatistics(periodFilteredRecords, student.minimumAttendanceRequired);
+  const stats = selectedPeriod === 'ALL' ? statisticsFromSummary(summary) : calculateAttendanceStatistics(periodFilteredRecords, student.minimumAttendanceRequired, settings.lateArrivalAbsenceWeight, settings.attendanceRiskThresholdPercent);
 
   // Últimos 5 registros ordenados cronológicamente descendente
   const recentRecords = [...records].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 5);
@@ -51,7 +51,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate }) => {
         <div className="flex items-center gap-2 p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-lg text-emerald-900 dark:text-emerald-200">
           <CheckCircle2 size={20} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
           <div>
-            <p className="text-sm font-semibold">Condición: Alumno Regular</p>
+            <p className="text-sm font-semibold">Asistencia dentro del umbral institucional</p>
             <p className="text-xs text-emerald-800 dark:text-emerald-300 mt-0.5">
               Tu porcentaje actual supera el umbral obligatorio institucional del {student.minimumAttendanceRequired}%.
             </p>
@@ -66,7 +66,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate }) => {
           <div>
             <p className="text-sm font-semibold">Alerta: Regularidad en Riesgo</p>
             <p className="text-xs text-amber-800 dark:text-amber-300 mt-0.5">
-              Tu asistencia ({stats.percentage}%) está por debajo del {student.minimumAttendanceRequired}%. Consulta en Preceptoría para justificar inasistencias.
+              Tu asistencia ({stats.percentage}%) está en zona de alerta institucional ({settings.attendanceRiskThresholdPercent}%). Consulta en Preceptoría para justificar inasistencias.
             </p>
           </div>
         </div>
@@ -76,9 +76,9 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate }) => {
       <div className="flex items-center gap-2 p-3 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 rounded-lg text-rose-900 dark:text-rose-200">
         <XCircle size={20} className="text-rose-600 dark:text-rose-400 shrink-0" />
         <div>
-          <p className="text-sm font-semibold">Condición Crítica: Pérdida de Regularidad</p>
+          <p className="text-sm font-semibold">Asistencia por debajo del mínimo</p>
           <p className="text-xs text-rose-800 dark:text-rose-300 mt-0.5">
-            El porcentaje acumulado ({stats.percentage}%) se encuentra por debajo del umbral mínimo extraordinario del {student.minimumJustifiedAttendanceRequired}%.
+            El porcentaje acumulado ({stats.percentage}%) se encuentra por debajo del mínimo institucional del {student.minimumAttendanceRequired}%.
           </p>
         </div>
       </div>
@@ -148,6 +148,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate }) => {
         </div>
       </div>
 
+      <section aria-label="Comunicados institucionales"><h2>Comunicados</h2>{notices.length ? notices.map(n=><article key={n.id}><h3>{n.title}</h3><p>{n.content}</p></article>) : <p>Sin comunicados publicados.</p>}</section>
       {/* Tarjetas de métricas estadísticas */}
       <div>
         <div className="flex items-center justify-between mb-3">
@@ -165,7 +166,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ onNavigate }) => {
             value={`${stats.percentage}%`}
             subtitle={`Mínimo exigido: ${student.minimumAttendanceRequired}%`}
             icon={Percent}
-            variant={stats.percentage >= 75 ? 'success' : stats.percentage >= 60 ? 'warning' : 'danger'}
+            variant={stats.percentage >= settings.attendanceRiskThresholdPercent ? 'success' : stats.percentage >= settings.minAttendancePercent ? 'warning' : 'danger'}
           />
 
           <StatCard

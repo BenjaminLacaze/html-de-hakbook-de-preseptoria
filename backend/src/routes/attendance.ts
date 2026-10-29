@@ -226,6 +226,13 @@ export const attendanceRoutes = new Hono<AppEnv>()
   })
 
   // ---------------------------------------------- Profesores: comisión + clase
+  .get('/commissions/:id/sessions', requireRoles(...READERS), async (c) => {
+    const commission = await prisma.commission.findFirst({ where: { AND: [await commissionScope(c.get('user')), { id: c.req.param('id') }] } });
+    if (!commission) throw notFound('No existe la comisión o no la tenés a cargo.');
+    const rows = await prisma.classSession.findMany({ where: { commissionId: commission.id }, include: { records: true }, orderBy: { date: 'desc' }, take: 1000 });
+    return c.json(rows.map(s => ({ id: s.id, commissionId: s.commissionId, date: toISODate(s.date), topic: s.topic, status: s.status,
+      records: s.records.map(r => ({ studentId: r.studentId, status: r.status, minutesLate: r.minutesLate ?? undefined, notes: r.notes ?? undefined })) })));
+  })
   .post('/commissions/:id/sessions', requireRoles(...WRITERS), async (c) => {
     const user = c.get('user');
     const body = await parseBody(c, z.object({ date: z.string(), topic: z.string().max(200).optional() }));

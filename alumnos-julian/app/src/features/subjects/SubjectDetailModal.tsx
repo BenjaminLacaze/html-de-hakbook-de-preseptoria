@@ -15,7 +15,8 @@ import {
   CheckCircle,
 } from 'lucide-react';
 import type { Subject, GradeItem } from '../../types';
-import { mockGrades } from '../../mocks/mockData';
+import { useQuery } from '@tanstack/react-query';
+import { gradesService } from '../../services/gradesService';
 
 interface SubjectDetailModalProps {
   subject: Subject | null;
@@ -30,10 +31,11 @@ export const SubjectDetailModal: React.FC<SubjectDetailModalProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<string>('info');
 
+  const { data: subjectGrades = [] } = useQuery({queryKey:['grades',subject?.id],queryFn:()=>gradesService.getGradesBySubject(subject!.id),enabled:!!subject});
   if (!subject) return null;
 
   // Filtrar notas asociadas a esta materia
-  const subjectGrades = mockGrades.filter((g) => g.materiaId === subject.id);
+
 
   const tabs = [
     { id: 'info', label: 'Información General' },
@@ -42,7 +44,7 @@ export const SubjectDetailModal: React.FC<SubjectDetailModalProps> = ({
     { id: 'horarios', label: 'Horarios & Aulas' },
   ];
 
-  const isWarning = subject.porcentajeAsistencia <= 75;
+  const isWarning = subject.attendanceRisk === 'BELOW_MINIMUM';
 
   return (
     <Modal
@@ -78,7 +80,7 @@ export const SubjectDetailModal: React.FC<SubjectDetailModalProps> = ({
               <div className="p-3 rounded-[calc(var(--radius-current)-2px)] bg-[var(--bg-surface-elevated)] border border-subtle-custom space-y-1">
                 <span className="text-muted-custom block font-medium">Promedio Parcial</span>
                 <span className="text-base font-bold text-primary-custom font-mono tabular-nums">
-                  {subject.promedioParciales ? subject.promedioParciales.toFixed(2) : 'Sin evaluaciones'}
+                  {subject.promedioParciales ? subject.promedioParciales.toFixed(2) : 'Sin promedio publicado'}
                 </span>
               </div>
             </div>
@@ -187,7 +189,7 @@ export const SubjectDetailModal: React.FC<SubjectDetailModalProps> = ({
               {isWarning && (
                 <div className="p-2.5 rounded bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 flex items-center gap-2 text-xs text-red-600 dark:text-red-300">
                   <AlertTriangle className="w-4 h-4 shrink-0" />
-                  <span>Atención: te encontrás al límite del porcentaje reglamentario del 75%.</span>
+                  <span>Atención: te encontrás al límite del porcentaje reglamentario del {subject.minimumAttendance}%.</span>
                 </div>
               )}
             </div>

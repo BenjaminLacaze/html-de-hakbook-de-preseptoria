@@ -3,7 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React from 'react';
+import React, { useLayoutEffect } from 'react';
+import type { AuthMe } from '@shared/types';
+import { SessionGate } from '@shared/auth/SessionGate';
+import { StudentCommunication } from './communication/StudentCommunication';
+import { SessionContext } from './lib/session';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from './lib/queryClient';
@@ -25,9 +29,10 @@ import { SettingsView } from './features/settings/SettingsView';
 import { AppearanceView } from './features/settings/AppearanceView';
 import { NotFoundView } from './features/notfound/NotFoundView';
 
-export default function App() {
+function Portal({me}: {me:AuthMe}) {
+  useLayoutEffect(() => () => queryClient.clear(), []);
   return (
-    <QueryClientProvider client={queryClient}>
+    <SessionContext.Provider value={me}><QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <BrowserRouter basename={import.meta.env.BASE_URL}>
           <Routes>
@@ -39,6 +44,7 @@ export default function App() {
               <Route path="notas" element={<GradesView />} />
               <Route path="faltas" element={<AttendanceView />} />
               <Route path="historial" element={<HistoryView />} />
+              <Route path="comunicacion" element={<StudentCommunication userId={me.user.id} />} />
               <Route path="comunidad" element={<CommunityView />} />
               <Route path="foros" element={<ForumsView />} />
               <Route path="opciones" element={<SettingsView />} />
@@ -49,6 +55,8 @@ export default function App() {
           </Routes>
         </BrowserRouter>
       </ThemeProvider>
-    </QueryClientProvider>
+    </QueryClientProvider></SessionContext.Provider>
   );
 }
+
+export default function App(){return <SessionGate apps={['alumnos']}>{me=><Portal me={me} key={me.user.id}/>}</SessionGate>;}

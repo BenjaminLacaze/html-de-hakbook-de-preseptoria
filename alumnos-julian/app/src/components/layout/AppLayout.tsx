@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
+import { ApiErrors } from './ApiErrors';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
 import { LogoutModal } from './LogoutModal';
@@ -34,7 +35,7 @@ export const AppLayout: React.FC = () => {
           transition={{ duration: 0.15 }}
           className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto"
         >
-          <Outlet />
+          <ApiErrors /><Outlet />
         </motion.main>
 
         {/* Institutional Footer */}

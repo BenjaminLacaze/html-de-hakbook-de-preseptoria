@@ -1,5 +1,27 @@
 # CHANGELOG
 
+## 2026-10-28 — Login común e integración de portales; relevo para Claude (sin publicar)
+
+- Decisión final del usuario: conservar **Neon**. Supabase queda como alternativa documentada, sin migración.
+- `shared/auth/SessionGate.tsx`: sesión real, login, cambio obligatorio, referencias de roles y cierre.
+  `shared/api.ts`: consultas sin caché y aviso de sesión vencida. React compartido deduplicado por Vite.
+- Directivos: panel real de altas académicas/cuentas/inscripciones, asignación de comisión y notas.
+- Profesores: servicios reales, clases incluso vacías/cerradas, carga/publicación de calificaciones.
+- Ambos portales Alumno: adaptadores reales `/me`, `/records`, `/social`, eliminación de mockData,
+  comunidad Centro/mensajes y errores explícitos; se deshabilitan acciones que no tienen soporte real.
+- Consolidación: nueva entrada `OperationalApp.tsx` con asistencia, justificaciones, foro/avisos,
+  Auxiliares, Centro y datos personales compartidos. La entrada ya no ejecuta el store demo legacy.
+- Backend: `GET /attendance/commissions/:id/sessions` y `/ready` para verificar PostgreSQL.
+- Batería reproducible: cinco escenarios QA con contraseñas privadas, cinco CRUD Centro/Auxiliar,
+  alta completa por HTTP y porcentaje 100→0→100. Pruebas locales y build completo correctos.
+- Neon: respaldo consistente de 39 tablas/1210 filas en `.local-backups/` (ignorado), limpieza confirmada
+  de 2 carreras/60 alumnos/18 comisiones demo y desactivación de las 7 cuentas públicas de prueba.
+  Cinco escenarios QA persistidos. Prueba remota parcial: escenario 1 confirmado; se detuvo para relevo.
+- No se publicó el nuevo código en Vercel. Pendientes: completar cinco recorridos Neon, QA visual de
+  todas las pantallas y publicación coordinada del repo de deploy.
+- Relevo completo: `docs/RELEVO_CLAUDE_2026-10-28.md`, `MEJORAS.md` y `AGENTS.md` de este proyecto.
+  Credenciales, respaldo y resultados privados NO se versionan. `recursos/` y `julian appcompleta/` preservados.
+
 ## 2026-10-27 (noche) — Publicada la API de datos compartidos
 
 **Publicado:** repo de deploy `53af151` = equipo `f4c3986` (commit firmado por `mjsis20052`, sin forzar; antes se verificó
@@ -300,3 +322,19 @@ sino desde `mjsis20052/sistema-gestion-i26` (proyecto Vercel `mjsis20052-3236s-p
 
 Las redirecciones con espacios en el `source` no coincidían en Vercel (daban 404).
 `vercel.json` ahora usa patrones `(.*)` que cubren espacios y `%20`.
+
+## 2026-10-28 — Codex: pruebas QA locales de backend
+
+Agregados backend/src/integration-fixtures.ts, backend/test/integration-flow.mjs, backend/test/README.md, backend/package.json y backend/.gitignore. Cinco alumnos/docentes QA, cuentas aleatorias privadas, estructura académica y cinco registros por categoría staff/Centro. Pruebas HTTP reales: cinco recorridos académicos y cinco CRUD Centro/auxiliar OK; typecheck OK. Comandos, límites y detalle del incidente de DIRECT_DATABASE_URL documentados en backend/test/README.md. Sin commits ni push, según pedido. No se modificaron apps/shared ni paquete raíz.
+
+## 2026-10-28 — Codex: porcentaje y alta HTTP completos
+
+backend/test/integration-flow.mjs verifica ausencia → pendiente → aprobada en resumen y materias de los cinco alumnos (100 → 0 → 100), y alta HTTP de alumno/cuenta vinculada/cambio de clave/inscripción/asistencia. Repetido OK; evidencia privada en backend/.local-test/integration-result.txt. backend/test/local-api.ts deja API 4052 sin dotenv y con entorno restringido a conexiones locales. Corregida resolución de ruta Windows del manifest con fileURLToPath y conservación de campos HTTP al recargar fixtures. Sin cambios de apps/shared/rutas productivas. Detalle del comando previo que tomó DIRECT_DATABASE_URL remoto y salidas recuperadas en backend/test/README.md: no hay confirmación del resultado de migrate remoto; P2002 posterior corresponde a fixtures locales solapadas. Sin comandos remotos en esta ampliación, sin commits.
+
+## 2026-10-28 — Codex: habilitación configurada QA explícita, sin ejecución remota
+
+integration-fixtures.ts admite únicamente con --allow-configured-qa + ALLOW_REMOTE_QA=true la DATABASE_URL configurada y separa neon-manifest.json; default restringido a PG local. Configurada exige un solo ACTIVE existente, nunca crea ciclo. Test configurado exige autorización y localhost/127.0.0.1:4053, manifest QA, verifica pertenencia previa de IDs y rechaza redirecciones; omite DELETE en configurada. Documentados comandos del padre sin migraciones. Reejecutado sólo local: porcentaje cinco alumnos y alta HTTP completa OK, CRUD OK y typecheck OK. Ningún comando remoto ni commit. Rutas existentes modificadas por otro trabajo no se tocaron.
+
+## 2026-10-28 — Codex: configuración institucional en fixtures
+
+backend/src/integration-fixtures.ts agrega institutionSettings id=1 con los mismos mínimos de seed (name, shortName, city, district), upsert con update vacío para preservar valores existentes. backend/test/integration-flow.mjs comprueba GET /records/settings como alumno antes del circuito. Ejecutado exclusivamente PG local 5452: fixtures OK, settings alumno OK, cinco porcentajes/recorridos y CRUD OK, alta HTTP OK; typecheck OK. API local 4052 sigue viva. No se ejecutó contra Neon ni se tocó la base remota en ejecución; sin commits.

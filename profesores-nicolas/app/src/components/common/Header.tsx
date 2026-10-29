@@ -127,7 +127,7 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
 
-        {/* Perfil del Docente de Demostración */}
+        {/* Perfil del docente */}
         <div
           style={{
             display: 'flex',
@@ -194,7 +194,7 @@ export const Header: React.FC<HeaderProps> = ({
               color: 'var(--isf-white)',
               flexShrink: 0,
             }}
-            title="Usuario Docente Autenticado en Demostración"
+            title="Usuario docente autenticado"
             aria-label="Perfil de usuario docente"
           >
             <UserCheck size={20} aria-hidden="true" />

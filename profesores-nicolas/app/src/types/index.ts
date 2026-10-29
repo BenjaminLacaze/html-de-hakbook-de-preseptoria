@@ -6,7 +6,7 @@
 
 export type Shift = 'Mañana' | 'Tarde' | 'Vespertino';
 
-export type StudentStatus = 'REGULAR' | 'LIBRE' | 'PROMOCIONADO';
+export type StudentStatus = 'REGULAR' | 'LIBRE' | 'PROMOCIONADO' | 'APROBADO' | 'CURSANDO';
 
 export type AttendanceStatus = 'PRESENTE' | 'AUSENTE' | 'TARDE';
 
@@ -94,4 +94,4 @@ export interface AcademicObservation {
   teacherId: string;
 }
 
-export type ActiveScreen = 'dashboard' | 'commissions' | 'students' | 'attendance' | 'observations';
+export type ActiveScreen = 'dashboard' | 'commissions' | 'students' | 'attendance' | 'observations' | 'grades';

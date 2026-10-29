@@ -81,7 +81,7 @@ export const ProfileView: React.FC = () => {
               <h2 className="text-xl font-bold text-primary-custom tracking-tight">
                 {student?.nombre} {student?.apellido}
               </h2>
-              <Badge variant="success">Alumno Regular</Badge>
+              <Badge variant="success">Ficha institucional</Badge>
             </div>
             <p className="text-xs text-secondary-custom">
               Legajo Oficial: <strong className="font-mono text-primary-custom">{student?.legajo}</strong> · DNI {student?.dni}
@@ -95,7 +95,7 @@ export const ProfileView: React.FC = () => {
         <div className="flex flex-col items-start sm:items-end gap-1 text-xs text-secondary-custom">
           <span>Inscripción: <strong>{student?.fechaInscripcion}</strong></span>
           <span>Turno: <strong>{student?.turno}</strong></span>
-          <span>Promedio General: <strong className="font-mono text-primary-custom">{student?.promedioGeneral.toFixed(2)}</strong></span>
+          <span>Promedio General: <strong className="font-mono text-primary-custom">{student?.promedioGeneral?.toFixed(2) ?? 'Sin informar'}</strong></span>
         </div>
       </div>
 
@@ -140,7 +140,7 @@ export const ProfileView: React.FC = () => {
               <div className="p-3 rounded-[calc(var(--radius-current)-2px)] bg-[var(--bg-surface-elevated)] border border-subtle-custom space-y-1">
                 <span className="text-muted-custom block font-medium">Año y Cuatrimestre</span>
                 <span className="font-bold text-primary-custom block">
-                  {student?.anioCursada}° Año · {student?.cuatrimestreActual}° Cuatrimestre
+                  {student?.anioCursada}° Año · Consultá el período de cada materia
                 </span>
                 <span className="text-[11px] text-secondary-custom">
                   Ciclo Lectivo 2026
@@ -160,7 +160,7 @@ export const ProfileView: React.FC = () => {
 
             <div className="p-3 rounded-[calc(var(--radius-current)-2px)] bg-[var(--bg-surface-elevated)]/50 border border-subtle-custom flex items-center justify-between text-xs">
               <span className="text-secondary-custom">Condición de Matrícula:</span>
-              <span className="font-bold text-emerald-600 dark:text-emerald-400">Regular Activo (Sin trámites pendientes)</span>
+              <span className="font-bold text-emerald-600 dark:text-emerald-400">{student?.estadoAcademico ?? 'Sin informar'}</span>
             </div>
           </CardContent>
         </Card>
@@ -174,7 +174,7 @@ export const ProfileView: React.FC = () => {
                 Datos Personales & Contacto
               </CardTitle>
               {!isEditing && (
-                <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
+                <Button variant="outline" size="sm" disabled title="La ficha institucional la actualiza Secretaría">
                   Modificar Contacto
                 </Button>
               )}
@@ -187,7 +187,7 @@ export const ProfileView: React.FC = () => {
             {saveSuccess && (
               <div className="mb-4 p-3 rounded-[calc(var(--radius-current)-2px)] bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 flex items-center gap-2 text-xs text-emerald-700 dark:text-emerald-300">
                 <Check className="w-4 h-4 shrink-0" />
-                <span>Datos de contacto actualizados localmente con éxito (modo demostración).</span>
+                <span>Datos guardados.</span>
               </div>
             )}
 
@@ -233,7 +233,7 @@ export const ProfileView: React.FC = () => {
                 <div className="pt-2 flex items-center justify-between gap-3 border-t border-subtle-custom">
                   <div className="flex items-center gap-1.5 text-[11px] text-muted-custom">
                     <Info className="w-3.5 h-3.5 shrink-0" />
-                    <span>Los cambios se guardan localmente en esta demostración.</span>
+                    <span>La ficha institucional la actualiza Secretaría.</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Button

@@ -35,6 +35,11 @@ app.use(async (c, next) => {
 });
 
 app.get('/health', (c) => c.json({ ok: true, time: new Date().toISOString() }));
+app.get('/ready', async (c) => {
+  const { prisma } = await import('./db.js');
+  await prisma.$queryRaw`SELECT 1`;
+  return c.json({ ok: true, database: true, time: new Date().toISOString() });
+});
 app.route('/auth', authRoutes);
 app.route('/users', userRoutes);
 app.route('/academic', academicRoutes);

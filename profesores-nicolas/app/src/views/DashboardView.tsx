@@ -347,7 +347,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         </div>
       </section>
 
-      {/* Actividad Académica Reciente Simulada */}
+      {/* Actividad académica reciente */}
       <section aria-labelledby="section-recent-activity">
         <h2 id="section-recent-activity" style={{ fontSize: '1.2rem', marginBottom: '0.85rem' }}>
           Actividad Académica Registrada en el Período

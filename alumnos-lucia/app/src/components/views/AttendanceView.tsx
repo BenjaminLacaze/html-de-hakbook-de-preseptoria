@@ -14,7 +14,7 @@ import {
 import { AttendanceFilters, AttendanceRecord, AttendanceStatus } from '../../types';
 import { StatusBadge } from '../common/StatusBadge';
 import { RecordDetailModal } from '../modals/RecordDetailModal';
-import { MONTH_NAMES } from '../../data/mockData';
+const MONTH_NAMES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 import {
   Search,
   Filter,
@@ -39,7 +39,7 @@ const INITIAL_FILTERS: AttendanceFilters = {
 };
 
 export const AttendanceView: React.FC = () => {
-  const { records, student } = useAuth();
+  const { records, student, settings } = useAuth();
   const [filters, setFilters] = useState<AttendanceFilters>(INITIAL_FILTERS);
   const [selectedRecordForModal, setSelectedRecordForModal] = useState<AttendanceRecord | null>(null);
 
@@ -48,10 +48,10 @@ export const AttendanceView: React.FC = () => {
     return filterAttendanceRecords(records, filters);
   }, [records, filters]);
 
-  // Estadísticas del subconjunto filtrado
+  // Estadísticas informativas del subconjunto filtrado
   const filteredStats = useMemo(() => {
-    return calculateAttendanceStatistics(filteredRecords, student.minimumAttendanceRequired);
-  }, [filteredRecords, student.minimumAttendanceRequired]);
+    return calculateAttendanceStatistics(filteredRecords, student.minimumAttendanceRequired, settings.lateArrivalAbsenceWeight, settings.attendanceRiskThresholdPercent);
+  }, [filteredRecords, student.minimumAttendanceRequired, settings]);
 
   // Verificar si hay algún filtro activo
   const hasActiveFilters =
@@ -67,7 +67,7 @@ export const AttendanceView: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6"><p className="text-xs">Los filtros muestran un resumen informativo de los registros seleccionados. El resumen oficial completo está en Inicio.</p>
       {/* Encabezado de la sección */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>

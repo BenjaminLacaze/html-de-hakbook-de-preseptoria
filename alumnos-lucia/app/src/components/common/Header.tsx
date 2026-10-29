@@ -33,6 +33,7 @@ export const Header: React.FC<HeaderProps> = ({
 
   const viewTitles: Record<NavView, string> = {
     inicio: 'Inicio y Resumen',
+    comunicacion: 'Centro y mensajes',
     asistencia: 'Historial de Asistencia',
     perfil: 'Información del Alumno',
     ayuda: 'Guía y Funcionamiento',

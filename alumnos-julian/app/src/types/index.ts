@@ -23,18 +23,20 @@ export interface StudentProfile {
   anioCursada: number;
   cuatrimestreActual: number;
   comision: string;
-  turno: 'Mañana' | 'Tarde' | 'Noche';
-  estadoAcademico: 'Regular' | 'Condicional' | 'Libre';
+  turno: 'Mañana' | 'Tarde' | 'Noche' | 'Sin informar';
+  estadoAcademico: string;
   fechaInscripcion: string;
-  promedioGeneral: number;
+  promedioGeneral: number | null;
   porcentajeAsistenciaGlobal: number;
+  minimumAttendance?: number;
+  attendanceRisk?: string;
   avatarUrl?: string;
 }
 
 export interface SubjectTeacher {
   id: string;
   nombre: string;
-  rol: 'Titular' | 'Adjunto' | 'JTP' | 'Ayudante';
+  rol: 'Titular' | 'Adjunto' | 'JTP' | 'Ayudante' | 'Sin informar';
   email: string;
 }
 
@@ -43,11 +45,13 @@ export interface SubjectSchedule {
   horarioInicio: string;
   horarioFin: string;
   aula: string;
-  modalidad: 'Presencial' | 'Híbrida' | 'Virtual';
+  modalidad: 'Presencial' | 'Híbrida' | 'Virtual' | 'Sin informar';
 }
 
 export interface Subject {
   id: string;
+  minimumAttendance: number;
+  attendanceRisk: string;
   codigo: string;
   nombre: string;
   carrera: string;
@@ -56,7 +60,7 @@ export interface Subject {
   comision: string;
   docentes: SubjectTeacher[];
   horarios: SubjectSchedule[];
-  estadoCursada: 'En Curso' | 'Regularizada' | 'Promocionada' | 'Aprobada' | 'Recursando';
+  estadoCursada: 'En Curso' | 'Regularizada' | 'Promocionada' | 'Aprobada' | 'Recursando' | 'Libre';
   totalClasesPrevistas: number;
   clasesDictadas: number;
   asistenciasPresentes: number;
@@ -76,7 +80,7 @@ export interface GradeItem {
   nota: number | null; // null si está pendiente de publicación
   fechaEvaluacion: string;
   fechaPublicacion?: string;
-  estado: 'Aprobado' | 'Desaprobado' | 'Ausente' | 'Pendiente' | 'Promocionado';
+  estado: 'Aprobado' | 'Desaprobado' | 'Ausente' | 'Pendiente' | 'Promocionado' | 'Publicada';
   ponderacion?: string; // ej. "30%"
   observaciones?: string;
   esOficial: boolean;
@@ -134,12 +138,14 @@ export interface ForumPostReply {
   id: string;
   postId: string;
   autorNombre: string;
-  autorRol: 'Alumno' | 'Docente' | 'Preceptor';
+  autorRol: 'Alumno' | 'Docente' | 'Preceptor' | 'Participante';
   fecha: string;
   contenido: string;
 }
 
 export interface ForumPost {
+  status?: string;
+  locked?: boolean;
   id: string;
   materiaId?: string;
   materiaNombre?: string;
@@ -147,7 +153,7 @@ export interface ForumPost {
   titulo: string;
   contenido: string;
   autorNombre: string;
-  autorRol: 'Alumno' | 'Docente' | 'Preceptor';
+  autorRol: 'Alumno' | 'Docente' | 'Preceptor' | 'Participante';
   fecha: string;
   fijado?: boolean;
   respuestasCount: number;

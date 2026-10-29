@@ -72,3 +72,21 @@ h1, h2, h3, .font-heading {
     box-shadow: none !important;
   }
 }
+
+.real-panel { color:var(--navy); background:var(--paper-soft); min-height:100vh; }
+.real-panel header {background:var(--navy);color:white;padding:24px;}
+.real-panel nav {display:flex;flex-wrap:wrap;gap:8px;padding:16px;}
+.real-panel main {padding:24px;max-width:1500px;margin:auto;}
+.real-panel button,.real-panel input,.real-panel select {min-height:44px;border:1px solid #b9c1ce;border-radius:6px;padding:8px 12px;background:white;color:var(--navy);}
+.real-panel button {cursor:pointer;margin:4px;}
+.real-panel button[aria-current=page] {background:var(--navy);color:white;}
+.real-panel button:disabled {opacity:.5;cursor:wait;}
+.real-panel form,.real-panel section {background:white;padding:20px;margin:20px 0;border:1px solid #dce1e8;border-radius:8px;}
+.real-panel .fields {display:flex;flex-wrap:wrap;gap:16px;align-items:end;}
+.real-panel label {display:flex;flex-direction:column;gap:6px;min-width:200px;max-width:100%;}
+.real-panel .table-wrap {overflow:auto;margin-top:20px;}
+.real-panel table {border-collapse:collapse;width:100%;background:white;}
+.real-panel th,.real-panel td {padding:12px;text-align:left;border-bottom:1px solid #dce1e8;}
+.real-panel .error {color:#9d2020;background:#fff0f0;padding:16px;}
+.real-panel aside {padding:16px;background:var(--gold-soft);}
+@media print {.real-panel nav,.real-panel button,.real-panel form,.real-panel section {display:none}}

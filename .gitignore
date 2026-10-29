@@ -7,3 +7,8 @@ dist/
 
 # Cliente de Prisma generado (se regenera con npm run db:generate / en el build)
 backend/src/generated/
+
+# Base y credenciales de la batería de integración local
+.local-test/
+.test-results/
+.local-backups/

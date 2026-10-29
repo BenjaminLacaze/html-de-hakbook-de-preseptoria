@@ -73,6 +73,7 @@ export async function apiFetch<T>(
     res = await fetch(API_BASE_URL + path + qs, {
       method: options.method ?? 'GET',
       credentials: 'include',
+      cache: 'no-store',
       headers: options.body !== undefined ? { 'Content-Type': 'application/json' } : undefined,
       body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
     });
@@ -83,6 +84,9 @@ export async function apiFetch<T>(
   if (res.status === 204) return undefined as T;
   const data: unknown = await res.json().catch(() => null);
   if (!res.ok) {
+    if (res.status === 401 && path !== '/auth/login' && path !== '/auth/me' && typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('i26:session-expired'));
+    }
     const err = (data as ApiError | null)?.error;
     throw new ApiRequestError(
       res.status,

@@ -1,0 +1,1 @@
+{"private":true,"type":"module","scripts":{"db:integration-fixtures":"tsx src/integration-fixtures.ts","test:integration":"node test/integration-flow.mjs"}}

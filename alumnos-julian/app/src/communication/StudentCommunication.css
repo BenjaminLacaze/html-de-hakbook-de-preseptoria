@@ -1,0 +1,18 @@
+.student-communication { color:var(--text-primary,inherit); line-height:1.6; overflow-wrap:anywhere; }
+.student-communication h2 {font-size:1.4rem;font-weight:700;margin-bottom:.5rem;}
+.student-communication h3 {font-size:1.15rem;font-weight:700;margin:1.5rem 0 .5rem;}
+.student-communication h4 {font-weight:700;}
+.student-communication nav {display:flex;flex-wrap:wrap;gap:.5rem;margin:1rem 0;}
+.student-communication article,.student-communication form {padding:1rem;border:1px solid var(--border-subtle,#94a3b8);border-radius:.7rem;margin:1rem 0;background:var(--bg-surface,transparent);}
+.student-communication p {margin:.4rem 0;white-space:pre-wrap;}
+.student-communication label {display:block;font-weight:600;margin:.6rem 0;}
+.student-communication input,.student-communication select,.student-communication textarea {display:block;width:100%;padding:.65rem;border:1px solid var(--border-subtle,#94a3b8);border-radius:.4rem;color:inherit;background:var(--bg-surface,transparent);font:inherit;margin-top:.25rem;}
+.student-communication select option {color:#172554;background:#fff;}
+.student-communication textarea {min-height:6rem;resize:vertical;}
+.student-communication button {min-height:44px;border:1px solid var(--border-subtle,#94a3b8);border-radius:.4rem;padding:.5rem .8rem;margin:.25rem .5rem .25rem 0;font-weight:600;cursor:pointer;}
+.student-communication button[aria-pressed=true] {background:var(--accent-primary,#1e3a8a);color:var(--accent-foreground,#fff);}
+.student-communication button:disabled {opacity:.55;cursor:not-allowed;}
+.student-communication :is(button,input,select,textarea):focus-visible {outline:3px solid #3b82f6;outline-offset:3px;}
+.student-communication [role=alert] {border-left:4px solid #dc2626;padding:.5rem .8rem;}
+.student-communication blockquote {border-left:3px solid var(--border-subtle,#94a3b8);margin:1rem 0;padding:.5rem 1rem;}
+.student-communication small {font-size:.85rem;}

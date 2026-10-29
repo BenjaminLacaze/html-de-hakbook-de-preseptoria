@@ -47,7 +47,7 @@ export const AttendanceView: React.FC = () => {
       queryClient.invalidateQueries({ queryKey: ['attendanceRecords'] });
       setJustifyingRecord(null);
       setJustificationReason('');
-      setSubmissionFeedback('Solicitud de justificación enviada a Preceptoría (modo demostración).');
+      setSubmissionFeedback('Solicitud enviada.');
       setTimeout(() => setSubmissionFeedback(null), 4000);
     },
   });
@@ -74,7 +74,7 @@ export const AttendanceView: React.FC = () => {
             Control de Asistencia & Faltas
           </h2>
           <p className="text-xs text-secondary-custom mt-0.5">
-            Régimen institucional: mínimo 75% de presentismo por asignatura para mantener regularidad
+            Régimen institucional: el mínimo y las alertas son calculados por el servidor para cada asignatura.
           </p>
         </div>
 
@@ -96,8 +96,8 @@ export const AttendanceView: React.FC = () => {
       {/* Global & Per Subject Threshold Monitor */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {subjects?.map((sub) => {
-          const isWarning = sub.porcentajeAsistencia <= 75;
-          const isCaution = sub.porcentajeAsistencia > 75 && sub.porcentajeAsistencia <= 85;
+          const isWarning = sub.attendanceRisk === 'BELOW_MINIMUM';
+          const isCaution = sub.attendanceRisk === 'AT_RISK';
 
           return (
             <Card key={sub.id} className="p-4 sm:p-5 flex flex-col justify-between">
@@ -127,7 +127,7 @@ export const AttendanceView: React.FC = () => {
               </div>
 
               <div className="mt-4 pt-3 border-t border-subtle-custom flex items-center justify-between text-[11px] text-muted-custom">
-                <span>{sub.clasesDictadas} de {sub.totalClasesPrevistas} clases</span>
+                <span>{sub.clasesDictadas} clases registradas</span>
                 <span className={isWarning ? 'text-red-500 font-bold' : ''}>
                   {sub.limiteFaltas - sub.asistenciasAusentes} falta(s) de margen
                 </span>
@@ -150,7 +150,7 @@ export const AttendanceView: React.FC = () => {
           <div>
             <CardTitle>Historial Cronológico de Clases & Faltas</CardTitle>
             <p className="text-xs text-secondary-custom mt-0.5">
-              Registros presenciales, escaneos QR y trámites de justificación
+              Registros oficiales y estado de justificaciones
             </p>
           </div>
           <span className="text-xs text-muted-custom font-mono">
@@ -224,7 +224,7 @@ export const AttendanceView: React.FC = () => {
                               variant="outline"
                               size="sm"
                               className="text-xs"
-                              onClick={() => setJustifyingRecord(rec)}
+                              disabled title="Las justificaciones las carga Preceptoría"
                             >
                               Justificar
                             </Button>

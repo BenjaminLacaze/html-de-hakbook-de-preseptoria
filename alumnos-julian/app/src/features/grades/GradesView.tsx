@@ -39,8 +39,8 @@ export const GradesView: React.FC = () => {
 
   const statusTabs = [
     { id: 'todas', label: 'Todas las Notas' },
-    { id: 'Aprobado', label: 'Aprobados' },
-    { id: 'Promocionado', label: 'Promocionados' },
+    { id: 'Publicada', label: 'Publicadas' },
+    { id: 'Ausente', label: 'Ausentes' },
     { id: 'Pendiente', label: 'Pendientes' },
   ];
 
@@ -85,10 +85,10 @@ export const GradesView: React.FC = () => {
       {/* KPI Cards Strip */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card className="p-4 sm:p-5">
-          <span className="text-xs font-medium text-secondary-custom block">Promedio General Ponderado</span>
+          <span className="text-xs font-medium text-secondary-custom block">Promedio simple de notas publicadas</span>
           <div className="mt-2 flex items-baseline gap-2">
             <span className="text-2xl font-bold font-mono tabular-nums text-primary-custom">
-              {overallAverage.toFixed(2)}
+              {publishedGrades.length ? overallAverage.toFixed(2) : 'Sin notas'}
             </span>
             <span className="text-xs text-secondary-custom">/ 10.00</span>
           </div>

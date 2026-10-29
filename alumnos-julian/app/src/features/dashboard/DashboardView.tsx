@@ -58,7 +58,7 @@ export const DashboardView: React.FC = () => {
   const greeting = hour < 12 ? 'Buenos días' : hour < 19 ? 'Buenas tardes' : 'Buenas noches';
 
   // Identificar materias en zona de atención (asistencia <= 80%)
-  const warningSubjects = subjects?.filter((s) => s.porcentajeAsistencia <= 80) || [];
+  const warningSubjects = subjects?.filter((s) => s.attendanceRisk !== 'OK') || [];
 
   // Próximas evaluaciones o entregas
   const upcomingAssessments = events?.filter((e) => e.tipo === 'Examen' || e.tipo === 'Entrega TP').slice(0, 3) || [];
@@ -72,19 +72,19 @@ export const DashboardView: React.FC = () => {
             <div className="flex items-center gap-2 text-xs text-secondary-custom">
               <span className="font-semibold text-primary-custom">{greeting}</span>
               <span aria-hidden="true">·</span>
-              <span>{student?.carrera || 'Tecnicatura Superior en Desarrollo de Software'}</span>
+              <span>{student?.carrera || '—'}</span>
             </div>
             <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-primary-custom">
               {student ? `${student.nombre} ${student.apellido}` : 'Cargando perfil...'}
             </h2>
             <p className="text-xs sm:text-sm text-secondary-custom leading-relaxed">
-              Comisión {student?.comision || '2° A'} · Estado académico: <strong className="text-emerald-600 dark:text-emerald-400">Regular</strong>.
-              Tenés 2 actividades académicas programadas para esta semana.
+              Comisión {student?.comision || '—'} · Estado académico: <strong className="text-emerald-600 dark:text-emerald-400">{student?.estadoAcademico ?? '—'}</strong>.
+              Consultá los eventos publicados en la agenda.
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-3 shrink-0">
-            <Button variant="primary" size="md" onClick={() => navigate('/asistencia-qr')}>
+            <Button variant="primary" size="md" disabled title="El servidor no admite registro por QR">
               <QrCode className="w-4 h-4" />
               <span>Marcar Asistencia QR</span>
             </Button>
@@ -108,21 +108,21 @@ export const DashboardView: React.FC = () => {
           </div>
           <div className="mt-3 flex items-baseline gap-2">
             <span className="text-2xl font-bold tracking-tight text-primary-custom font-mono tabular-nums">
-              {student ? `${student.porcentajeAsistenciaGlobal.toFixed(1)}%` : '87.5%'}
+              {student ? `${student.porcentajeAsistenciaGlobal.toFixed(1)}%` : '—'}
             </span>
             <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
-              Mínimo: 75%
+              Mínimo: {student?.minimumAttendance ?? '—'}%
             </span>
           </div>
           {/* Progress bar */}
           <div className="mt-3 w-full bg-[var(--bg-muted)] h-1.5 rounded-full overflow-hidden">
             <div
               className="bg-emerald-500 h-full rounded-full transition-all duration-500"
-              style={{ width: `${student?.porcentajeAsistenciaGlobal || 87.5}%` }}
+              style={{ width: `${student?.porcentajeAsistenciaGlobal ?? 0}%` }}
             />
           </div>
           <span className="text-[11px] text-muted-custom mt-2 block">
-            En regla institucional general
+            Resumen oficial de asistencia
           </span>
         </Card>
 
@@ -136,12 +136,12 @@ export const DashboardView: React.FC = () => {
           </div>
           <div className="mt-3 flex items-baseline gap-2">
             <span className="text-2xl font-bold tracking-tight text-primary-custom font-mono tabular-nums">
-              {student ? student.promedioGeneral.toFixed(2) : '8.42'}
+              {student ? student.promedioGeneral?.toFixed(2) ?? 'Sin informar' : '—'}
             </span>
             <span className="text-xs text-secondary-custom">/ 10.00</span>
           </div>
           <p className="text-[11px] text-muted-custom mt-3">
-            Calculado sobre 11 evaluaciones cargadas
+            Promedio general no publicado por el servidor
           </p>
         </Card>
 
@@ -155,12 +155,12 @@ export const DashboardView: React.FC = () => {
           </div>
           <div className="mt-3 flex items-baseline gap-2">
             <span className="text-2xl font-bold tracking-tight text-primary-custom font-mono tabular-nums">
-              {subjects?.length || 6}
+              {subjects?.length ?? '—'}
             </span>
-            <span className="text-xs text-emerald-600 font-medium">1 Promocionada</span>
+            <span className="text-xs text-emerald-600 font-medium">{subjects?.filter(s=>s.estadoCursada==='Promocionada').length ?? 0} Promocionadas</span>
           </div>
           <p className="text-[11px] text-muted-custom mt-3">
-            Comisión 2° A · 2° Cuatrimestre
+            {student?.comision ?? '—'}
           </p>
         </Card>
 
@@ -174,12 +174,12 @@ export const DashboardView: React.FC = () => {
           </div>
           <div className="mt-3 flex items-baseline gap-2">
             <span className="text-2xl font-bold tracking-tight text-amber-600 font-mono tabular-nums">
-              1 Materia
+              {warningSubjects.length} Materias
             </span>
-            <span className="text-xs text-secondary-custom">Redes (75.0%)</span>
+            <span className="text-xs text-secondary-custom">Con alerta de asistencia</span>
           </div>
           <p className="text-[11px] text-amber-600 dark:text-amber-400 mt-3 font-medium">
-            3 de 4 faltas acumuladas
+            Según la configuración institucional
           </p>
         </Card>
       </div>
@@ -211,8 +211,8 @@ export const DashboardView: React.FC = () => {
               ) : (
                 <div className="divide-y divide-subtle-custom">
                   {subjects?.map((sub) => {
-                    const isWarning = sub.porcentajeAsistencia <= 75;
-                    const isCaution = sub.porcentajeAsistencia > 75 && sub.porcentajeAsistencia <= 85;
+                    const isWarning = sub.attendanceRisk === 'BELOW_MINIMUM';
+                    const isCaution = sub.attendanceRisk === 'AT_RISK';
 
                     return (
                       <div
@@ -363,7 +363,7 @@ export const DashboardView: React.FC = () => {
             </CardHeader>
             <CardContent className="p-3 space-y-2">
               <button
-                onClick={() => navigate('/asistencia-qr')}
+                disabled title="El servidor no admite registro por QR"
                 className="w-full p-3 rounded-[var(--radius-current)] bg-[var(--accent-subtle)]/40 hover:bg-[var(--accent-subtle)] border border-subtle-custom text-left transition-colors flex items-center justify-between group"
               >
                 <div className="flex items-center gap-3">

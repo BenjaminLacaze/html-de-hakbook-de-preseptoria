@@ -70,7 +70,9 @@ for (const mod of modulesWithApp) {
     // --legacy-peer-deps: las apps hechas con AI Studio piden esbuild 0.25 y
     // Vite 8 declara 0.27+ como opcional; sin esto npm se niega a instalar.
     // --no-package-lock: no generar package-lock.json (las apps usan bun.lock).
-    run('npm install --no-audit --no-fund --loglevel=error --legacy-peer-deps --no-package-lock', cwd);
+    if (!process.argv.includes('--skip-install')) {
+      run('npm install --no-audit --no-fund --loglevel=error --legacy-peer-deps --no-package-lock', cwd);
+    }
     // vite build directo (sin "tsc"): un error de tipos no debe frenar el deploy de todos.
     run(`npx vite build --base=/${mod}/app/ --outDir "${out}" --emptyOutDir`, cwd);
   } catch (err) {

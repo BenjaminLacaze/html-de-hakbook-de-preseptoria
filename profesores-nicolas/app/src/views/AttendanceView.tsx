@@ -34,7 +34,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
 
   const [date, setDate] = useState<string>(new Date().toISOString().slice(0, 10));
   const [classTopic, setClassTopic] = useState<string>('Clase teórico-práctica regular');
-  
+
   const [students, setStudents] = useState<Student[]>([]);
   const [sessions, setSessions] = useState<ClassSession[]>([]);
   const [selectedSessionId, setSelectedSessionId] = useState<string>('');
@@ -43,6 +43,12 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
   // Inicialmente null para cumplir la regla estricta: NO marcar a todos como presentes por defecto
   const [attendanceMap, setAttendanceMap] = useState<Record<string, AttendanceStatus | null>>({});
 
+  const [focusRevision, setFocusRevision] = useState(0);
+  useEffect(() => {
+    const refresh = () => setFocusRevision(n => n + 1);
+    window.addEventListener('focus', refresh);
+    return () => window.removeEventListener('focus', refresh);
+  }, []);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [validationError, setValidationError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -94,14 +100,14 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
           setAttendanceMap(emptyMap);
         }
       } catch (err) {
-        console.error('Error al inicializar asistencia:', err);
+        setValidationError(err instanceof Error ? err.message : 'No se pudieron cargar los datos.');
       } finally {
         setIsLoading(false);
       }
     };
 
     loadCommissionData();
-  }, [selectedCommissionId, date]);
+  }, [selectedCommissionId, date, focusRevision]);
 
   // Manejo de cambio de sesión desde el selector de sesiones históricas
   const handleSessionChange = async (sessionId: string) => {
@@ -120,7 +126,9 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
       setSelectedSessionId(session.id);
       setDate(session.date);
       setClassTopic(session.topic || '');
-      const existingRecords = await academicService.getAttendanceBySession(session.id);
+      let existingRecords;
+      try { existingRecords = await academicService.getAttendanceBySession(session.id); }
+      catch (err) { setValidationError(err instanceof Error ? err.message : 'No se pudo cargar la clase.'); return; }
       const initialMap: Record<string, AttendanceStatus | null> = {};
       students.forEach((st) => {
         const rec = existingRecords.find((r) => r.studentId === st.id);
@@ -238,8 +246,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
       setSuccessMessage(res.message);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err) {
-      console.error('Error al guardar asistencia:', err);
-      setValidationError('Ocurrió un error inesperado al registrar la asistencia simulada.');
+      setValidationError(err instanceof Error ? err.message : 'No se pudo guardar la asistencia.');
     } finally {
       setIsLoading(false);
     }
@@ -801,7 +808,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
         isOpen={isConfirmModalOpen}
         title="Confirmación de Asistencia de Clase"
         description={`¿Deseás registrar la asistencia de la clase del ${date} para la comisión ${currentCommission?.name} (${currentCommission?.subjectName})?`}
-        confirmLabel="Guardar Registro Demostrativo"
+        confirmLabel="Guardar asistencia"
         cancelLabel="Revisar"
         onConfirm={handleConfirmSave}
         onCancel={() => setIsConfirmModalOpen(false)}
@@ -847,7 +854,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
               color: '#554215',
             }}
           >
-            <strong>Aviso de Demostración:</strong> Esta acción actualizará los datos en el estado del navegador. No se enviará a una base de datos de producción oficial.
+            <strong>Registro institucional:</strong> La asistencia se guardará en el sistema del instituto.
           </div>
         </div>
       </ConfirmModal>

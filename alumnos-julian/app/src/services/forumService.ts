@@ -1,73 +1,12 @@
-import { apiClient } from '../lib/apiClient';
-import { IS_MOCK_MODE, simulateNetworkLatency } from './apiConfig';
-import { mockForumPosts } from '../mocks/mockData';
+import { apiFetch } from '@shared/api';
+import type { ForumThread, ForumReply } from '@shared/types';
 import type { ForumPost, ForumPostReply } from '../types';
-
-let forumPostsStore: ForumPost[] = [...mockForumPosts];
-
-export const forumService = {
-  async getPosts(): Promise<ForumPost[]> {
-    if (IS_MOCK_MODE) {
-      await simulateNetworkLatency(200);
-      return [...forumPostsStore];
-    }
-    const { data } = await apiClient.get<ForumPost[]>('/student/forums');
-    return data;
-  },
-
-  async createPost(newPostData: {
-    titulo: string;
-    contenido: string;
-    categoria: ForumPost['categoria'];
-    materiaId?: string;
-    materiaNombre?: string;
-  }): Promise<ForumPost> {
-    if (IS_MOCK_MODE) {
-      await simulateNetworkLatency(350);
-      const createdPost: ForumPost = {
-        id: `post-${Date.now()}`,
-        titulo: newPostData.titulo,
-        contenido: newPostData.contenido,
-        categoria: newPostData.categoria,
-        materiaId: newPostData.materiaId,
-        materiaNombre: newPostData.materiaNombre,
-        autorNombre: 'Alex Estudiante',
-        autorRol: 'Alumno',
-        fecha: 'Hace instantes',
-        respuestasCount: 0,
-        respuestas: [],
-      };
-      forumPostsStore = [createdPost, ...forumPostsStore];
-      return createdPost;
-    }
-    const { data } = await apiClient.post<ForumPost>('/student/forums', newPostData);
-    return data;
-  },
-
-  async replyToPost(postId: string, content: string): Promise<ForumPostReply> {
-    if (IS_MOCK_MODE) {
-      await simulateNetworkLatency(300);
-      const postIndex = forumPostsStore.findIndex((p) => p.id === postId);
-      if (postIndex === -1) throw new Error('Foro no encontrado');
-
-      const newReply: ForumPostReply = {
-        id: `rep-${Date.now()}`,
-        postId,
-        autorNombre: 'Alex Estudiante',
-        autorRol: 'Alumno',
-        fecha: 'Hace instantes',
-        contenido: content,
-      };
-
-      forumPostsStore[postIndex] = {
-        ...forumPostsStore[postIndex],
-        respuestasCount: forumPostsStore[postIndex].respuestasCount + 1,
-        respuestas: [...forumPostsStore[postIndex].respuestas, newReply],
-      };
-
-      return newReply;
-    }
-    const { data } = await apiClient.post<ForumPostReply>(`/student/forums/${postId}/replies`, { content });
-    return data;
-  },
-};
+const reply = (r: ForumReply): ForumPostReply => ({ id: r.id, postId: r.threadId, autorNombre: r.authorName, autorRol: 'Participante', fecha: r.createdAt, contenido: r.content });
+const post = (t: ForumThread, respuestas: ForumPostReply[] = []): ForumPost => ({ id: t.id, materiaId: t.commissionId, categoria: 'General', titulo: t.title, contenido: t.content, autorNombre: t.authorName, autorRol: 'Participante', fecha: t.createdAt, respuestasCount: t.replyCount, respuestas, status: t.status, locked: t.locked });
+export const forumService = { async getPosts() { const ts = await apiFetch<ForumThread[]>('/social/forum'); return Promise.all(ts.map(async (t) => post(t, t.status === 'APPROVED' ? (await apiFetch<ForumReply[]>(`/social/forum/${t.id}/replies`)).map(reply) : []))); }, async createPost(d: {
+        titulo: string;
+        contenido: string;
+        categoria: ForumPost['categoria'];
+        materiaId?: string;
+        materiaNombre?: string;
+    }) { return post(await apiFetch<ForumThread>('/social/forum', { method: 'POST', body: { title: d.titulo, content: d.contenido, commissionId: d.materiaId || undefined } })); }, async replyToPost(id: string, content: string) { return reply(await apiFetch<ForumReply>(`/social/forum/${id}/replies`, { method: 'POST', body: { content } })); } };

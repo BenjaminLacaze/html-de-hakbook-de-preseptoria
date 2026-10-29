@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   MessageSquare,
@@ -35,7 +35,7 @@ export const ForumsView: React.FC = () => {
   // Nuevo post form state
   const [newTitle, setNewTitle] = useState('');
   const [newContent, setNewContent] = useState('');
-  const [newCategory, setNewCategory] = useState<ForumPost['categoria']>('Consultas de TP');
+  const [newCategory, setNewCategory] = useState<ForumPost['categoria']>('General');
   const [newMateriaId, setNewMateriaId] = useState('');
 
   // Respuesta form state
@@ -45,6 +45,10 @@ export const ForumsView: React.FC = () => {
     queryKey: ['forumPosts'],
     queryFn: () => forumService.getPosts(),
   });
+
+  useEffect(() => {
+    if (selectedPost && posts) setSelectedPost(posts.find(p => p.id === selectedPost.id) ?? null);
+  }, [posts]);
 
   const { data: subjects } = useQuery({
     queryKey: ['subjects'],
@@ -192,7 +196,7 @@ export const ForumsView: React.FC = () => {
                   <div className="flex items-start justify-between gap-2 mb-1.5">
                     <div className="flex items-center gap-1.5 flex-wrap">
                       {post.fijado && <Pin className="w-3.5 h-3.5 text-amber-500 fill-amber-500 shrink-0" />}
-                      <Badge variant="default">{post.categoria}</Badge>
+                      <Badge variant="default">{post.status} {post.locked ? '· Cerrado' : ''}</Badge>
                       {post.materiaNombre && (
                         <span className="text-[10px] text-muted-custom truncate max-w-[140px]">
                           {post.materiaNombre}
@@ -325,7 +329,7 @@ export const ForumsView: React.FC = () => {
                       variant="primary"
                       size="sm"
                       isLoading={replyMutation.isPending}
-                      disabled={!replyContent.trim()}
+                      disabled={!replyContent.trim() || selectedPost.locked || selectedPost.status !== 'APPROVED'}
                     >
                       <Send className="w-3.5 h-3.5" />
                       <span>Responder</span>
@@ -383,7 +387,7 @@ export const ForumsView: React.FC = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Select
-              label="Categoría"
+              disabled title="El servidor no admite categorías" label="Categoría"
               value={newCategory}
               onChange={(e) => setNewCategory(e.target.value as any)}
             >
@@ -425,7 +429,7 @@ export const ForumsView: React.FC = () => {
           <div className="p-3 rounded-[calc(var(--radius-current)-2px)] bg-[var(--bg-surface-elevated)] border border-subtle-custom text-[11px] text-muted-custom flex items-center gap-2">
             <Info className="w-4 h-4 text-secondary-custom shrink-0" />
             <span>
-              Modo demostración: la publicación se almacena localmente en memoria durante esta sesión.
+              Las publicaciones de alumnos quedan pendientes de aprobación por Preceptoría.
             </span>
           </div>
         </form>

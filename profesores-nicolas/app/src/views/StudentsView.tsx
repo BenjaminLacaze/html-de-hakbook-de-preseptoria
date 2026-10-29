@@ -29,7 +29,14 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
   const [selectedCommissionId, setSelectedCommissionId] = useState<string>(
     initialCommissionId || (commissions.length > 0 ? commissions[0].id : '')
   );
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [students, setStudents] = useState<Student[]>([]);
+  const [focusRevision, setFocusRevision] = useState(0);
+  useEffect(() => {
+    const refresh = () => setFocusRevision(n => n + 1);
+    window.addEventListener('focus', refresh);
+    return () => window.removeEventListener('focus', refresh);
+  }, []);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<string>('TODOS');
@@ -45,7 +52,7 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
   useEffect(() => {
     const loadStudents = async () => {
       if (!selectedCommissionId) return;
-      setIsLoading(true);
+      setIsLoading(true); setLoadError(null);
       try {
         const data = await academicService.getStudentsByCommission(selectedCommissionId, {
           searchQuery,
@@ -55,14 +62,14 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
         });
         setStudents(data);
       } catch (err) {
-        console.error('Error al cargar estudiantes:', err);
+        setStudents([]); setLoadError(err instanceof Error ? err.message : 'No se pudieron cargar los alumnos.');
       } finally {
         setIsLoading(false);
       }
     };
 
     loadStudents();
-  }, [selectedCommissionId, searchQuery, statusFilter, sortBy, sortOrder]);
+  }, [selectedCommissionId, searchQuery, statusFilter, sortBy, sortOrder, focusRevision]);
 
   const currentCommission = useMemo(() => {
     return commissions.find((c) => c.id === selectedCommissionId);
@@ -79,7 +86,7 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-      {/* Barra de Navegación Superior y Título */}
+      {loadError && <p role="alert">{loadError}</p>}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
           <button
@@ -187,7 +194,7 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
       >
         <AlertCircle size={16} color="var(--isf-blue-sky)" aria-hidden="true" style={{ flexShrink: 0 }} />
         <span>
-          <strong>Nota institucional:</strong> Los datos personales, DNI y legajos son ficticios y de uso exclusivo de demostración. La matriculación oficial, altas y bajas son gestionadas por la Preceptoría del instituto.
+          <strong>Nota institucional:</strong> Los datos provienen del registro institucional. La matriculación oficial, altas y bajas son gestionadas por la Preceptoría del instituto.
         </span>
       </div>
 
@@ -316,7 +323,7 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
                     <ArrowUpDown size={14} aria-hidden="true" />
                   </button>
                 </th>
-                <th scope="col">DNI (Ficticio)</th>
+                <th scope="col">DNI</th>
                 <th scope="col">Contacto Institucional</th>
                 <th scope="col">Condición</th>
                 <th scope="col" style={{ textAlign: 'right' }}>Acciones</th>

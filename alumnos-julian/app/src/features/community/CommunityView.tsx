@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import {
@@ -70,7 +71,7 @@ export const CommunityView: React.FC = () => {
             Comunidad Educativa
           </h2>
           <p className="text-xs text-secondary-custom mt-0.5">
-            Canales institucionales y contactos autorizados de la comisión 2° A
+            Directorio institucional de usuarios activos
           </p>
         </div>
 
@@ -84,6 +85,7 @@ export const CommunityView: React.FC = () => {
         </div>
       </div>
 
+      <Link to="/comunicacion">Abrir Centro de Estudiantes y mensajes privados</Link>
       {/* Role Filter Tabs */}
       <Tabs tabs={roleTabs} activeTab={selectedRole} onChange={setSelectedRole} />
 
@@ -92,7 +94,7 @@ export const CommunityView: React.FC = () => {
         <div className="flex items-center gap-2">
           <Shield className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
           <span>
-            Privacidad académica: solo se exhiben casillas de correo institucional autorizadas y miembros de la misma cohorte.
+            El directorio publica nombres y roles. No informa correos ni garantiza pertenencia a tu comisión.
           </span>
         </div>
       </div>
@@ -156,11 +158,13 @@ export const CommunityView: React.FC = () => {
 
               <div className="mt-4 pt-3 border-t border-subtle-custom flex items-center justify-between text-xs">
                 <a
-                  href={`mailto:${member.email}`}
+                  href={member.email ? `mailto:${member.email || 'Correo no publicado'}` : undefined}
+                  aria-disabled={!member.email}
+                  title={member.email ? 'Enviar correo' : 'El directorio no publica correos'}
                   className="inline-flex items-center gap-1.5 text-secondary-custom hover:text-primary-custom transition-colors truncate"
                 >
                   <Mail className="w-3.5 h-3.5 text-muted-custom shrink-0" />
-                  <span className="truncate text-[11px] font-mono">{member.email}</span>
+                  <span className="truncate text-[11px] font-mono">{member.email || 'Correo no publicado'}</span>
                 </a>
               </div>
             </Card>

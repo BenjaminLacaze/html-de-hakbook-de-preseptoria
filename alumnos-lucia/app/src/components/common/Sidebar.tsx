@@ -31,11 +31,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
   isMobileOpen,
   onCloseMobile
 }) => {
-  const { student, switchDemoProfile } = useAuth();
+  const { student } = useAuth();
 
   const navItems: { id: NavView; label: string; icon: React.FC<{ size?: number; className?: string }> }[] = [
     { id: 'inicio', label: 'Inicio', icon: LayoutDashboard },
     { id: 'asistencia', label: 'Mi asistencia', icon: CalendarCheck },
+    { id: 'comunicacion', label: 'Centro y mensajes', icon: Users },
     { id: 'perfil', label: 'Mi perfil', icon: User },
     { id: 'ayuda', label: 'Ayuda', icon: HelpCircle },
     { id: 'accesibilidad', label: 'Accesibilidad', icon: Sliders }
@@ -111,40 +112,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
           );
         })}
       </nav>
-
-      {/* Selector de perfiles de demostración (para evaluar estados) */}
-      <div className="p-3 border-t border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
-        <label className="block text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
-          <Users size={12} />
-          <span>Caso de Demostración:</span>
-        </label>
-        <div className="grid grid-cols-2 gap-1 text-xs">
-          <button
-            type="button"
-            onClick={() => switchDemoProfile('std_01')}
-            className={`px-2 py-1.5 rounded text-left truncate transition-colors border ${
-              student.id === 'std_01'
-                ? 'bg-blue-50 border-blue-300 text-blue-900 dark:bg-blue-950 dark:border-blue-700 dark:text-blue-200 font-semibold'
-                : 'bg-white border-slate-200 text-slate-600 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400 hover:bg-slate-100'
-            }`}
-            title="Lucia Salgado - Regular (90% asistencia)"
-          >
-            Lucia (Regular)
-          </button>
-          <button
-            type="button"
-            onClick={() => switchDemoProfile('std_02')}
-            className={`px-2 py-1.5 rounded text-left truncate transition-colors border ${
-              student.id === 'std_02'
-                ? 'bg-amber-50 border-amber-300 text-amber-900 dark:bg-amber-950 dark:border-amber-700 dark:text-amber-200 font-semibold'
-                : 'bg-white border-slate-200 text-slate-600 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400 hover:bg-slate-100'
-            }`}
-            title="Agustín Méndez - En riesgo de inasistencias"
-          >
-            Agustín (Riesgo)
-          </button>
-        </div>
-      </div>
 
       {/* Pie institucional de crédito académico */}
       <div className="p-3.5 border-t border-slate-200 dark:border-slate-800 text-[11px] text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900">

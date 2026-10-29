@@ -7,6 +7,7 @@ export default defineConfig(() => {
   return {
     plugins: [react(), tailwindcss()],
     resolve: {
+      dedupe: ['react', 'react-dom'],
       alias: {
         '@': path.resolve(__dirname, '.'),
         // Tipos compartidos del sistema (ver shared/README.md en la raíz del repo)

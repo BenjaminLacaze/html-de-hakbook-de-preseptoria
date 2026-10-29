@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url'
 export default defineConfig({
   plugins: [react()],
   resolve: {
+    dedupe: ['react', 'react-dom'],
     alias: {
       // Tipos compartidos del sistema (ver shared/README.md en la raíz del repo)
       '@shared': fileURLToPath(new URL('../../shared', import.meta.url)),

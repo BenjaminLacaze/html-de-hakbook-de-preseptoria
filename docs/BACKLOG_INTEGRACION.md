@@ -1,5 +1,11 @@
 # Backlog de la integración
 
+> **Estado de relevo 2026-10-28:** nuevas conexiones/login implementados en las cinco apps y compilados;
+> se comprobó batería completa en PostgreSQL local y solo el primer escenario remoto en Neon.
+> Los cuadros históricos de abajo no equivalen a validación visual ni a publicación de estos cambios.
+> Continuar desde `RELEVO_CLAUDE_2026-10-28.md`: terminar batería Neon, revisar todas las pantallas y publicar.
+> Base vigente: Neon; usuarios demo públicos desactivados, datos demo retirados con respaldo.
+
 **Actualizado:** 2026-10-27 (tarde: datos compartidos). **Cómo se usa:** cuando alguien empieza una tarea, pone su nombre en
 *Responsable* y la pasa a 🟡. Cuando termina, la pasa a ✅ y anota el cambio en el `CHANGELOG.md`.
 Las tareas nuevas van al final de su bloque, con el número siguiente.

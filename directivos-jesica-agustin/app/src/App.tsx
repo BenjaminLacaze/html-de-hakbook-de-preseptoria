@@ -1,133 +1,82 @@
-import React, { useState } from 'react';
-import { AppProvider, useApp } from './context/AppContext';
-import { TopBar } from './components/layout/TopBar';
-import { SideBar } from './components/layout/SideBar';
-import { DashboardView } from './components/views/DashboardView';
-import { UsersView } from './components/views/UsersView';
-import { AccountsView } from './components/views/AccountsView';
-import { CoursesView } from './components/views/CoursesView';
-import { AttendanceView } from './components/views/AttendanceView';
-import { GradesView } from './components/views/GradesView';
-import { OrganizationView } from './components/views/OrganizationView';
-import { NoticesView } from './components/views/NoticesView';
-import { ReportsView } from './components/views/ReportsView';
-import { AuditView } from './components/views/AuditView';
-import { SettingsView } from './components/views/SettingsView';
-import { BackendContractView } from './components/views/BackendContractView';
-import {
-  Menu,
-  CheckCircle2,
-  AlertTriangle,
-  Info,
-  XCircle,
-  X,
-} from 'lucide-react';
+import { useCallback, useEffect, useState, type FormEvent } from 'react';
+import { apiFetch } from '@shared/api';
+import { SessionGate } from '@shared/auth/SessionGate';
+import { ASSESSMENT_TYPE_LABELS, ASSIGNABLE_ROLES, ROLE_LABELS, type AuthMe, type Role } from '@shared/types';
 
-// Con VITE_USE_MOCK=false la app trabaja contra la API real (cuentas de acceso, etc.).
-const USE_API = import.meta.env.VITE_USE_MOCK === 'false';
-
-const AppContent: React.FC = () => {
-  const { activeSection, systemNotification } = useApp();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
-  const renderActiveView = () => {
-    switch (activeSection) {
-      case 'inicio':
-        return <DashboardView />;
-      case 'usuarios':
-        return USE_API ? <AccountsView /> : <UsersView />;
-      case 'cursos':
-        return <CoursesView />;
-      case 'asistencia':
-        return <AttendanceView />;
-      case 'rendimiento':
-        return <GradesView />;
-      case 'organizacion':
-        return <OrganizationView />;
-      case 'comunicados':
-        return <NoticesView />;
-      case 'informes':
-        return <ReportsView />;
-      case 'auditoria':
-        return <AuditView />;
-      case 'configuracion':
-        return <SettingsView />;
-      case 'contrato':
-        return <BackendContractView />;
-      default:
-        return <DashboardView />;
-    }
-  };
-
-  return (
-    <div className="min-h-screen bg-[#F8F9FA] text-[#14214F] flex flex-col font-sans">
-      {/* Top bar */}
-      <TopBar />
-
-      {/* Mobile subheader with menu button */}
-      <div className="lg:hidden bg-white border-b border-slate-200 px-4 py-2 flex items-center justify-between no-print shadow-xs">
-        <button
-          onClick={() => setIsMobileMenuOpen(true)}
-          className="flex items-center gap-2 text-xs font-semibold text-[#14214F] px-2.5 py-1.5 rounded hover:bg-slate-100 transition-colors"
-        >
-          <Menu className="w-4 h-4 text-[#89743A]" />
-          <span>Menú de Navegación</span>
-        </button>
-        <span className="text-[11px] font-mono text-slate-500 capitalize">
-          {activeSection}
-        </span>
-      </div>
-
-      {/* Main Body: Sidebar + Viewport */}
-      <div className="flex-1 flex max-w-[1600px] w-full mx-auto">
-        <SideBar
-          isMobileOpen={isMobileMenuOpen}
-          onCloseMobile={() => setIsMobileMenuOpen(false)}
-        />
-
-        <main className="flex-1 p-4 lg:p-8 min-w-0 overflow-y-auto">
-          {renderActiveView()}
-        </main>
-      </div>
-
-      {/* System Toast Notification */}
-      {systemNotification && (
-        <div className="fixed bottom-5 right-5 z-50 animate-in fade-in slide-in-from-bottom-5">
-          <div
-            className={`px-4 py-3 rounded-lg shadow-lg border text-xs flex items-center gap-2.5 max-w-md ${
-              systemNotification.type === 'error'
-                ? 'bg-red-50 border-red-200 text-red-900'
-                : systemNotification.type === 'warning'
-                ? 'bg-amber-50 border-amber-300 text-amber-900'
-                : systemNotification.type === 'info'
-                ? 'bg-blue-50 border-blue-200 text-blue-900'
-                : 'bg-emerald-50 border-emerald-200 text-emerald-900'
-            }`}
-          >
-            {systemNotification.type === 'error' && (
-              <XCircle className="w-4 h-4 text-red-600 shrink-0" />
-            )}
-            {systemNotification.type === 'warning' && (
-              <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
-            )}
-            {systemNotification.type === 'info' && (
-              <Info className="w-4 h-4 text-blue-600 shrink-0" />
-            )}
-            {systemNotification.type === 'success' && (
-              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-            )}
-            <span className="font-medium">{systemNotification.message}</span>
-          </div>
-        </div>
-      )}
-    </div>
-  );
+type Row = Record<string, any>;
+type Field = [string, string, string?];
+const definitions: Record<string, { title: string; read: string; write: string; fields: Field[] }> = {
+ careers: {title:'Carreras',read:'/academic/careers',write:'/structure/careers',fields:[['code','Código'],['name','Nombre'],['durationYears','Duración en años','number']]},
+ plans: {title:'Planes',read:'/structure/plans',write:'/structure/plans',fields:[['careerId','Carrera','careers'],['code','Código'],['name','Nombre'],['startYear','Año de inicio','number']]},
+ subjects: {title:'Materias',read:'/academic/subjects',write:'/structure/subjects',fields:[['planId','Plan','plans'],['code','Código'],['name','Nombre'],['year','Año','number'],['period','Período','period']]},
+ cycles: {title:'Ciclos',read:'/structure/cycles',write:'/structure/cycles',fields:[['year','Año','number'],['startDate','Inicio','date'],['endDate','Fin','date']]},
+ commissions: {title:'Comisiones',read:'/structure/commissions',write:'/structure/commissions',fields:[['code','Código'],['subjectId','Materia','subjects'],['cycleId','Ciclo','cycles'],['period','Período','period'],['shift','Turno','shift'],['teacherIds','Docentes (opcional)','teachers'],['preceptorUserId','Preceptor (opcional)','preceptors']]},
+ students: {title:'Alumnos',read:'/structure/students',write:'/structure/students',fields:[['fileNumber','Legajo'],['dni','DNI'],['firstName','Nombre'],['lastName','Apellido'],['email','Correo','email'],['careerId','Carrera','careers'],['planId','Plan','plans'],['admissionDate','Ingreso','date']]},
+ teachers: {title:'Docentes',read:'/structure/teachers',write:'/structure/teachers',fields:[['fileNumber','Legajo'],['dni','DNI'],['firstName','Nombre'],['lastName','Apellido'],['email','Correo','email']]},
+ users: {title:'Cuentas',read:'/users',write:'/users',fields:[['firstName','Nombre'],['lastName','Apellido'],['email','Correo','email'],['roles','Rol','roles'],['studentId','Alumno (opcional)','students'],['teacherId','Docente (opcional)','teachers']]},
+ enrollments: {title:'Inscripciones',read:'/structure/enrollments',write:'/structure/enrollments',fields:[['studentId','Alumno','students'],['commissionId','Comisión','commissions']]},
 };
-
-export default function App() {
-  return (
-    <AppProvider>
-      <AppContent />
-    </AppProvider>
-  );
+function ScheduleFields(){return <fieldset><legend>Bloque horario (opcional)</legend><div className="fields"><label>Día<select name="weekday"><option value="">Sin horario</option>{['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'].map((d,i)=><option key={d} value={i+1}>{d}</option>)}</select></label><label>Desde<input type="time" name="startTime"/></label><label>Hasta<input type="time" name="endTime"/></label><label>Aula<input name="classroom" maxLength={60}/></label></div></fieldset>;}
+function GradeFields(){return <div className="fields"><label>Evaluación<select name="type" required>{Object.entries(ASSESSMENT_TYPE_LABELS).map(([id,text])=><option key={id} value={id}>{text}</option>)}</select></label><label>Instancia<input name="instance" type="number" required min="1" max="10" defaultValue="1"/></label></div>;}
+const label = (r:Row) => r.name || r.code || [r.lastName,r.firstName].filter(Boolean).join(', ') || String(r.year || r.id);
+const message = (e:unknown) => e instanceof Error ? e.message : 'No se pudo completar la operación.';
+function Panel({me}:{me:AuthMe}) {
+ const [tab,setTab]=useState('careers'), [data,setData]=useState<Record<string,Row[]>>({}), [busy,setBusy]=useState(false), [error,setError]=useState(''), [notice,setNotice]=useState(''), [secret,setSecret]=useState('');
+ const [editing,setEditing]=useState<Row|null>(null);
+ const [enrollments,setEnrollments]=useState<Row[]>([]);
+ const canGrade=me.user.roles.some(r=>r==='DIRECTOR'||r==='SUPER_ADMIN');
+ const [commission,setCommission]=useState(''), [student,setStudent]=useState(''), [report,setReport]=useState<Row[]>([]);
+ const load=useCallback(async()=>{
+  setBusy(true); setError('');
+  const results=await Promise.allSettled(Object.entries(definitions).filter(([k])=>k!=='enrollments').map(async([key,d])=>[key,await apiFetch<Row[]>(d.read)] as const));
+  const next:Record<string,Row[]>={}; const errors:string[]=[];
+  results.forEach(r=>{if(r.status==='fulfilled') next[r.value[0]]=r.value[1]; else errors.push(message(r.reason));});
+  next.preceptors=(next.users||[]).filter(u=>u.status==='ACTIVE' && u.roles.includes('PRECEPTOR'));setData(next);setError(errors.join(' • '));setBusy(false);
+ },[]);
+ useEffect(()=>{void load();const focus=()=>{void load();setReport([]);};window.addEventListener('focus',focus);return()=>window.removeEventListener('focus',focus);},[load]);
+ useEffect(()=>{setEditing(null);setReport([]);setNotice('');setSecret('');},[tab,commission,student]);
+ async function mutate(path:string,body:unknown,method:'POST'|'PATCH'|'PUT'='POST') {
+  setBusy(true);setError('');setNotice('');
+  try {const result=await apiFetch<Row>(path,{method,body});if(result.temporaryPassword)setSecret(result.temporaryPassword);await load();setNotice('Guardado en el sistema compartido.');return true;}catch(e){setError(message(e));return false;}finally{setBusy(false);}
+ }
+ async function submit(e:FormEvent<HTMLFormElement>) {
+  e.preventDefault(); const form=e.currentTarget; const values=new FormData(form);const body:Row={};
+  definitions[tab].fields.forEach(([key,,type])=>{const value=String(values.get(key)||'');if(value)body[key]=type==='number'?Number(value):key==='roles'||key==='teacherIds'?[value]:value;});
+  if(tab==='commissions'){body.teacherIds=values.getAll('teacherIds').filter(Boolean); const schedule=readSchedule(values);if(schedule===null)return;body.schedule=schedule;}
+  if(tab==='students' && data.plans?.find(p=>p.id===body.planId)?.careerId!==body.careerId){setError('El plan debe pertenecer a la carrera elegida.');return;}
+  if(await mutate(definitions[tab].write,body))form.reset();
+ }
+ async function readReport(){setBusy(true);setError('');setReport([]);try{
+  const query={commissionId:commission||undefined};
+  if(tab==='attendance'){if(!student)throw new Error('Elegí un alumno.'); const r=await apiFetch<Row|Row[]>('/attendance/summary',{query:{...query,studentId:student}});setReport(Array.isArray(r)?r:[r]);}
+  else {if(!commission)throw new Error('Elegí una comisión.');const [en,grades]=await Promise.all([apiFetch<Row[]>('/structure/enrollments',{query}),apiFetch<Row[]>('/records/grades',{query})]);setReport(tab==='enrollments'?en:grades.map(g=>({...g,studentId:en.find(e=>e.id===g.enrollmentId)?.studentId})));}
+ }catch(e){setError(message(e));}finally{setBusy(false);}}
+ useEffect(()=>{let active=true;setEnrollments([]);if(tab==='grades'&&commission){apiFetch<Row[]>('/structure/enrollments',{query:{commissionId:commission}}).then(rows=>{if(active)setEnrollments(rows);}).catch(e=>{if(active)setError(message(e));});}return()=>{active=false;};},[tab,commission]);
+ function readSchedule(values:FormData):Row[]|null {
+  const day=String(values.get('weekday')||'');const start=String(values.get('startTime')||'');const end=String(values.get('endTime')||'');const classroom=String(values.get('classroom')||'');
+  if(!day&&!start&&!end&&!classroom)return [];
+  if(!day||!start||!end||end<=start){setError('Completá día y horario. La hora de fin debe ser posterior al inicio.');return null;}
+  return [{weekday:Number(day),startTime:start,endTime:end,...(classroom?{classroom}:{})}];
+ }
+ async function editCommission(e:FormEvent<HTMLFormElement>){e.preventDefault();if(!editing)return;const f=new FormData(e.currentTarget);const schedule=readSchedule(f);if(schedule===null)return;
+ const body:Row={teacherIds:f.getAll('teacherIds').filter(Boolean),preceptorUserId:f.get('preceptorUserId')||null};
+ if(f.get('replaceSchedule'))body.schedule=schedule;
+ if(await mutate('/structure/commissions/'+editing.id,body,'PATCH'))setEditing(null);
+ }
+ async function saveGrade(e:FormEvent<HTMLFormElement>){e.preventDefault();const f=new FormData(e.currentTarget);const absent=f.get('absent')==='on';
+ if(!absent&&!f.get('value')){setError('Ingresá la nota o marcá ausente.');return;}
+ if(await mutate('/records/grades',{enrollmentId:f.get('enrollmentId'),type:f.get('type'),instance:Number(f.get('instance')),date:f.get('date'),absent,value:absent?null:Number(f.get('value')),notes:String(f.get('notes')||'')},'PUT'))await readReport();
+ }
+ async function publishGrades(e:FormEvent<HTMLFormElement>){e.preventDefault();const f=new FormData(e.currentTarget);if(await mutate('/records/grades/publish',{commissionId:commission,type:f.get('type'),instance:Number(f.get('instance'))}))await readReport();}
+ const options=(type:string):[string,string][]=> type==='period'?[['ANNUAL','Anual'],['FIRST_TERM','Primer cuatrimestre'],['SECOND_TERM','Segundo cuatrimestre']]:type==='shift'?[['MORNING','Mañana'],['AFTERNOON','Tarde'],['EVENING','Vespertino']]:type==='roles'?[...new Set(me.user.roles.flatMap(r=>ASSIGNABLE_ROLES[r]||[]))].map(r=>[r,ROLE_LABELS[r as Role]]):(data[type]||[]).map(r=>[r.id,label(r)]);
+ const select=(type:string,value:string,onChange:(s:string)=>void)=><select value={value} onChange={e=>onChange(e.target.value)}><option value="">Seleccionar</option>{options(type).map(([id,text])=><option key={id} value={id}>{text}</option>)}</select>;
+ const rows=tab==='grades'||tab==='attendance'||tab==='enrollments'?report:data[tab]||[];
+ const display=(key:string,value:any):string=>{if(value==null)return '—';const refs:Record<string,string>={studentId:'students',teacherId:'teachers',careerId:'careers',planId:'plans',subjectId:'subjects',commissionId:'commissions',cycleId:'cycles',preceptorUserId:'users'};if(refs[key]){const r=data[refs[key]]?.find(r=>r.id===value);return r?label(r):String(value);}if(key==='schedule')return value.map((v:Row)=>`${['','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'][v.weekday]} ${v.startTime}–${v.endTime}${v.classroom?' · Aula '+v.classroom:''}`).join('; ');if(key==='teacherIds')return value.map((id:string)=>label(data.teachers?.find(r=>r.id===id)||{name:'Docente no disponible'})).join(', ');const catalogs:Row={...ASSESSMENT_TYPE_LABELS,ACTIVE:'Activo',INACTIVE:'Inactivo',PLANNED:'Planificado',CLOSED:'Cerrado',ANNUAL:'Anual',FIRST_TERM:'Primer cuatrimestre',SECOND_TERM:'Segundo cuatrimestre',MORNING:'Mañana',AFTERNOON:'Tarde',EVENING:'Vespertino',IN_PROGRESS:'Cursando',REGULAR:'Regular',FREE:'Libre',PROMOTED:'Promocionado',PASSED:'Aprobado',DROPPED:'Baja',OK:'Al día',AT_RISK:'En riesgo',BELOW_MINIMUM:'Por debajo del mínimo'};if(typeof value==='string'&&catalogs[value])return catalogs[value];if(Array.isArray(value))return value.map(v=>typeof v==='object'?JSON.stringify(v):ROLE_LABELS[v as Role]||String(v)).join(', ');return typeof value==='object'?JSON.stringify(value):typeof value==='boolean'?(value?'Sí':'No'):String(value);};
+ return <div className="real-panel"><header><h1>Directivos · ISFDyT N.º 26</h1><p>{me.user.firstName} {me.user.lastName}</p><a href="/">Inicio institucional</a></header><nav aria-label="Secciones">{[...Object.entries(definitions).map(([k,v])=>[k,v.title]),['attendance','Asistencia'],['grades','Notas']].map(([key,title])=><button aria-current={tab===key?'page':undefined} key={key} onClick={()=>setTab(key)}>{title}</button>)}</nav><main><h2>{definitions[tab]?.title || (tab==='grades'?'Notas compartidas':'Asistencia compartida')}</h2><button disabled={busy} onClick={()=>void load()}>Actualizar datos</button>{busy&&<p role="status">Consultando el servidor…</p>}{error&&<p role="alert" className="error">{error}</p>}{notice&&<p role="status">{notice}</p>}{secret&&<aside role="status">Contraseña temporal: <strong>{secret}</strong><button onClick={()=>setSecret('')}>Ocultar</button></aside>}
+ {definitions[tab]&&<form key={tab} onSubmit={submit}><h3>Agregar {definitions[tab].title.toLowerCase()}</h3><div className="fields">{definitions[tab].fields.map(([key,title,type])=><label key={key}>{title}{type&&options(type).length || ['careers','plans','subjects','cycles','teachers','students','commissions','preceptors','roles','period','shift'].includes(type||'')?<select name={key} multiple={key==='teacherIds'} required={!title.includes('opcional')}><option value="">Seleccionar</option>{options(type!).map(([id,text])=><option key={id} value={id}>{text}</option>)}</select>:<input name={key} type={type||'text'} required min={type==='number'?1:undefined}/>}</label>)}</div>{tab==='commissions'&&<ScheduleFields/>}{tab==='cycles'&&<p>Se crea planificado. Activá el ciclo desde su fila cuando corresponda; esto cierra el ciclo vigente anterior.</p>}<button disabled={busy}>Guardar</button></form>}
+ {['grades','attendance','enrollments'].includes(tab)&&<section className="fields"><label>Comisión {select('commissions',commission,setCommission)}</label>{tab==='attendance'&&<label>Alumno {select('students',student,setStudent)}</label>}<button disabled={busy} onClick={()=>void readReport()}>Consultar reporte</button><button disabled={!rows.length} onClick={()=>window.print()}>Imprimir reporte</button></section>}
+ {editing&&tab==='commissions'&&<form key={editing.id} onSubmit={editCommission}><h3>Editar {label(editing)}</h3><label>Docentes (podés seleccionar varios)<select name="teacherIds" multiple defaultValue={editing.teacherIds}>{options('teachers').map(([id,text])=><option key={id} value={id}>{text}</option>)}</select></label><label>Preceptor<select name="preceptorUserId" defaultValue={editing.preceptorUserId||''}><option value="">Sin asignar</option>{options('preceptors').map(([id,text])=><option key={id} value={id}>{text}</option>)}</select></label><p>Horario actual: {display('schedule',editing.schedule)}</p><label><input type="checkbox" name="replaceSchedule"/>Reemplazar horario completo por el bloque siguiente (vacío elimina el horario)</label><ScheduleFields/><button disabled={busy}>Guardar asignaciones</button><button type="button" onClick={()=>setEditing(null)}>Cancelar</button></form>}
+ {tab==='grades'&&commission&&(canGrade?<><form onSubmit={saveGrade}><h3>Cargar o corregir nota</h3><p>La misma evaluación e instancia actualiza la nota existente.</p><div className="fields"><label>Alumno inscripto<select name="enrollmentId" required><option value="">Seleccionar</option>{enrollments.map(en=><option key={en.id} value={en.id}>{display('studentId',en.studentId)}</option>)}</select></label><GradeFields/><label>Fecha<input type="date" name="date" required/></label><label>Nota<input type="number" name="value" min="1" max="10" step="0.01"/></label><label><input type="checkbox" name="absent"/>Ausente</label><label>Observación<input name="notes" maxLength={1000}/></label></div><button disabled={busy||!enrollments.length}>Guardar nota</button></form><form onSubmit={publishGrades}><h3>Publicar notas</h3><p>Publica todas las notas de la evaluación e instancia elegidas en esta comisión para que las vean los alumnos.</p><GradeFields/><button disabled={busy}>Publicar evaluación</button></form></>:<p>Secretaría puede consultar notas. El servidor reserva la carga y publicación a Directivos y Superadministración.</p>)}
+ <div className="table-wrap">{rows.length?<table><thead><tr>{Object.keys(rows[0]).filter(k=>!['createdAt','updatedAt','id','recordedBy','enrollmentId'].includes(k)).map(k=><th key={k}>{({firstName:'Nombre',lastName:'Apellido',email:'Correo',fileNumber:'Legajo',studentId:'Alumno',subjectName:'Materia',careerId:'Carrera',planId:'Plan',commissionId:'Comisión',value:'Nota',date:'Fecha',published:'Publicada',absent:'Ausente',status:'Estado',code:'Código',name:'Nombre',roles:'Roles',year:'Año',period:'Período',shift:'Turno',durationYears:'Duración',enrolledAt:'Inscripción',condition:'Condición',type:'Evaluación',instance:'Instancia',preceptorUserId:'Preceptor',teacherIds:'Docentes',teacherNames:'Docentes',schedule:'Horario y aula',cycleId:'Ciclo',subjectId:'Materia',subjectYear:'Año de materia',careerName:'Carrera',studentCount:'Inscriptos',capacity:'Cupo',startDate:'Inicio',endDate:'Fin',startYear:'Año de inicio',admissionDate:'Ingreso',totalSessions:'Clases registradas',presentCount:'Presentes',absentCount:'Ausentes',lateCount:'Llegadas tarde',justifiedAbsenceCount:'Ausencias justificadas',percentage:'Asistencia (%)',minimumRequired:'Mínimo exigido (%)',risk:'Situación',remainingAbsencesAllowed:'Faltas disponibles',notes:'Observaciones',recordedAt:'Registrada',publishedAt:'Publicada el',mustChangePassword:'Debe cambiar contraseña',active:'Activo',enrollmentId:'Inscripción'} as Row)[k]||k}</th>)}{tab==='users'||tab==='cycles'||tab==='commissions'?<th>Acciones</th>:null}</tr></thead><tbody>{rows.map((r,i)=><tr key={r.id||i}>{Object.keys(rows[0]).filter(k=>!['createdAt','updatedAt','id','recordedBy','enrollmentId'].includes(k)).map(k=><td key={k}>{display(k,r[k])}</td>)}{tab==='commissions'&&<td><button disabled={busy} onClick={()=>setEditing(r)}>Editar asignaciones y horario</button></td>}{tab==='cycles'&&<td><button disabled={busy||r.status==='ACTIVE'} onClick={()=>void mutate('/structure/cycles/'+r.id,{status:'ACTIVE'},'PATCH')}>Activar ciclo</button></td>}{tab==='users'&&<td><button disabled={busy} onClick={()=>void mutate('/users/'+r.id,{status:r.status==='ACTIVE'?'INACTIVE':'ACTIVE'},'PATCH')}>{r.status==='ACTIVE'?'Desactivar':'Activar'}</button><button disabled={busy} onClick={()=>void mutate('/users/'+r.id+'/reset-password',{})}>Restablecer contraseña</button></td>}</tr>)}</tbody></table>:<p>Sin datos para mostrar. En reportes, seleccioná los filtros y consultá.</p>}</div></main></div>;
 }
+export default function App(){return <SessionGate apps={['directivos']}>{me=><Panel me={me}/>}</SessionGate>;}

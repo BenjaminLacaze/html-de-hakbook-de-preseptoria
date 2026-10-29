@@ -1,3 +1,4 @@
+import { useSession } from '../../lib/session';
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
@@ -47,18 +48,19 @@ export const navigationGroups: NavGroup[] = [
     group: 'Académico',
     items: [
       { name: 'Inicio', path: '/', icon: LayoutDashboard },
-      { name: 'Agenda Académica', path: '/agenda', icon: Calendar, badge: 'Hoy' },
+      { name: 'Agenda Académica', path: '/agenda', icon: Calendar },
       { name: 'Materias', path: '/materias', icon: BookOpen },
       { name: 'Mis Notas', path: '/notas', icon: GraduationCap },
-      { name: 'Mis Faltas', path: '/faltas', icon: ClipboardList, badge: 'Alerta', badgeVariant: 'gold' },
+      { name: 'Mis Faltas', path: '/faltas', icon: ClipboardList },
       { name: 'Historial completo', path: '/historial', icon: History },
     ],
   },
   {
     group: 'Comunidad',
     items: [
+      { name: 'Centro y mensajes', path: '/comunicacion', icon: MessageSquare },
       { name: 'Comunidad', path: '/comunidad', icon: Users },
-      { name: 'Foros', path: '/foros', icon: MessageSquare, badge: '3' },
+      { name: 'Foros', path: '/foros', icon: MessageSquare },
     ],
   },
   {
@@ -85,6 +87,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onOpenLogout,
 }) => {
   const location = useLocation();
+  const { user } = useSession();
 
   const sidebarContent = (
     <div className="flex flex-col h-full bg-surface select-none">
@@ -176,15 +179,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div className={cn('flex items-center gap-3', isCollapsed ? 'justify-center' : 'justify-between')}>
           <div className="flex items-center gap-2.5 overflow-hidden">
             <div className="w-8 h-8 rounded-full bg-[var(--accent-subtle)] text-[var(--accent-primary)] border border-subtle-custom flex items-center justify-center font-bold text-xs shrink-0">
-              JC
+              {user.firstName[0]}{user.lastName[0]}
             </div>
             {!isCollapsed && (
               <div className="flex flex-col truncate">
                 <span className="text-xs font-semibold text-primary-custom truncate">
-                  Alex Estudiante
+                  {user.firstName} {user.lastName}
                 </span>
                 <span className="text-[10px] text-secondary-custom truncate">
-                  Leg. DEMO-0842
+                  {user.email}
                 </span>
               </div>
             )}

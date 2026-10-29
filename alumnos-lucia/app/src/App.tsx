@@ -11,22 +11,21 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { NavView } from './types';
 import { Header } from './components/common/Header';
 import { Sidebar } from './components/common/Sidebar';
-import { LoginView } from './components/views/LoginView';
+import { SessionGate } from '@shared/auth/SessionGate';
 import { HomeView } from './components/views/HomeView';
 import { AttendanceView } from './components/views/AttendanceView';
 import { ProfileView } from './components/views/ProfileView';
 import { HelpView } from './components/views/HelpView';
 import { AccessibilityView } from './components/views/AccessibilityView';
+import { StudentCommunication } from './communication/StudentCommunication';
 import './App.css';
 
 const AppContent: React.FC = () => {
-  const { isLoggedIn } = useAuth();
+  const { isLoading, userId } = useAuth();
   const [activeView, setActiveView] = useState<NavView>('inicio');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
 
-  if (!isLoggedIn) {
-    return <LoginView />;
-  }
+
 
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors">
@@ -46,9 +45,10 @@ const AppContent: React.FC = () => {
           onNavigate={(view) => setActiveView(view)}
         />
 
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
+        <main aria-busy={isLoading} className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
           {activeView === 'inicio' && <HomeView onNavigate={(view) => setActiveView(view)} />}
           {activeView === 'asistencia' && <AttendanceView />}
+          {activeView === 'comunicacion' && <StudentCommunication userId={userId} />}
           {activeView === 'perfil' && <ProfileView />}
           {activeView === 'ayuda' && <HelpView onNavigate={(view) => setActiveView(view)} />}
           {activeView === 'accesibilidad' && <AccessibilityView />}
@@ -71,9 +71,9 @@ const AppContent: React.FC = () => {
 export default function App() {
   return (
     <AccessibilityProvider>
-      <AuthProvider>
+      <SessionGate apps={['alumnos']}>{me=><AuthProvider me={me} key={me.user.id}>
         <AppContent />
-      </AuthProvider>
+      </AuthProvider>}</SessionGate>
     </AccessibilityProvider>
   );
 }

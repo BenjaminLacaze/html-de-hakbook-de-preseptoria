@@ -5,6 +5,7 @@ import { defineConfig } from 'vite';
 export default defineConfig({
   plugins: [react()],
   resolve: {
+    dedupe: ['react', 'react-dom'],
     alias: {
       // Tipos, cliente de la API y diseño compartidos (ver shared/README.md en la raíz del repo)
       '@shared': path.resolve(import.meta.dirname, '../../shared'),

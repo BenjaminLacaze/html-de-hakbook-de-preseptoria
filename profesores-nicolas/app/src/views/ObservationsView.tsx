@@ -49,6 +49,12 @@ export const ObservationsView: React.FC<ObservationsViewProps> = ({
   const [filterSearchQuery, setFilterSearchQuery] = useState<string>('');
 
   // Estados de control
+  const [focusRevision, setFocusRevision] = useState(0);
+  useEffect(() => {
+    const refresh = () => setFocusRevision(n => n + 1);
+    window.addEventListener('focus', refresh);
+    return () => window.removeEventListener('focus', refresh);
+  }, []);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [validationError, setValidationError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -68,12 +74,12 @@ export const ObservationsView: React.FC<ObservationsViewProps> = ({
           setFormStudentId(list[0].id);
         }
       } catch (err) {
-        console.error('Error al cargar estudiantes para observación:', err);
+        setValidationError(err instanceof Error ? err.message : 'No se pudieron cargar los datos.');
       }
     };
 
     loadStudents();
-  }, [formCommissionId, initialStudentId]);
+  }, [formCommissionId, initialStudentId, focusRevision]);
 
   // Cargar listado de observaciones
   const fetchObservations = async () => {
@@ -85,7 +91,7 @@ export const ObservationsView: React.FC<ObservationsViewProps> = ({
       });
       setObservations(list);
     } catch (err) {
-      console.error('Error al obtener observaciones:', err);
+      setValidationError(err instanceof Error ? err.message : 'No se pudieron cargar los datos.');
     } finally {
       setIsLoading(false);
     }
@@ -93,7 +99,7 @@ export const ObservationsView: React.FC<ObservationsViewProps> = ({
 
   useEffect(() => {
     fetchObservations();
-  }, [filterCommissionId, filterSearchQuery]);
+  }, [filterCommissionId, filterSearchQuery, focusRevision]);
 
   // Obtener datos del estudiante seleccionado en el formulario
   const selectedStudentObj = useMemo(() => {
@@ -155,7 +161,7 @@ export const ObservationsView: React.FC<ObservationsViewProps> = ({
       });
 
       setSuccessMessage(
-        `Observación cualitativa registrada correctamente para ${selectedStudentObj.lastName}, ${selectedStudentObj.firstName} (Registro simulado).`
+        `Observación cualitativa registrada correctamente para ${selectedStudentObj.lastName}, ${selectedStudentObj.firstName}.`
       );
 
       // Limpiar formulario
@@ -163,8 +169,8 @@ export const ObservationsView: React.FC<ObservationsViewProps> = ({
       await fetchObservations();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err) {
-      console.error('Error al crear observación:', err);
-      setValidationError('Ocurrió un error al guardar la observación.');
+      setValidationError(err instanceof Error ? err.message : 'No se pudieron cargar los datos.');
+
     } finally {
       setIsLoading(false);
     }

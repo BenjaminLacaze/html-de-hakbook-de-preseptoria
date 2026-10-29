@@ -1,94 +1,65 @@
-/**
- * Contexto de Autenticación de Demostración
- * Sistema de Asistencia Escolar - Módulo Alumno
- * Responsable: Lucia Salgado
- */
-
-import React, { createContext, useContext, useState } from 'react';
-import { StudentProfile, AttendanceRecord } from '../types';
-import {
-  DEMO_STUDENT,
-  DEMO_STUDENT_AT_RISK,
-  MOCK_ATTENDANCE_RECORDS_LUCIA,
-  MOCK_ATTENDANCE_RECORDS_RISK
-} from '../data/mockData';
-
-interface AuthContextType {
-  isLoggedIn: boolean;
-  student: StudentProfile;
-  records: AttendanceRecord[];
-  isDemoMode: boolean;
-  isLoading: boolean;
-  login: (legajoOrUser: string, pass: string) => Promise<{ success: boolean; message?: string }>;
-  logout: () => void;
-  switchDemoProfile: (profileId: 'std_01' | 'std_02') => void;
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { apiFetch, logout as endSession } from '@shared/api';
+import type { AuthMe, Student, MySubject, AttendanceRecordView, AttendanceSummary, InstitutionSettings, Notice } from '@shared/types';
+import type { StudentProfile, AttendanceRecord } from '../types';
+interface Data {
+    userId: string;
+    student: StudentProfile;
+    records: AttendanceRecord[];
+    summary: AttendanceSummary;
+    settings: InstitutionSettings;
+    notices: Notice[];
 }
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Inicialmente con sesión activa para facilitar navegación inmediata del evaluador
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(true);
-  const [selectedProfileId, setSelectedProfileId] = useState<'std_01' | 'std_02'>('std_01');
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-
-  const student = selectedProfileId === 'std_01' ? DEMO_STUDENT : DEMO_STUDENT_AT_RISK;
-  const records = selectedProfileId === 'std_01' ? MOCK_ATTENDANCE_RECORDS_LUCIA : MOCK_ATTENDANCE_RECORDS_RISK;
-
-  const login = async (legajoOrUser: string, pass: string) => {
-    setIsLoading(true);
-    // Simulación de latencia de red para demostrar estados de carga
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    setIsLoading(false);
-
-    if (!legajoOrUser.trim()) {
-      return { success: false, message: 'Ingrese su número de legajo o usuario institucional.' };
+const AuthContext = createContext<(Data & {
+    isLoggedIn: boolean;
+    isDemoMode: boolean;
+    isLoading: boolean;
+    logout: () => Promise<void>;
+}) | undefined>(undefined);
+export const AuthProvider: React.FC<{
+    me: AuthMe;
+    children: React.ReactNode;
+}> = ({ me, children }) => {
+    const [data, setData] = useState<Data>(), [error, setError] = useState(''), [loading, setLoading] = useState(true);
+    useEffect(() => {
+        let active = true;
+        const load = async () => {
+            setLoading(true);
+            try {
+                const [s, subjects, rows, summary, settings, notices] = await Promise.all([apiFetch<Student>('/me/student'), apiFetch<MySubject[]>('/me/subjects'), apiFetch<AttendanceRecordView[]>('/me/attendance'), apiFetch<AttendanceSummary>('/me/summary'), apiFetch<InstitutionSettings>('/records/settings'), apiFetch<Notice[]>('/records/notices')]);
+                const c = subjects[0]?.commission;
+                const student: StudentProfile = { id: s.id, legajo: s.fileNumber, dni: s.dni, firstName: s.firstName, lastName: s.lastName, email: s.email, career: c?.careerName ?? 'Sin cursadas', institution: settings.name, institutionShort: settings.shortName, year: c ? String(c.subjectYear) : 'Sin informar', division: subjects.map(x => x.commission.code).join(', '), shift: c?.shift ?? 'Sin informar', academicYear: new Date().getFullYear(), enrollmentStatus: ({ ACTIVE: 'ACTIVO', GRADUATED: 'EGRESADO', INACTIVE: 'INACTIVO', WITHDRAWN: 'BAJA' } as const)[s.status], minimumAttendanceRequired: settings.minAttendancePercent, minimumJustifiedAttendanceRequired: settings.attendanceRiskThresholdPercent, preceptorContact: { name: 'Consultar en Secretaría', email: 'Sin informar', office: 'Sin informar' } };
+                const records: AttendanceRecord[] = rows.map(r => ({ id: r.id, studentId: r.studentId, date: r.date, time: '', status: r.justified ? 'JUSTIFICADO' : r.status === 'PRESENT' ? 'PRESENTE' : r.status === 'LATE' ? 'TARDE' : 'AUSENTE', subjectName: r.subjectName, academicPeriod: subjects.find(x => x.commission.id === r.commissionId)?.commission.period === 'FIRST_TERM' ? '1C' : subjects.find(x => x.commission.id === r.commissionId)?.commission.period === 'SECOND_TERM' ? '2C' : 'ANUAL', observation: r.notes, registeredBy: r.source === 'TEACHER' ? 'Docente' : 'Preceptoría' }));
+                if (active) {
+                    setData({ userId: me.user.id, student, records, summary, settings, notices });
+                    setError('');
+                }
+            }
+            catch (e) {
+                if (active)
+                    setError((e as Error).message);
+            }
+            finally {
+                if (active)
+                    setLoading(false);
+            }
+        };
+        void load();
+        window.addEventListener('focus', load);
+        return () => { active = false; window.removeEventListener('focus', load); };
+    }, [me.user.id]);
+    const logout = async () => { try {
+        await endSession();
+        window.location.reload();
     }
-    if (!pass.trim()) {
-      return { success: false, message: 'Ingrese su contraseña de acceso.' };
-    }
-
-    // Si ingresa con el usuario de Agustín
-    if (legajoOrUser.includes('8902') || legajoOrUser.toLowerCase().includes('mendez')) {
-      setSelectedProfileId('std_02');
-    } else {
-      setSelectedProfileId('std_01');
-    }
-
-    setIsLoggedIn(true);
-    return { success: true };
-  };
-
-  const logout = () => {
-    setIsLoggedIn(false);
-  };
-
-  const switchDemoProfile = (profileId: 'std_01' | 'std_02') => {
-    setSelectedProfileId(profileId);
-  };
-
-  return (
-    <AuthContext.Provider
-      value={{
-        isLoggedIn,
-        student,
-        records,
-        isDemoMode: true,
-        isLoading,
-        login,
-        logout,
-        switchDemoProfile
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
-  );
+    catch (e) {
+        setError((e as Error).message);
+    } };
+    if (error)
+        return <div role="alert"><p>{error}</p><button onClick={() => window.location.reload()}>Volver a cargar</button></div>;
+    if (!data)
+        return <p role="status">Cargando datos del alumno…</p>;
+    return <AuthContext.Provider value={{ ...data, isLoggedIn: true, isDemoMode: false, isLoading: loading, logout }}>{children}</AuthContext.Provider>;
 };
-
-export function useAuth() {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth debe ser utilizado dentro de un AuthProvider');
-  }
-  return context;
-}
+export const useAuth = () => { const c = useContext(AuthContext); if (!c)
+    throw new Error('Falta la sesión del alumno'); return c; };

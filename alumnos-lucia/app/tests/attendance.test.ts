@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import { calculateAttendanceStatistics, statisticsFromSummary, filterAttendanceRecords } from '../src/services/attendanceService';
+import type { AttendanceRecord } from '../src/types';
+const records:AttendanceRecord[]=['PRESENTE','TARDE','JUSTIFICADO','AUSENTE'].map((status,i)=>({id:String(i),studentId:'student',date:'2026-10-28',time:'',status:status as AttendanceRecord['status'],subjectName:'Materia',academicPeriod:'ANUAL',registeredBy:'Docente'}));
+assert.equal(calculateAttendanceStatistics(records,75,0,80).percentage,66.7);
+assert.equal(calculateAttendanceStatistics(records,75,0.5,80).percentage,50);
+assert.equal(calculateAttendanceStatistics([],75,0,80).percentage,100);
+assert.equal(calculateAttendanceStatistics(records,60,0,80).regularityStatus,'EN_RIESGO');
+assert.equal(calculateAttendanceStatistics(records,70,0,80).regularityStatus,'LIBRE');
+assert.equal(filterAttendanceRecords(records,{period:'1C',status:'ALL',searchQuery:''}).length,0);
+assert.equal(filterAttendanceRecords(records,{period:'ALL',status:'ALL',searchQuery:''}).length,4);
+assert.equal(statisticsFromSummary({studentId:'student',totalSessions:8,presentCount:6,absentCount:1,lateCount:0,justifiedAbsenceCount:1,percentage:85.7,minimumRequired:75,risk:'OK',remainingAbsencesAllowed:0}).percentage,85.7);
+console.log('Lucía: 8 comprobaciones de asistencia OK.');

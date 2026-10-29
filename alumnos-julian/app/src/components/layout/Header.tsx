@@ -1,3 +1,6 @@
+import { useQuery } from '@tanstack/react-query';
+import { apiFetch } from '@shared/api';
+import type { AppNotification } from '@shared/types';
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
@@ -40,32 +43,8 @@ export const Header: React.FC<HeaderProps> = ({ onOpenMobile }) => {
     }
   };
 
-  const simulatedNotifications = [
-    {
-      id: 'notif-1',
-      title: 'Nota de Parcial publicada',
-      time: 'Hace 2 horas',
-      text: 'Se publicó la calificación de Programación III (8.50 / 10).',
-      icon: GraduationCap,
-      type: 'success',
-    },
-    {
-      id: 'notif-2',
-      title: 'Límite de inasistencias',
-      time: 'Ayer',
-      text: 'Redes y Telecomunicaciones: 3 faltas registradas de 4 permitidas.',
-      icon: AlertTriangle,
-      type: 'warning',
-    },
-    {
-      id: 'notif-3',
-      title: 'Próxima entrega de TP',
-      time: '18 Oct',
-      text: 'Bases de Datos II: Entrega de agregaciones MongoDB el 20/10.',
-      icon: Calendar,
-      type: 'info',
-    },
-  ];
+  const { data: notifications = [], error: notificationError } = useQuery({queryKey:['notifications'],queryFn:()=>apiFetch<AppNotification[]>('/social/notifications')});
+  const simulatedNotifications = notifications.map(n=>({id:n.id,title:n.text,text:n.details??'',time:new Date(n.createdAt).toLocaleString('es-AR'),icon:Bell}));
 
   return (
     <header className="h-16 border-b border-subtle-custom bg-surface sticky top-0 z-20 flex items-center justify-between px-4 sm:px-6 gap-4">
@@ -93,12 +72,12 @@ export const Header: React.FC<HeaderProps> = ({ onOpenMobile }) => {
 
       {/* Zone 2: Academic Period Context (Middle) */}
       <div className="hidden lg:flex items-center gap-2 text-xs text-secondary-custom">
-        <span className="font-semibold text-primary-custom">Período Académico 2026</span>
+        <span className="font-semibold text-primary-custom">Portal del alumno</span>
         <span aria-hidden="true">·</span>
-        <span>2° Cuatrimestre</span>
+        <span>Datos institucionales</span>
         <span aria-hidden="true">·</span>
         <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-medium">
-          <CheckCircle2 className="w-3.5 h-3.5" /> Alumno Regular
+          <CheckCircle2 className="w-3.5 h-3.5" /> Sesión activa
         </span>
       </div>
 
@@ -108,7 +87,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenMobile }) => {
         <Button
           variant="primary"
           size="sm"
-          onClick={() => navigate('/asistencia-qr')}
+          disabled title="El servidor no admite registro por QR"
           className="hidden sm:inline-flex"
         >
           <QrCode className="w-4 h-4" />
@@ -152,10 +131,10 @@ export const Header: React.FC<HeaderProps> = ({ onOpenMobile }) => {
               <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-surface border border-subtle-custom rounded-[var(--radius-current)] shadow-xl z-40 p-4 space-y-3 animate-in fade-in zoom-in-95 duration-150">
                 <div className="flex items-center justify-between border-b border-subtle-custom pb-2.5">
                   <span className="text-xs font-bold text-primary-custom">Avisos Académicos</span>
-                  <span className="text-[11px] text-muted-custom">3 no leídos</span>
+                  <span className="text-[11px] text-muted-custom">{notifications.filter(n=>!n.readAt).length} no leídos</span>
                 </div>
 
-                <div className="space-y-2 max-h-72 overflow-y-auto">
+                <div className="space-y-2 max-h-72 overflow-y-auto">{notificationError && <p role="alert">{notificationError.message}</p>}{!notifications.length && <p>Sin notificaciones.</p>}
                   {simulatedNotifications.map((notif) => {
                     const Icon = notif.icon;
                     return (

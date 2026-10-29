@@ -1,9 +1,11 @@
+import { GradesView } from './views/GradesView';
 import React, { useState, useEffect } from 'react';
 import type { ActiveScreen, Commission, Teacher, ClassSession, AcademicObservation } from './types';
 import { academicService } from './services/academicService';
 import { Header } from './components/common/Header';
 import { Sidebar } from './components/common/Sidebar';
-import { DemoBanner } from './components/common/DemoBanner';
+import { SessionGate } from '@shared/auth/SessionGate';
+import type { AuthMe } from '@shared/types';
 import { AlertNotification } from './components/common/AlertNotification';
 import { DashboardView } from './views/DashboardView';
 import { CommissionsView } from './views/CommissionsView';
@@ -13,7 +15,7 @@ import { ObservationsView } from './views/ObservationsView';
 import { motion, AnimatePresence, useReducedMotion } from 'motion/react';
 import './styles/global.css';
 
-export const App: React.FC = () => {
+const TeacherApp: React.FC<{ me: AuthMe }> = ({ me }) => {
   const [activeScreen, setActiveScreen] = useState<ActiveScreen>('dashboard');
   const [navigationContext, setNavigationContext] = useState<{
     commissionId?: string;
@@ -31,7 +33,7 @@ export const App: React.FC = () => {
   const loadData = async () => {
     try {
       const [tch, comms, obs] = await Promise.all([
-        academicService.getCurrentTeacher(),
+        academicService.getCurrentTeacher(me),
         academicService.getCommissions(),
         academicService.getObservations(),
       ]);
@@ -49,13 +51,16 @@ export const App: React.FC = () => {
         setSessions([]);
       }
     } catch (err) {
-      console.error('Error al cargar datos institucionales:', err);
+      setGlobalNotification(err instanceof Error ? err.message : 'No se pudieron cargar los datos.');
     }
   };
 
   useEffect(() => {
-    loadData();
-  }, []);
+    void loadData();
+    const refresh = () => { void loadData(); };
+    window.addEventListener('focus', refresh);
+    return () => window.removeEventListener('focus', refresh);
+  }, [me]);
 
   const handleNavigate = (
     screen: ActiveScreen,
@@ -70,14 +75,6 @@ export const App: React.FC = () => {
       loadData();
     }
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const handleResetData = async () => {
-    await academicService.resetDemoData();
-    await loadData();
-    setGlobalNotification(
-      'Los datos de demostración han sido restablecidos con éxito a sus valores iniciales predeterminados.'
-    );
   };
 
   const shouldReduceMotion = useReducedMotion();
@@ -99,7 +96,8 @@ export const App: React.FC = () => {
           <div style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.5rem' }}>
             ISFDyT N.° 26 — SGA Módulo Docente
           </div>
-          <p style={{ color: 'var(--color-text-muted)' }}>Cargando entorno institucional...</p>
+          <p style={{ color: 'var(--color-text-muted)' }}>{globalNotification ?? 'Cargando entorno institucional...'}</p>
+          {globalNotification && <button onClick={() => { setGlobalNotification(null); void loadData(); }}>Reintentar</button>}
         </div>
       </div>
     );
@@ -124,8 +122,8 @@ export const App: React.FC = () => {
           onToggleMobileMenu={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
         />
 
-        {/* Banner de Aviso de Demostración Local */}
-        <DemoBanner onResetData={handleResetData} />
+
+
 
         {/* Notificación global al restablecer datos */}
         {globalNotification && (
@@ -181,6 +179,8 @@ export const App: React.FC = () => {
                 />
               )}
 
+              {activeScreen === 'grades' && <GradesView commissions={commissions} />}
+
               {activeScreen === 'observations' && (
                 <ObservationsView
                   commissions={commissions}
@@ -196,5 +196,7 @@ export const App: React.FC = () => {
     </div>
   );
 };
+
+export const App: React.FC = () => <SessionGate apps={["profesores"]}>{me => <TeacherApp key={me.user.id} me={me} />}</SessionGate>;
 
 export default App;

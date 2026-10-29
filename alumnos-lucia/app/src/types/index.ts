@@ -6,7 +6,7 @@
 
 export type AttendanceStatus = 'PRESENTE' | 'AUSENTE' | 'TARDE' | 'JUSTIFICADO';
 
-export type AcademicPeriod = '1C' | '2C';
+export type AcademicPeriod = '1C' | '2C' | 'ANUAL';
 
 export type EnrollmentStatus = 'REGULAR' | 'EN_RIESGO' | 'LIBRE';
 
@@ -38,7 +38,7 @@ export interface StudentProfile {
   division: string;
   shift: string;
   academicYear: number;
-  enrollmentStatus: 'ACTIVO' | 'CONDICIONAL' | 'SUSPENDIDO';
+  enrollmentStatus: 'ACTIVO' | 'EGRESADO' | 'INACTIVO' | 'BAJA';
   minimumAttendanceRequired: number; // e.g. 75 (%)
   minimumJustifiedAttendanceRequired: number; // e.g. 60 (%)
   preceptorContact: {
@@ -76,4 +76,4 @@ export interface AccessibilitySettings {
   darkMode: boolean;
 }
 
-export type NavView = 'inicio' | 'asistencia' | 'perfil' | 'ayuda' | 'accesibilidad';
+export type NavView = 'comunicacion' | 'inicio' | 'asistencia' | 'perfil' | 'ayuda' | 'accesibilidad';

@@ -47,6 +47,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
       icon: <ClipboardCheck size={20} aria-hidden="true" />,
     },
     {
+      id: 'grades',
+      label: 'Calificaciones',
+      icon: <GraduationCap size={20} aria-hidden="true" />,
+    },
+    {
       id: 'observations',
       label: 'Observaciones Académicas',
       icon: <MessageSquare size={20} aria-hidden="true" />,
@@ -205,7 +210,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               color: 'var(--isf-gold-sand)',
             }}
           >
-            Versión Frontend 1.0 (Demo)
+            Sistema de Gestión Académica
           </span>
         </div>
       </aside>

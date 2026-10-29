@@ -95,7 +95,7 @@ export const SubjectsView: React.FC = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredSubjects.map((sub) => {
-            const isWarning = sub.porcentajeAsistencia <= 75;
+            const isWarning = sub.attendanceRisk === 'BELOW_MINIMUM';
 
             return (
               <Card
