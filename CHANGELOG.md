@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## 2026-10-28 — Aclaración del alcance de integración y pruebas
+
+- Nuevo `docs/ESTADO_VALIDACION.md`: matriz del pedido, pruebas efectivamente realizadas y condiciones
+  pendientes para declarar el flujo completo. Enlaces desde MEJORAS y el relevo para Claude.
+- Confirmación explícita: cinco escenarios locales correctos; en Neon solo primer circuito completo y
+  porcentaje del segundo. Verificación visual y publicación de la interfaz nueva pendientes.
+- Datos QA persistidos no equivalen a identidades institucionales reales. QR/materiales/planificaciones/
+  adjuntos/turnos siguen fuera de la integración terminada.
+- Solo documentación; no se hicieron nuevas pruebas, cambios de datos ni despliegues en esta actualización.
+
 ## 2026-10-28 — Login común e integración de portales; relevo para Claude (sin publicar)
 
 - Decisión final del usuario: conservar **Neon**. Supabase queda como alternativa documentada, sin migración.

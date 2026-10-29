@@ -3,6 +3,7 @@
 ## Relevo actual
 
 Leer primero `docs/RELEVO_CLAUDE_2026-10-28.md`: contiene el estado exacto, pruebas, pendientes y comandos.
+La matriz `docs/ESTADO_VALIDACION.md` distingue implementado, probado en local, probado parcialmente en Neon y pendiente de publicación.
 
 - Equipo: `BenjaminLacaze/html-de-hakbook-de-preseptoria`, carpeta raíz de este archivo.
 - Deploy: `mjsis20052/sistema-gestion-i26` → `https://sistema-gestion-i26.vercel.app`.
@@ -21,6 +22,9 @@ Leer primero `docs/RELEVO_CLAUDE_2026-10-28.md`: contiene el estado exacto, prue
 5. Migraciones locales siempre con las dos cadenas explícitas; las del `.env` apuntan a Neon real.
 
 ## Bitácora
+
+- 2026-10-28 — GPT/Codex — Aclaración de alcance pedida por el usuario: matriz de pruebas y pendientes
+  en `docs/ESTADO_VALIDACION.md`, enlazada desde el relevo. No se ejecutaron pruebas nuevas ni se publicó código.
 
 - 2026-10-28 — GPT/Codex — Revisión y conexión real de los cinco frontends a la API existente;
   SessionGate común con login/cambio de contraseña/referencias de roles; Directivos y Profesores con

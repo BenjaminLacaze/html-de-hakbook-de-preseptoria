@@ -1,5 +1,8 @@
 # Relevo para Claude — 28/10/2026
 
+**Aclaración solicitada por el usuario:** leer también `ESTADO_VALIDACION.md`.
+La batería local pasó; la validación remota y visual está incompleta. No afirmar que todas las integraciones están terminadas.
+
 ## Pedido y decisión vigente
 
 El usuario pidió integrar todas las apps, agregar login con referencias de usuarios/roles, retirar datos
