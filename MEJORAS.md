@@ -1,5 +1,12 @@
 # Estado compartido — Sistema de gestión i26
 
+## Ecosistema 2.0 — 2026-10-30
+
+- La base Neon y el backend Hono/Prisma compartidos ya existen para los cuatro módulos; el trabajo pendiente es completar contratos, permisos e integración, no crear una base vacía.
+- Preceptoría gobierna la operación académica de su alcance asignado. El backend todavía reserva alta/edición de fichas de alumno a Dirección/Administración/Superadmin; acordar la delegación antes de abrir endpoints.
+- Plan de arquitectura por etapas: [`docs/ECOSISTEMA_2.0.md`](docs/ECOSISTEMA_2.0.md).
+- No hubo consultas ni escrituras nuevas en Neon y no se generaron migraciones.
+
 ## Relevo actual
 
 Leer primero `docs/RELEVO_CLAUDE_2026-10-28.md`: contiene el estado exacto, pruebas, pendientes y comandos.

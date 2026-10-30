@@ -100,4 +100,4 @@ Los paneles de Consolidación y el Portal del Alumno comparten la API institucio
 - El foro académico `/social/forum` tiene moderación de Preceptoría y es distinto de `/centro/threads`.
 - **Auxiliares** usan las rutas `/staff/*` para tareas, instalaciones, incidencias y mantenimiento. El rol `STUDENT` no tiene acceso a esos datos.
 
-La nueva app de Julián está en `alumnos-julian/app v2/`, pero todavía usa `demoDB` y no consume la API común. La integración pendiente está detallada en [`alumnos-julian/docs/Contrato_backend_alumno_julian.md`](../alumnos-julian/docs/Contrato_backend_alumno_julian.md).
+La nueva app de Julián está en `alumnos-julian/app v2/`; su código local ya incorpora sesión institucional y lecturas desde la API compartida. Esa revisión todavía debe publicarse y validarse con QA. El contrato de integración está en [`alumnos-julian/docs/Contrato_backend_alumno_julian.md`](../alumnos-julian/docs/Contrato_backend_alumno_julian.md). El plan del sistema completo está en [`docs/ECOSISTEMA_2.0.md`](../docs/ECOSISTEMA_2.0.md).

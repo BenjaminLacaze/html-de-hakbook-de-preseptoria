@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 2026-10-30 — Plan Ecosistema 2.0
+
+- Inventario de Neon, Prisma, endpoints y módulos Alumno, Preceptoría, Centro de Estudiantes y Auxiliares.
+- Documentado que ya existe una base/backend común; no se crea una base paralela ni se migró Neon.
+- Registrado el gap de gobierno: Preceptoría ve alumnos de comisiones asignadas y escribe asistencia/justificaciones, pero la alta y edición de fichas permanecen reservadas a Dirección/Administración/Superadmin.
+- Creado `docs/ECOSISTEMA_2.0.md` con modelo de relaciones, estado de cada módulo, límites de seguridad y etapas de trabajo.
+- Siguiente etapa: acordar alcance y campos editables de Preceptoría antes de diseñar endpoints nuevos o cambiar permisos.
+
 ## 2026-10-30 — Inicio de la conexión de Alumnos V2 a la base compartida
 
 - Revisión del esquema Prisma y de los paneles Alumno, Preceptoría, Centro de Estudiantes y Auxiliares.
