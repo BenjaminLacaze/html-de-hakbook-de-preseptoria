@@ -5,6 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Informe de avance - Sistema Profesor</title>
+  <link rel="icon" type="image/jpeg" href="logo-profesores.jpg">
 
   <style>
     :root {
@@ -69,6 +70,33 @@
       background: linear-gradient(135deg, var(--azul-oscuro), #1976b9);
       color: white;
       border-bottom: 6px solid #7db9e3;
+    }
+
+    .portada-cabecera {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 28px;
+    }
+
+    .portada-texto {
+      flex: 1;
+    }
+
+    .portada-logo {
+      flex-shrink: 0;
+    }
+
+    .logo-escudo {
+      width: 125px;
+      height: 125px;
+      object-fit: contain;
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 6px;
+      box-shadow: 0 8px 24px rgba(10, 25, 45, 0.35);
+      border: 3px solid rgba(255, 255, 255, 0.9);
+      display: block;
     }
 
     .etiqueta {
@@ -198,6 +226,17 @@
         padding: 35px 25px;
       }
 
+      .portada-cabecera {
+        flex-direction: column-reverse;
+        align-items: flex-start;
+        gap: 16px;
+      }
+
+      .logo-escudo {
+        width: 90px;
+        height: 90px;
+      }
+
       .contenido {
         padding: 30px 25px;
       }
@@ -239,6 +278,13 @@
         -webkit-print-color-adjust: exact;
       }
 
+      .logo-escudo {
+        box-shadow: none;
+        border: 1px solid #c0c0c0;
+        width: 100px;
+        height: 100px;
+      }
+
       .contenido {
         padding: 12mm 15mm;
       }
@@ -267,10 +313,16 @@
   <main class="contenedor">
 
     <header class="portada">
-      <p class="etiqueta">Informe académico de avance</p>
-
-      <h1>Sistema de Gestión Académica</h1>
-      <p class="subtitulo">Módulo Profesor</p>
+      <div class="portada-cabecera">
+        <div class="portada-texto">
+          <p class="etiqueta">Informe académico de avance</p>
+          <h1>Sistema de Gestión Académica</h1>
+          <p class="subtitulo">Módulo Profesor</p>
+        </div>
+        <div class="portada-logo">
+          <img src="logo-profesores.jpg" alt="Escudo oficial del Módulo Profesores" class="logo-escudo" width="125" height="125" />
+        </div>
+      </div>
 
       <div class="datos">
         <div class="dato">

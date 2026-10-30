@@ -100,8 +100,25 @@ export const Sidebar: React.FC<SidebarProps> = ({
           style={{
             padding: '1.25rem 1rem 0.75rem',
             borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.625rem',
           }}
         >
+          <img
+            src="/logo-profesores.jpg"
+            alt=""
+            aria-hidden="true"
+            style={{
+              width: '28px',
+              height: '28px',
+              borderRadius: '6px',
+              backgroundColor: '#ffffff',
+              objectFit: 'contain',
+              padding: '2px',
+              flexShrink: 0,
+            }}
+          />
           <span
             style={{
               fontSize: '0.72rem',

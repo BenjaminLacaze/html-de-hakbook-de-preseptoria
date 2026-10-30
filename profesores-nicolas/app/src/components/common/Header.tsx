@@ -62,30 +62,21 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.875rem' }}>
-            {/* Isotipo institucional con tipografía oficial de marca */}
-            <div
+            {/* Logotipo oficial del Módulo Profesores */}
+            <img
+              src="/logo-profesores.jpg"
+              alt="Escudo oficial del Módulo Profesores"
               style={{
-                width: '42px',
-                height: '42px',
+                width: '44px',
+                height: '44px',
                 borderRadius: '8px',
                 backgroundColor: 'var(--isf-white)',
-                color: 'var(--isf-blue-primary)',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontFamily: 'var(--font-family-logo)',
-                fontWeight: 800,
-                fontSize: '0.75rem',
-                lineHeight: 1.1,
                 border: '2px solid var(--isf-gold-sand)',
+                objectFit: 'contain',
+                padding: '2px',
                 flexShrink: 0,
               }}
-              aria-hidden="true"
-            >
-              <span style={{ fontSize: '0.65rem', color: 'var(--isf-gold-text)', fontWeight: 700 }}>ISFDyT</span>
-              <span style={{ fontSize: '1rem', color: 'var(--isf-blue-primary)', fontWeight: 800 }}>26</span>
-            </div>
+            />
 
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>

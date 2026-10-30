@@ -93,6 +93,19 @@ const TeacherApp: React.FC<{ me: AuthMe }> = ({ me }) => {
         }}
       >
         <div style={{ textAlign: 'center' }}>
+          <img
+            src="/logo-profesores.jpg"
+            alt="Módulo Profesores"
+            style={{
+              width: '72px',
+              height: '72px',
+              borderRadius: '12px',
+              marginBottom: '1rem',
+              boxShadow: '0 4px 14px rgba(10, 25, 45, 0.15)',
+              backgroundColor: '#ffffff',
+              padding: '4px',
+            }}
+          />
           <div style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '0.5rem' }}>
             ISFDyT N.° 26 — SGA Módulo Docente
           </div>
