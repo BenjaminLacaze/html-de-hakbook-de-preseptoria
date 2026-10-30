@@ -30,8 +30,8 @@ export const Logo: React.FC<LogoProps> = ({
   const [imageError, setImageError] = useState(false);
   const isDark = variant === "negativo";
   const imageSrc = isDark
-    ? "/JULIAN/assets/brand/alumnos-logo-negativo.png"
-    : "/JULIAN/assets/brand/alumnos-logo-marca.png";
+    ? `${import.meta.env.BASE_URL}JULIAN/assets/brand/alumnos-logo-negativo.png`
+    : `${import.meta.env.BASE_URL}JULIAN/assets/brand/alumnos-logo-marca.png`;
 
   if (imageError) {
     // Respaldo vectorial idéntico si el navegador no puede renderizar el binario

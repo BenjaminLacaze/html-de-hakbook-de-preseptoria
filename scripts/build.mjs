@@ -1,7 +1,7 @@
 // Build del sitio para Vercel.
 //
 // 1. Copia todo el repo (landing, informes, handbooks, docs) a dist/.
-// 2. Compila la app React/Vite de cada módulo y la deja en dist/<modulo>/app/,
+// 2. Compila las apps React/Vite y las deja en dist/<ruta-publica>/,
 //    en lugar del código fuente.
 //
 // Las apps no se pueden servir "crudas": su index.html pide /src/main.tsx,
@@ -17,14 +17,14 @@ import { join, relative, resolve, sep } from 'node:path';
 const root = resolve(import.meta.dirname, '..');
 const dist = join(root, 'dist');
 
-// Módulos que tienen app React en <modulo>/app/.
-// Para sumar uno: agregarlo acá y su rewrite en vercel.json.
-const modulesWithApp = [
-  'profesores-nicolas',
-  'directivos-jesica-agustin',
-  'alumnos-julian',
-  'alumnos-lucia',
-  'consolidacion', // Preceptoría, Auxiliares y Centro de Estudiantes
+// Apps React a compilar. source es su carpeta fuente; output es su URL pública.
+const appsToBuild = [
+  { module: 'profesores-nicolas', source: 'app', output: 'profesores-nicolas/app' },
+  { module: 'directivos-jesica-agustin', source: 'app', output: 'directivos-jesica-agustin/app' },
+  { module: 'alumnos-julian', source: 'app', output: 'alumnos-julian/app' },
+  { module: 'alumnos-julian', source: 'app v2', output: 'alumnos-julian/app-v2' },
+  { module: 'alumnos-lucia', source: 'app', output: 'alumnos-lucia/app' },
+  { module: 'consolidacion', source: 'app', output: 'consolidacion/app' }, // Preceptoría, Auxiliares y Centro de Estudiantes
 ];
 
 // shared/ son tipos que se compilan dentro de cada app: no hace falta publicarlos sueltos.
@@ -34,7 +34,7 @@ const skipTop = new Set([
   'package.json', 'package-lock.json', 'prisma.config.ts', '.env', '.env.example', 'recursos',
   'julian appcompleta', // copia original de Julián (no se publica; ver consolidacion/README.md)
 ]);
-const appDirs = new Set(modulesWithApp.map((m) => join(root, m, 'app')));
+const appDirs = new Set(appsToBuild.map((app) => join(root, app.module, app.source)));
 
 function run(cmd, cwd) {
   console.log(`\n> ${cmd}   (en ${relative(root, cwd) || '.'})`);
@@ -62,9 +62,9 @@ mkdirSync(join(dist, 'shared', 'design'), { recursive: true });
 cpSync(join(root, 'shared', 'design', 'tokens.css'), join(dist, 'shared', 'design', 'tokens.css'));
 
 const failed = [];
-for (const mod of modulesWithApp) {
-  const cwd = join(root, mod, 'app');
-  const out = join(dist, mod, 'app');
+for (const app of appsToBuild) {
+  const cwd = join(root, app.module, app.source);
+  const out = join(dist, app.output);
   try {
     if (!existsSync(join(cwd, 'package.json'))) throw new Error('no tiene package.json');
     // --legacy-peer-deps: las apps hechas con AI Studio piden esbuild 0.25 y
@@ -74,10 +74,10 @@ for (const mod of modulesWithApp) {
       run('npm install --no-audit --no-fund --loglevel=error --legacy-peer-deps --no-package-lock', cwd);
     }
     // vite build directo (sin "tsc"): un error de tipos no debe frenar el deploy de todos.
-    run(`npx vite build --base=/${mod}/app/ --outDir "${out}" --emptyOutDir`, cwd);
+    run(`npx vite build --base=/${app.output}/ --outDir "${out}" --emptyOutDir`, cwd);
   } catch (err) {
-    console.error(`\n!! ${mod}: ${err.message}`);
-    failed.push(mod);
+    console.error(`\n!! ${app.module}/${app.source}: ${err.message}`);
+    failed.push(`${app.module}/${app.source}`);
   }
 }
 

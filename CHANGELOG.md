@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 2026-10-30 — Integración de Alumnos V2 al build del sitio
+
+- El build general incorpora `alumnos-julian/app v2/` bajo `/alumnos-julian/app-v2/` y configura el rewrite de navegación SPA en Vercel.
+- La landing presenta V2 como entrada principal y mantiene un enlace a la versión anterior.
+- Logo y video usan el `BASE_URL` de Vite para funcionar en la ruta publicada.
+- Preparado en este repositorio de equipo; pendiente integrar en el repo productivo `mjsis20052/sistema-gestion-i26` para que se refleje en el dominio.
+
 ## 2026-10-28 — Aclaración del alcance de integración y pruebas
 
 - Nuevo `docs/ESTADO_VALIDACION.md`: matriz del pedido, pruebas efectivamente realizadas y condiciones

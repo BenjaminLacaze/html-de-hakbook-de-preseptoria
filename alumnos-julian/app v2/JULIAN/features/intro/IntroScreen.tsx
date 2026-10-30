@@ -123,7 +123,7 @@ export const IntroScreen: React.FC<IntroScreenProps> = ({ onEnterPanel }) => {
           <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-[#14214F] border-2 border-[#24356E] shadow-2xl shadow-black/60 group">
             <video
               ref={videoRef}
-              src="/assets/aistudio/alumnos_transicion_16x9_3f94e8d4.mp4"
+              src={`${import.meta.env.BASE_URL}assets/aistudio/alumnos_transicion_16x9_3f94e8d4.mp4`}
               playsInline
               autoPlay
               muted={isMuted}

@@ -33,7 +33,7 @@ Estos datos compartidos existen en la API del sistema, pero la app v2 todavía u
 | index.html, index_detalle.html, index_conexiones.html | Documentación visual anterior | Consultar junto con los documentos Markdown actualizados |
 | Logo/ | Recursos gráficos | Logos del módulo |
 
-**Importante sobre Vercel:** el proceso de compilación del repositorio todavía compila alumnos-julian/app/, no app v2/. Subir la app nueva a GitHub no cambia por sí solo la versión publicada. Para reemplazar la versión desplegada hay que integrar app v2 en el proceso de build del repositorio.
+**Publicación en Vercel:** el build del repositorio ahora compila `app v2/` en `/alumnos-julian/app-v2/`. La landing enlaza esa versión como principal y conserva `/alumnos-julian/app/` para la anterior. Para que el dominio público refleje el cambio, estos cambios deben llegar al repositorio productivo `mjsis20052/sistema-gestion-i26`.
 
 ## Documentación vigente
 

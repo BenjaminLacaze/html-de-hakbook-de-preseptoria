@@ -54,6 +54,10 @@
       "destination": "/alumnos-julian/app/index.html"
     },
     {
+      "source": "/alumnos-julian/app-v2/:path*",
+      "destination": "/alumnos-julian/app-v2/index.html"
+    },
+    {
       "source": "/alumnos-lucia/app/:path*",
       "destination": "/alumnos-lucia/app/index.html"
     },

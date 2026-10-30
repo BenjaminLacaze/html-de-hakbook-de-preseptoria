@@ -6,7 +6,7 @@ Repositorio del equipo con los módulos de gestión y asistencia. Sitio publicad
 
 | Carpeta | Responsable | App de desarrollo | Documentación |
 |---|---|---|---|
-| alumnos-julian/ | Julián | Nueva app: alumnos-julian/app v2/. La compilación actual de Vercel todavía usa alumnos-julian/app/. | alumnos-julian/README.md y alumnos-julian/docs/ |
+| alumnos-julian/ | Julián | Nueva app: alumnos-julian/app v2/ → /alumnos-julian/app-v2/; versión anterior en /alumnos-julian/app/. | alumnos-julian/README.md y alumnos-julian/docs/ |
 | alumnos-lucia/ | Lucía | alumnos-lucia/app/ | documentacion/ |
 | directivos-jesica-agustin/ | Jesica y Agustín | directivos-jesica-agustin/app/ | index.html y Handbook/ |
 | preceptoria-benjamin/ | Benjamín | Sin app React independiente | handbook.html |
@@ -22,13 +22,13 @@ La landing en index.html enlaza a los módulos. Tener una carpeta en GitHub no p
 
 Vercel ejecuta node scripts/build.mjs, configurado en vercel.json. El proceso compila solo las aplicaciones declaradas en scripts/build.mjs y las deja dentro de dist/.
 
-**Estado de la app nueva de Julián:** alumnos-julian/app v2/ está guardada en el repositorio y vinculada a Google AI Studio, pero el build general todavía compila alumnos-julian/app/. Para reemplazar la versión publicada hay que actualizar y verificar scripts/build.mjs, vercel.json y los enlaces de la landing.
+**Estado de la app nueva de Julián:** el build general compila `alumnos-julian/app v2/` en `dist/alumnos-julian/app-v2/`, la landing la ofrece como entrada principal y la versión anterior permanece en `/alumnos-julian/app/`. La configuración del repositorio está lista para publicarla en Vercel; este commit aún debe integrarse en el repositorio productivo `mjsis20052/sistema-gestion-i26` para que el sitio público cambie.
 
 ## Desarrollo de la nueva app de alumno
 
 Proyecto de Google AI Studio: https://ai.studio/apps/bf731764-b335-4afd-af62-3b5d690f9070
 
-Desde la raíz del repositorio, ingresá a alumnos-julian/app v2/, ejecutá npm install y npm run dev. Vite usa el puerto 3000. npm run build compila esta app de forma independiente; el build del sitio completo todavía no la incorpora.
+Desde la raíz del repositorio, ingresá a alumnos-julian/app v2/, ejecutá npm install y npm run dev. Vite usa el puerto 3000. El build del sitio completo la publica bajo `/alumnos-julian/app-v2/`.
 
 La app nueva usa datos de demostración guardados en localStorage. No tiene login ni integración HTTP con el backend institucional. Sus formularios y acciones no cambian registros oficiales. Consultá docs/Contrato_backend_alumno_julian.md para el estado y la propuesta de integración.
 
