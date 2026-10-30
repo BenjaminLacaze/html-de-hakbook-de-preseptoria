@@ -51,7 +51,7 @@ export const AsistenciaQRView: React.FC<AsistenciaQRViewProps> = ({
         const materias = await StudentApi.getMaterias();
         setMateriaAfectada(materias[0] ?? null);
         setQrState("success");
-        toast.success("¡Asistencia registrada en modo Demo!");
+        toast.success("Asistencia enviada y confirmada por el servidor institucional.");
         if (onSuccessRegistered) onSuccessRegistered();
       } else if (res.yaRegistrado) {
         setMensajeResultado(res.mensaje || "Ya registraste asistencia en esta clase.");
@@ -98,15 +98,15 @@ export const AsistenciaQRView: React.FC<AsistenciaQRViewProps> = ({
         />
       </div>
 
-      {/* 2. AVISO PERMANENTE DE DEMOSTRACIÓN (REGLA 0 Y SECCIÓN 6 OBLIGATORIA) */}
+      {/* 2. LÍMITE ACTUAL DE INTEGRACIÓN */}
       <div className="p-4 rounded-xl bg-[rgba(185,28,28,0.06)] border border-[rgba(185,28,28,0.25)] flex items-start gap-3">
         <ShieldWarning size={22} className="text-[#B91C1C] shrink-0 mt-0.5" />
         <div className="space-y-0.5">
           <span className="font-bold text-xs uppercase tracking-wider text-[#B91C1C] font-mono">
-            Aviso de Transparencia Académica
+            Registro QR todavía no habilitado
           </span>
           <p className="text-xs text-[var(--text-muted)] leading-relaxed">
-            <strong>Demo: no registra asistencia real en los servidores del Instituto.</strong> Esta pantalla valida códigos de aula, comprueba duplicados de asistencia en el día e impacta en la base local (persistencia en navegador).
+            La API institucional todavía no ofrece un endpoint para que el alumno registre su asistencia mediante QR. No se guardará ningún dato desde esta pantalla; hasta que se habilite, registrá tu asistencia con el docente o la Preceptoría.
           </p>
         </div>
       </div>
@@ -286,7 +286,7 @@ export const AsistenciaQRView: React.FC<AsistenciaQRViewProps> = ({
 
             <div className="space-y-1">
               <span className="text-[11px] font-mono uppercase tracking-widest text-[#1E7E34] font-bold">
-                COMPROBANTE PROVISORIO (MODO DEMO)
+                COMPROBANTE INSTITUCIONAL
               </span>
               <h3
                 className="text-2xl font-extrabold text-[var(--text)]"

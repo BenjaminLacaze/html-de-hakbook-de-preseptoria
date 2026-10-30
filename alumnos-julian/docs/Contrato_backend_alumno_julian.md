@@ -1,16 +1,22 @@
 # Contrato de integración — Portal del Alumno app v2
 
-**Estado de app v2:** usa demo local; todavía no consume la API compartida.
+**Estado de app v2 (2026-10-30):** conexión inicial implementada en el código local: login institucional, cookie de sesión HttpOnly y lecturas del alumno, foros, eventos y comunicados desde la API compartida. Requiere publicar esta versión y validar el flujo con una cuenta QA autorizada.
 **Estado del backend general:** hay rutas compartidas para Alumno, Profesores, Preceptoría, Auxiliares y Centro de Estudiantes; consultar docs/INTEGRACION_TECNICA.md y consolidacion/README.md.
-**Fuentes de la app:** JULIAN/shared/services/api.ts, JULIAN/shared/types/index.ts, JULIAN/mocks/db.ts y JULIAN/mocks/dataset.ts.
+**Fuentes de la app:** `JULIAN/shared/services/http.ts`, `JULIAN/shared/services/api.ts` y `JULIAN/shared/types/index.ts`. `JULIAN/mocks/` queda como fixtures históricos y no como fuente conectada.
+
+## Decisión de arquitectura — base compartida
+
+No crear una segunda base. El sistema ya tiene PostgreSQL en Neon, esquema Prisma y una API única `/api/v1` que comparten los módulos. La URL actualmente publicada en [alumnos-julian-v2.vercel.app](https://alumnos-julian-v2.vercel.app) no incluye estos cambios locales aún. La app V2 ya tiene un cliente para login y lecturas compartidas; falta publicar y validar contra QA autorizado.
+
+Las relaciones principales son `User → Student → Enrollment → Commission → Subject`; Preceptoría y Profesores escriben en las mismas `ClassSession`, `AttendanceRecord` y `Justification` que el portal Alumno lee desde `/me/*`. Centro de Estudiantes usa `RepEvent`, participantes vinculados a `User`, `RepThread`/`RepReply`, `RepAnnouncement` y `RepClaim`. Auxiliares usa `StaffTask`, `Installation`, `Incident` y `MaintenanceLog` en la misma base, detrás de `/staff/*` y con permisos de personal. Compartir base no significa mostrar tareas o incidencias de Auxiliares al alumno.
+
+La V2 usa un rewrite same-origin `/api/v1` hacia la API institucional para conservar la cookie HttpOnly; el proxy local de Vite apunta al backend de desarrollo. Nunca debe recibir `DATABASE_URL` ni conectarse directamente a Neon desde el navegador.
 
 ## 1. Frontera actual
 
-StudentApi delega en demoDB. Los datos iniciales vienen de mocks y los cambios se guardan en localStorage con la clave alumno-demo-db-v1. La demora de 300–700 ms y los fallos simulados no son solicitudes de red reales.
+`StudentApi` usa ahora el cliente HTTP de `/api/v1` en lugar de `demoDB`. La sesión y las lecturas académicas se resuelven en el servidor. Preferencias, avisos leídos y recordatorios siguen locales al navegador; mocks permanecen como fixtures y no son fuente de los datos institucionales conectados.
 
-La app v2 no tiene login institucional ni autorización de servidor. No usa el cliente común apiFetch. Los valores de plantilla de .env.example no configuran la API.
-
-El backend real usa /api/v1, cookie HttpOnly de sesión y permisos validados en cada solicitud. En local, la URL base del cliente común es /api/v1 y puede configurarse con VITE_API_BASE_URL. No guardar tokens de sesión en localStorage.
+El login/cambio de contraseña usa cookie HttpOnly y permisos de backend. `VITE_API_BASE_URL` puede cambiar la base en desarrollo. No guardar tokens de sesión en localStorage.
 
 ## 2. Responsabilidad entre paneles
 
@@ -79,7 +85,7 @@ Confirmar siempre el método, el DTO y el rol requerido en backend/src/routes/ a
 - Marcado leído de avisos, preferencias de cuenta y recordatorios: confirmar contrato de persistencia y endpoint antes de sincronizar.
 - Foros: elegir claramente si cada pantalla usa foro académico o comunitario del Centro; no mezclar DTOs o reglas de moderación.
 
-Mientras no exista el endpoint y su autorización, la UI debe indicar que una acción es una demostración y no afirmar que fue recibida por Bedelía, Preceptoría o el Centro.
+Mientras no exista el endpoint y su autorización, la UI indica que el trámite no está habilitado y no afirma que fue recibido por Bedelía, Preceptoría o el Centro.
 
 ## 5. Seguridad y privacidad
 
@@ -94,11 +100,10 @@ Mientras no exista el endpoint y su autorización, la UI debe indicar que una ac
 
 ## 6. Pasos de integración
 
-1. Integrar el gate de sesión común y validar acceso STUDENT.
-2. Reemplazar las lecturas demo por /me/student, /me/subjects, /me/attendance, /me/summary y /me/grades.
-3. Conectar avisos y eventos institucionales con sus rutas; agregar contenido del Centro desde /centro/* solo donde corresponda.
-4. Mantener separados los foros y sus políticas de moderación.
-5. Deshabilitar o rotular como demo las acciones sin endpoint aprobado.
-6. Validar con la cuenta de prueba de Alumno y confirmar en backend qué lecturas, escrituras y permisos operan en el entorno vigente.
+1. Publicar la V2 con su rewrite same-origin y validar login/cambio de contraseña con una cuenta QA autorizada.
+2. Verificar las lecturas `/me/*`, eventos y comunicados institucionales, Centro y foros por rol.
+3. Mantener el portal Alumno fuera de `/staff/*`; Auxiliares usa la misma base/API, con roles, datos y pantallas propios.
+4. Mantener locales o deshabilitadas las funciones sin endpoint aprobado. Antes de agregar tablas, acordar el contrato de rectificaciones, preferencias, adjuntos y asistencia QR.
+5. Solo si se propone cambio de esquema, probarlo en PostgreSQL local aislado y revisar referencias antes de planificar una migración de Neon.
 
-La nueva app queda integrada cuando muestra datos de sesión, comparte los registros de Preceptoría/Profesores y consulta contenido habilitado del Centro, sin acceder a la información operativa de Auxiliares ni confundir los dominios.
+La arquitectura integra los cuatro módulos mediante una base y API comunes; cada llamada sigue su dominio y autorización. La integración de la V2 quedará validada cuando se publique y se comprueben los flujos autorizados de sesión, lecturas propias y acceso del Centro, manteniendo Auxiliares aislado por rol.

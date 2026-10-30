@@ -74,7 +74,7 @@ export const ForosView: React.FC<ForosViewProps> = ({
       await StudentApi.responderForo(publicacionId, replyText.trim());
       setReplyText("");
       setActiveReplyId(null);
-      toast.success("Respuesta registrada en modo Demo.");
+      toast.success("Respuesta enviada al servidor.");
       if (onForosMutated) onForosMutated();
     } catch (e: any) {
       toast.error(e.message || "Error al responder.");
@@ -98,7 +98,7 @@ export const ForosView: React.FC<ForosViewProps> = ({
       setNuevoContenido("");
       setNuevaMateria("");
       setModalNuevaPub(false);
-      toast.success("Nueva consulta creada en modo Demo.");
+      toast.success("Consulta enviada al servidor.");
       if (onForosMutated) onForosMutated();
     } catch (e: any) {
       toast.error(e.message || "Error al crear la consulta.");
@@ -113,7 +113,7 @@ export const ForosView: React.FC<ForosViewProps> = ({
     try {
       await StudentApi.editarMensajeForo(editingReply.pubId, editingReply.respId, editingReply.text.trim());
       setEditingReply(null);
-      toast.success("Mensaje actualizado en modo Demo.");
+      toast.success("Mensaje actualizado.");
       if (onForosMutated) onForosMutated();
     } catch (e: any) {
       toast.error(e.message || "Error al editar mensaje.");
@@ -128,7 +128,7 @@ export const ForosView: React.FC<ForosViewProps> = ({
     try {
       await StudentApi.borrarMensajeForo(deletingReply.pubId, deletingReply.respId);
       setDeletingReply(null);
-      toast.success("Mensaje eliminado en modo Demo.");
+      toast.success("Mensaje eliminado.");
       if (onForosMutated) onForosMutated();
     } catch (e: any) {
       toast.error(e.message || "Error al eliminar mensaje.");
@@ -368,7 +368,7 @@ export const ForosView: React.FC<ForosViewProps> = ({
                     <div className="space-y-3 p-4 rounded-xl border border-[var(--border)] bg-[rgba(20,33,79,0.02)] dark:bg-white/5 animate-fadeIn">
                       <div className="flex justify-between items-center text-xs">
                         <span className="font-bold text-[var(--text)]">Responder al hilo:</span>
-                        <span className="text-[10px] font-mono text-[#89743A]">Acción en modo Demo</span>
+                        <span className="text-[10px] font-mono text-[#89743A]">Se publica en el foro institucional</span>
                       </div>
                       <textarea
                         rows={2}
@@ -548,7 +548,7 @@ export const ForosView: React.FC<ForosViewProps> = ({
           >
             <h3 className="font-bold text-base text-[var(--text)]">¿Eliminar este mensaje?</h3>
             <p className="text-xs text-[var(--text-muted)] leading-relaxed">
-              Esta acción borrará tu respuesta del hilo en la base de datos de demostración local.
+              La eliminación se enviará al servidor institucional.
             </p>
             <div className="flex justify-end gap-2 pt-2">
               <button
@@ -564,7 +564,7 @@ export const ForosView: React.FC<ForosViewProps> = ({
                 onClick={handleConfirmDelete}
                 className="px-4 py-1.5 rounded-lg text-xs font-bold bg-[#B91C1C] text-white hover:bg-[#991B1B] disabled:opacity-50"
               >
-                Eliminar (Demo)
+                Eliminar
               </button>
             </div>
           </div>

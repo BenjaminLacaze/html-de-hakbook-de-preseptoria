@@ -39,7 +39,6 @@ import {
 import { Logo } from "../shared/ui/Logo";
 import { AlumnosIcon } from "../shared/ui/AlumnosIcon";
 import { useAppTheme } from "../shared/lib/theme";
-import { DemoBanner } from "../shared/ui/Components";
 import { GlobalSearch } from "../shared/ui/GlobalSearch";
 import { NotificationsPopover } from "../shared/ui/NotificationsPopover";
 
@@ -454,11 +453,6 @@ export const Layout: React.FC<LayoutProps> = ({
           </div>
         </header>
 
-        {/* Aviso persistente de demostración académica */}
-        <div className="px-4 sm:px-6 md:px-8 pt-4">
-          <DemoBanner />
-        </div>
-
         {/* Viewport de contenido principal con min-w-0 estricto para evitar scroll horizontal (A8) */}
         <main className="flex-1 px-4 sm:px-6 md:px-8 py-6 max-w-7xl w-full mx-auto min-w-0 pb-20 md:pb-8">
           {children}
@@ -479,7 +473,7 @@ export const Layout: React.FC<LayoutProps> = ({
               </div>
             </div>
             <div className="flex items-center gap-4 text-[11px] font-mono shrink-0">
-              <span className="text-[var(--accent)] font-bold">DEMO EDUCATIVA</span>
+              <span className="text-[var(--accent)] font-bold">PORTAL DEL ALUMNO</span>
               <span>·</span>
               <span>Régimen Académico Marco Res. 4043/09</span>
             </div>

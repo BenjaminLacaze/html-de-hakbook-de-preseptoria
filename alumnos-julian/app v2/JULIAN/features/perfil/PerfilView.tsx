@@ -27,6 +27,7 @@ import { Card, BrandBlock, IconBadge } from "../../shared/ui/Components";
 import { AlumnosIcon } from "../../shared/ui/AlumnosIcon";
 import { formatFecha } from "../../shared/lib/dateUtils";
 import { StudentApi } from "../../shared/services/api";
+import { toast } from "sonner";
 
 interface PerfilViewProps {
   alumno: Alumno;
@@ -89,6 +90,8 @@ export const PerfilView: React.FC<PerfilViewProps> = ({
       reset();
       setSelectedFileName("");
       setModalOpen(false);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "No se pudo enviar la solicitud.");
     } finally {
       setIsSubmitting(false);
     }
@@ -144,7 +147,7 @@ export const PerfilView: React.FC<PerfilViewProps> = ({
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-[#4ADE80]" />
               <span className="text-sm font-bold text-white uppercase tracking-wider">
-                {alumno.condicion} Activa
+                {alumno.condicion === "Sin datos" ? "No informada por el sistema" : `${alumno.condicion} Activa`}
               </span>
             </div>
             <span className="text-xs text-white/70 block mt-1">
@@ -323,7 +326,7 @@ export const PerfilView: React.FC<PerfilViewProps> = ({
                   </div>
                 )}
                 <div className="text-xs text-[var(--text-muted)] font-mono pt-1 border-t border-[var(--border)]">
-                  Enviada: {formatFecha(sol.fechaSolicitud)} · Solicitud simulada en la demo
+                  Enviada: {formatFecha(sol.fechaSolicitud)}
                 </div>
               </Card>
             ))}
@@ -438,7 +441,7 @@ export const PerfilView: React.FC<PerfilViewProps> = ({
               </div>
 
               <div className="p-3 rounded-lg bg-[rgba(137,116,58,0.1)] border border-[rgba(137,116,58,0.2)] text-xs text-[#89743A]">
-                <strong>Aviso de honestidad:</strong> Solicitud simulada: no se envió a Bedelía. Se guardará en la demo y tus datos oficiales no cambiarán sin resolución administrativa.
+                La API aún no habilita solicitudes de rectificación del perfil. No se enviará ni guardará este trámite hasta que Bedelía tenga un flujo institucional.
               </div>
 
               <div className="flex justify-end gap-3 pt-2">

@@ -109,7 +109,7 @@ export const FaltasView: React.FC<FaltasViewProps> = ({
         certificadoNombre: archivoAdjunto.trim() || "certificado_adjunto.pdf",
       });
 
-      toast.success("Justificación enviada en modo DEMO. Quedó registrada como 'En revisión'.");
+      toast.success("Justificación enviada al servidor institucional.");
       setModalJustificar(null);
       setMotivoJustificacion("");
       if (onAsistenciaMutated) onAsistenciaMutated();
@@ -450,7 +450,7 @@ export const FaltasView: React.FC<FaltasViewProps> = ({
               </div>
 
               <div className="p-3 rounded-lg bg-[rgba(137,116,58,0.08)] border border-[rgba(137,116,58,0.25)] text-xs text-[#89743A] leading-relaxed">
-                <strong>Aviso de honestidad (DEMO):</strong> Esta solicitud se almacena en el estado local del navegador. No envía correo ni notifica a preceptoría real.
+                La API aún no habilita el envío de justificaciones desde el portal del alumno. No se guardará el trámite; contactá a Preceptoría para presentarlo.
               </div>
 
               <div className="flex justify-end gap-3 pt-2">

@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect } from "react";
-import { Gear, Bell, Shield, Eye, CheckCircle, ArrowCounterClockwise, WarningCircle, X } from "@phosphor-icons/react";
+import { Gear, Bell, Shield, Eye, CheckCircle } from "@phosphor-icons/react";
 import { toast } from "sonner";
 import { PageTitle, SectionTitle, ContextLabel } from "../../shared/ui/Titles";
 import { Card } from "../../shared/ui/Components";
@@ -25,7 +25,6 @@ export const OpcionesView: React.FC = () => {
   });
 
   const [loading, setLoading] = useState(true);
-  const [modalResetOpen, setModalResetOpen] = useState(false);
   const [mensajeGuardado, setMensajeGuardado] = useState(false);
 
   useEffect(() => {
@@ -44,23 +43,10 @@ export const OpcionesView: React.FC = () => {
     try {
       await StudentApi.actualizarPreferencias(preferencias);
       setMensajeGuardado(true);
-      toast.success("Preferencias guardadas en el almacenamiento local (Modo Demo).");
+      toast.success("Preferencias guardadas en este navegador.");
       setTimeout(() => setMensajeGuardado(false), 3000);
     } catch (err: any) {
       toast.error(err.message || "Error al guardar preferencias.");
-    }
-  };
-
-  const handleResetData = async () => {
-    try {
-      await StudentApi.resetearDemoDB();
-      setModalResetOpen(false);
-      toast.success("Base de datos local restablecida al estado inicial.");
-      setTimeout(() => {
-        window.location.reload();
-      }, 800);
-    } catch (e: any) {
-      toast.error("Error al restablecer datos.");
     }
   };
 
@@ -72,7 +58,7 @@ export const OpcionesView: React.FC = () => {
         <PageTitle
           title="Opciones y"
           highlightWord="Configuración"
-          description="Ajustá los canales de alerta temprana de inasistencias, privacidad de la cuenta y configuración del entorno de prueba."
+          description="Administrá tus avisos y preferencias de visualización. Las preferencias de esta pantalla se guardan en este navegador."
         />
       </div>
 
@@ -180,48 +166,13 @@ export const OpcionesView: React.FC = () => {
           </Card>
         </div>
 
-        {/* 4. CONFIGURACIÓN DEL ENTORNO DEMO Y DIAGNÓSTICO */}
+        {/* 4. ALCANCE DE LAS PREFERENCIAS */}
         <div className="space-y-4">
-          <SectionTitle subtitle="Parámetros de ejecución del simulador en memoria local">
-            Control del Entorno de Demostración
+          <SectionTitle subtitle="Tus preferencias visuales no modifican los registros académicos compartidos.">
+            Almacenamiento de preferencias
           </SectionTitle>
-
-          <Card className="divide-y divide-[var(--border)]">
-            <div className="py-4 flex items-center justify-between gap-4">
-              <div>
-                <span className="font-bold text-sm text-[var(--text)] block">
-                  Modo Estable (Sin fallos de red inducidos)
-                </span>
-                <span className="text-xs text-[var(--text-muted)]">
-                  Si se desactiva, simula un 5% de fallos transitorios de red para probar reintentos y tolerancia a fallos.
-                </span>
-              </div>
-              <input
-                type="checkbox"
-                checked={preferencias.modoDemoEstable}
-                onChange={(e) => handleChange("modoDemoEstable", e.target.checked)}
-                className="w-4 h-4 accent-[#14214F] cursor-pointer"
-              />
-            </div>
-
-            <div className="py-4 flex items-center justify-between gap-4">
-              <div>
-                <span className="font-bold text-sm text-[var(--text)] block">
-                  Restablecer Base de Datos Local (Reset)
-                </span>
-                <span className="text-xs text-[var(--text-muted)]">
-                  Restaura los 84 registros de clase, foros, avisos y solicitudes a su estado inicial de demostración.
-                </span>
-              </div>
-              <button
-                type="button"
-                onClick={() => setModalResetOpen(true)}
-                className="px-3.5 py-1.5 rounded-lg text-xs font-bold border border-[#B91C1C] text-[#B91C1C] hover:bg-[#B91C1C]/10 transition-colors cursor-pointer inline-flex items-center gap-1.5"
-              >
-                <ArrowCounterClockwise size={14} />
-                <span>Restablecer</span>
-              </button>
-            </div>
+          <Card className="p-4 text-sm text-[var(--text-muted)]">
+            Las materias, calificaciones, asistencia y contenido institucional se consultan desde el sistema compartido. Tamaño de texto, densidad y movimiento reducido se guardan localmente.
           </Card>
         </div>
 
@@ -229,7 +180,7 @@ export const OpcionesView: React.FC = () => {
         <div className="space-y-2">
           <div className="p-4 rounded-xl border border-[var(--border)] bg-[rgba(20,33,79,0.02)] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs font-mono text-[var(--text-muted)]">
             <span>ISFDyT N° 26 Dolores · Módulo Alumno v2026.2</span>
-            <span>Régimen Académico Marco Res. 4043/09 · Almacenamiento: localStorage (alumno-demo-db-v1)</span>
+            <span>Régimen Académico Marco Res. 4043/09 · Preferencias visuales: almacenamiento local</span>
           </div>
         </div>
 
@@ -238,63 +189,21 @@ export const OpcionesView: React.FC = () => {
           <div className="text-xs text-[var(--text-muted)]">
             {mensajeGuardado ? (
               <span className="text-[#1E7E34] font-bold inline-flex items-center gap-1.5 font-mono">
-                <CheckCircle size={16} /> Preferencias guardadas correctamente (Modo Demostración)
+                <CheckCircle size={16} /> Preferencias guardadas en este navegador
               </span>
             ) : (
-              <span>Los cambios aplicados tendrán efecto dentro de tu sesión local.</span>
+            <span>Las preferencias guardadas se aplican a este navegador.</span>
             )}
           </div>
           <button
             type="submit"
             className="px-6 py-2.5 rounded-lg text-xs font-bold bg-[#14214F] text-white hover:bg-[#1D2E68] transition-colors focus-visible cursor-pointer"
           >
-            Guardar Preferencias (Demo)
+            Guardar Preferencias
           </button>
         </div>
       </form>
 
-      {/* MODAL DE CONFIRMACIÓN DE RESET */}
-      {modalResetOpen && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn"
-          onClick={() => setModalResetOpen(false)}
-        >
-          <div
-            className="bg-[var(--surface-raised)] border border-[var(--border)] rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="w-12 h-12 rounded-full bg-[rgba(185,28,28,0.1)] text-[#B91C1C] flex items-center justify-center">
-              <WarningCircle size={28} />
-            </div>
-
-            <div className="space-y-1">
-              <h3 className="font-bold text-lg text-[var(--text)]">¿Restablecer datos de prueba?</h3>
-              <p className="text-xs text-[var(--text-muted)] leading-relaxed">
-                Esta acción eliminará cualquier nueva consulta de foro, asistencia escaneada o justificación enviada en esta sesión, volviendo al dataset inicial del ISFDyT N° 26.
-              </p>
-            </div>
-
-            <div className="flex justify-end gap-2 pt-2">
-              <button
-                type="button"
-                onClick={() => setModalResetOpen(false)}
-                className="px-4 py-2 rounded-lg text-xs border border-[var(--border)]"
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                onClick={handleResetData}
-                className="px-4 py-2 rounded-lg text-xs font-bold bg-[#B91C1C] text-white hover:bg-[#991B1B]"
-              >
-                Confirmar y Restablecer
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

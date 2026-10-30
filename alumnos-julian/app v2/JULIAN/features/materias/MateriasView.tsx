@@ -302,7 +302,7 @@ export const MateriasView: React.FC<MateriasViewProps> = ({
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 rounded-xl bg-[rgba(20,33,79,0.03)] border border-[var(--border)] font-mono">
                   <div>
                     <span className="text-[var(--text-muted)] block font-bold">Carga Semanal</span>
-                    <span className="font-bold text-[var(--text)]">{selectedMateria.horasSemanales} horas</span>
+                    <span className="font-bold text-[var(--text)]">{selectedMateria.horasSemanales ?? "No informadas"}{selectedMateria.horasSemanales === null ? "" : " horas"}</span>
                   </div>
                   <div>
                     <span className="text-[var(--text-muted)] block font-bold">Período</span>

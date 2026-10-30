@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 2026-10-30 — Inicio de la conexión de Alumnos V2 a la base compartida
+
+- Revisión del esquema Prisma y de los paneles Alumno, Preceptoría, Centro de Estudiantes y Auxiliares.
+- Decisión: reutilizar PostgreSQL en Neon y la API `/api/v1`; no crear una segunda base ni exponer credenciales desde el frontend.
+- Actualizados el contrato y la arquitectura de la V2 con las relaciones entre dominios, rutas, límites de rol y pasos de conexión.
+- Verificación de solo lectura: `/api/v1/health` respondió 200; rutas autenticadas de Alumno, Centro y Auxiliares respondieron 401 sin sesión. No se leyó información personal ni se modificó Neon.
+- Esta revisión local implementa cliente API, login institucional y proxy same-origin; sigue pendiente publicarla y validarla con cuenta QA.
+
 ## 2026-10-30 — Publicación de Alumnos V2 en Vercel
 
 - Publicado el frontend de Google AI Studio desde `alumnos-julian/app v2/` en [alumnos-julian-v2.vercel.app](https://alumnos-julian-v2.vercel.app).
@@ -362,3 +370,10 @@ integration-fixtures.ts admite únicamente con --allow-configured-qa + ALLOW_REM
 ## 2026-10-28 — Codex: configuración institucional en fixtures
 
 backend/src/integration-fixtures.ts agrega institutionSettings id=1 con los mismos mínimos de seed (name, shortName, city, district), upsert con update vacío para preservar valores existentes. backend/test/integration-flow.mjs comprueba GET /records/settings como alumno antes del circuito. Ejecutado exclusivamente PG local 5452: fixtures OK, settings alumno OK, cinco porcentajes/recorridos y CRUD OK, alta HTTP OK; typecheck OK. API local 4052 sigue viva. No se ejecutó contra Neon ni se tocó la base remota en ejecución; sin commits.
+# 2026-10-30 — Conexión inicial del Panel Alumno V2
+
+- Se reemplazó el adaptador de lecturas de demostración por llamadas a `/api/v1` para perfil, cursadas, asistencia, notas, justificaciones, agenda, avisos, foros y notificaciones; las escrituras del foro académico y comunitario usan las rutas respectivas.
+- Se agregó inicio/cambio de contraseña institucional mediante cookie HttpOnly y rewrite same-origin de Vercel; Vite proxya la API local en desarrollo.
+- Preferencias, recordatorios y marcas de avisos leídos siguen en el navegador. QR de alumno, envío de justificaciones y rectificación del perfil permanecen sin endpoint y ahora informan que no se guardó el trámite.
+- Se retiró la etiqueta global de demo de la V2; el contrato aclara que los cuatro módulos comparten Neon/API con permisos y dominios separados.
+- Estado: build y chequeo TypeScript local correctos previamente; pendiente repetir tras estos ajustes, publicar el código local y validar con una cuenta QA. No se ejecutaron cambios ni migraciones en Neon.

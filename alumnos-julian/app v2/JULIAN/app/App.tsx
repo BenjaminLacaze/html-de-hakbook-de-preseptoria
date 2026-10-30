@@ -7,6 +7,7 @@ import React, { useState, useEffect } from "react";
 import { QueryClient, QueryClientProvider, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Toaster, toast } from "sonner";
 import { StudentApi } from "../shared/services/api";
+import { SessionGate, useStudentSession } from "../shared/auth/SessionGate";
 import { NavigationSection } from "../shared/types";
 import { ThemeProvider } from "../shared/lib/theme";
 import { Layout } from "./Layout";
@@ -39,6 +40,13 @@ const queryClient = new QueryClient({
 
 function StudentPortalContent() {
   const qc = useQueryClient();
+  const session = useStudentSession();
+
+  useEffect(() => {
+    const clearPrivateCache = () => qc.clear();
+    window.addEventListener("i26:session-expired", clearPrivateCache);
+    return () => window.removeEventListener("i26:session-expired", clearPrivateCache);
+  }, [qc]);
 
   // Pantalla de Introducción con el video oficial de transición
   const [showIntro, setShowIntro] = useState<boolean>(() => {
@@ -130,18 +138,15 @@ function StudentPortalContent() {
       await StudentApi.toggleRecordatorioEvento(eventoId);
       await qc.invalidateQueries({ queryKey: ["agenda"] });
       await qc.invalidateQueries({ queryKey: ["notificaciones"] });
-      toast.success("Recordatorio actualizado en la demo.");
+      toast.success("Recordatorio actualizado en este navegador.");
     } catch (e: any) {
       toast.error("Error al modificar recordatorio.");
     }
   };
 
-  const handleMarcarNotificacionLeida = async (id: string, refId?: string, tipo?: string) => {
-    if (tipo === "aviso" && refId) {
-      await StudentApi.toggleAvisoLeido(refId);
-      await qc.invalidateQueries({ queryKey: ["avisos"] });
-      await qc.invalidateQueries({ queryKey: ["notificaciones"] });
-    }
+  const handleMarcarNotificacionLeida = async (id: string) => {
+    await StudentApi.marcarNotificacionLeida(id);
+    await qc.invalidateQueries({ queryKey: ["notificaciones"] });
   };
 
   const handleMarcarTodasNotificacionesLeidas = async () => {
@@ -151,11 +156,17 @@ function StudentPortalContent() {
     toast.success("Todas las notificaciones marcadas como leídas.");
   };
 
-  const handleConfirmDemoLogout = () => {
+  const handleConfirmLogout = async () => {
     setLogoutModalOpen(false);
+    qc.clear();
     setCurrentSection("inicio");
     setShowIntro(true);
-    toast.info("Sesión reiniciada (Modo Demostración).");
+    try {
+      await session.logout();
+      toast.info("Sesión cerrada.");
+    } catch {
+      toast.error("No se pudo cerrar la sesión en el servidor.");
+    }
   };
 
   const unreadAvisosCount = avisosQuery.data?.filter((a) => !a.leido).length ?? 0;
@@ -234,7 +245,6 @@ function StudentPortalContent() {
               onSubmitSolicitud={async (data) => {
                 await StudentApi.addSolicitudCorreccion(data);
                 await qc.invalidateQueries({ queryKey: ["solicitudesCorreccion"] });
-                toast.success("Solicitud enviada a Bedelía (Modo DEMO).");
               }}
             />
           )}
@@ -315,7 +325,7 @@ function StudentPortalContent() {
       <LogoutDialog
         isOpen={logoutModalOpen}
         onClose={() => setLogoutModalOpen(false)}
-        onConfirmDemoLogout={handleConfirmDemoLogout}
+        onConfirmLogout={() => void handleConfirmLogout()}
       />
     </Layout>
   );
@@ -325,7 +335,9 @@ export default function JulianApp() {
   return (
     <ThemeProvider>
       <QueryClientProvider client={queryClient}>
-        <StudentPortalContent />
+        <SessionGate>
+          <StudentPortalContent />
+        </SessionGate>
       </QueryClientProvider>
     </ThemeProvider>
   );

@@ -1,6 +1,6 @@
 # Arquitectura e integraciones — Portal del Alumno app v2
 
-**Estado:** app v2 usa una base local de demostración. El sistema general dispone de una API compartida para los módulos de Alumno, Profesores, Preceptoría, Auxiliares y Centro de Estudiantes, pero app v2 todavía no la consume.
+**Estado (2026-10-30):** app v2 tiene en local su conexión inicial a login y lecturas de la API compartida. La URL independiente [alumnos-julian-v2.vercel.app](https://alumnos-julian-v2.vercel.app) aún requiere recibir estos cambios y validación QA. El sistema general ya dispone de PostgreSQL en Neon, Prisma y una API compartida para Alumno, Profesores, Preceptoría, Auxiliares y Centro de Estudiantes. No crear otra base: cada módulo usa sus tablas y permisos dentro del esquema institucional común. Ver el [contrato de backend](Contrato_backend_alumno_julian.md).
 
 ## Recorrido actual de datos
 
@@ -9,11 +9,10 @@
 3. La aplicación configura ThemeProvider y QueryClientProvider.
 4. JULIAN/app/Layout.tsx gestiona la navegación adaptable. La sección se refleja en tab dentro de la URL; no se usa React Router.
 5. Las pantallas están separadas en JULIAN/features/.
-6. Las pantallas llaman a StudentApi en JULIAN/shared/services/api.ts.
-7. StudentApi valida algunos resultados con Zod y delega en demoDB.
-8. demoDB inicia desde JULIAN/mocks/dataset.ts y persiste en localStorage bajo alumno-demo-db-v1.
+6. `SessionGate` controla acceso con la sesión institucional y `shared/services/http.ts` consulta el API `/api/v1`.
+7. `StudentApi` adapta las respuestas autorizadas a los modelos de la interfaz y valida estructuras con Zod. Las preferencias locales no contienen datos académicos oficiales.
 
-TanStack Query gestiona carga, caché e invalidaciones de interfaz. No convierte la base local en un servicio remoto.
+TanStack Query gestiona carga, caché e invalidaciones de interfaz. Los fixtures de `JULIAN/mocks/` ya no son la fuente de las lecturas institucionales.
 
 ## Capas y herramientas
 
@@ -22,9 +21,10 @@ TanStack Query gestiona carga, caché e invalidaciones de interfaz. No convierte
 | Entrada | src/ | Bootstrap de React y Vite |
 | Aplicación | JULIAN/app/ | Composición, consultas, tema y navegación |
 | Funcionalidades | JULIAN/features/ | Pantallas y acciones |
-| Tipos | JULIAN/shared/types/index.ts | Tipos y esquemas Zod de la demo |
-| Servicio demo | JULIAN/shared/services/api.ts | Fachada StudentApi sobre demoDB |
-| Datos | JULIAN/mocks/ | Dataset, comportamiento y persistencia demo |
+| Tipos | JULIAN/shared/types/index.ts | Tipos de interfaz y esquemas Zod para los adaptadores |
+| Cliente API | JULIAN/shared/services/http.ts | Fetch same-origin y manejo de sesión/errores |
+| Servicio | JULIAN/shared/services/api.ts | Fachada StudentApi y adaptación de DTO institucional |
+| Datos de referencia | JULIAN/mocks/ | Fixtures históricos, no fuente de datos conectados |
 | UI y estilos | JULIAN/shared/ui/, JULIAN/shared/lib/, JULIAN/styles/ | Componentes, utilidades, temas y tokens |
 
 Herramientas visibles: React, TypeScript, Vite, Tailwind CSS 4, TanStack Query, Zod, Phosphor Icons, Sonner, React Hook Form y lector QR. La lista de dependencias puede incluir paquetes aún no usados por las pantallas.
@@ -54,12 +54,12 @@ El prefijo configurado en el cliente compartido es /api/v1. Las rutas se indican
 
 El centro permite a alumnos participar o anotarse en eventos y crear reclamos propios. Sus endpoints de gestión de eventos y anuncios son exclusivos del rol STUDENT_REP y SUPER_ADMIN. Consultá el código de rutas y el contrato backend antes de integrar verbos de escritura.
 
-## Integración pendiente en app v2
+## Estado de integración en app v2
 
-StudentApi debe reemplazar demoDB por el cliente compartido apiFetch, usando cookies de sesión y respuestas validadas. Acordar adaptadores entre los tipos actuales en español y los DTOs compartidos, estados de moderación, destinatarios y filtros. Mantener fuera del panel Alumno los endpoints /staff/*.
+La implementación local ya reemplaza las lecturas demo por el cliente API con cookie de sesión y adaptadores tipados. Pendiente publicar esta versión y validar en QA los contratos, estados de moderación, destinatarios y filtros. Mantener fuera del panel Alumno los endpoints /staff/*.
 
 Las funciones actuales de rectificación de perfil y registro QR no tienen un endpoint de alumno confirmado en la API. La lectura de justificaciones existe, pero la creación y resolución corresponde a Preceptoría/gestión; no reutilizar un reclamo del Centro como justificación de falta. Las preferencias locales pueden seguir en navegador hasta que se acuerde una API.
 
 ## Publicación
 
-El build general compila actualmente alumnos-julian/app/, no alumnos-julian/app v2/. La nueva app de AI Studio no se publica en la ruta institucional hasta actualizar y validar scripts/build.mjs y las reglas de Vercel.
+La V2 de AI Studio está publicada en un proyecto Vercel propio. La ruta `/alumnos-julian/app-v2/` del sitio institucional requiere que el repositorio productivo integre la configuración de build general. La app independiente ya declara un rewrite same-origin hacia la API institucional; el deploy publicado aún no contiene estos cambios locales.
