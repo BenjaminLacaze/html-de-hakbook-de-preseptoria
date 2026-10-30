@@ -1,0 +1,231 @@
+@import "@fontsource/outfit/700.css";
+@import "@fontsource/outfit/800.css";
+@import "@fontsource/dm-sans/400.css";
+@import "@fontsource/dm-sans/500.css";
+@import "@fontsource/dm-sans/600.css";
+@import "@fontsource/jetbrains-mono/400.css";
+
+:root {
+  /* Paleta Oficial ISFDyT N° 26 */
+  --brand-navy: #14214F;
+  --brand-gold: #89743A;
+  --brand-blue: #3F78B6;
+  --brand-gold-sand: #AF9B63;
+  --brand-white: #FFFFFF;
+  --brand-black: #000000;
+
+  /* Tipografías oficiales y alternativas aprobadas */
+  --font-display: "Outfit", sans-serif;
+  --font-body: "DM Sans", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+
+  /* Tema por defecto: Celestial (Luz Institucional) */
+  --surface: #F8FAFD;
+  --surface-raised: #FFFFFF;
+  --surface-brand: #14214F;
+  --text: #14214F;
+  --text-muted: #53627E;
+  --border: #DDE4ED;
+  --accent: #89743A;
+  --accent-hover: #73612E;
+  --focus: #3F78B6;
+  --success: #1E7E34;
+  --warning: #A36200;
+  --danger: #B91C1C;
+  --badge-bg: rgba(63, 120, 182, 0.08);
+  --sidebar-bg: #14214F;
+  --sidebar-text: #FFFFFF;
+  --sidebar-muted: rgba(255, 255, 255, 0.72);
+  --sidebar-border: rgba(255, 255, 255, 0.12);
+  --header-bg: #FFFFFF;
+  --header-text: #14214F;
+  --header-border: #DDE4ED;
+}
+
+/* 1. Tema Celestial (Luz institucional, base del manual de marca) */
+[data-theme="celestial"] {
+  --surface: #F8FAFD;
+  --surface-raised: #FFFFFF;
+  --surface-brand: #14214F;
+  --text: #14214F;
+  --text-muted: #53627E;
+  --border: #DDE4ED;
+  --accent: #89743A;
+  --accent-hover: #73612E;
+  --focus: #3F78B6;
+  --success: #1E7E34;
+  --warning: #A36200;
+  --danger: #B91C1C;
+  --badge-bg: rgba(63, 120, 182, 0.08);
+  --sidebar-bg: #14214F;
+  --sidebar-text: #FFFFFF;
+  --sidebar-muted: rgba(255, 255, 255, 0.72);
+  --sidebar-border: rgba(255, 255, 255, 0.12);
+  --header-bg: #FFFFFF;
+  --header-text: #14214F;
+  --header-border: #DDE4ED;
+}
+
+/* 2. Tema Oscuro (Navy profundo nocturno, logo en negativo general) */
+[data-theme="oscuro"] {
+  --surface: #0B122B;
+  --surface-raised: #14214F;
+  --surface-brand: #1B2B65;
+  --text: #FFFFFF;
+  --text-muted: #AF9B63;
+  --border: #24356E;
+  --accent: #AF9B63;
+  --accent-hover: #C5B27A;
+  --focus: #3F78B6;
+  --success: #4ADE80;
+  --warning: #FBBF24;
+  --danger: #F87171;
+  --badge-bg: rgba(175, 155, 99, 0.15);
+  --sidebar-bg: #090E24;
+  --sidebar-text: #FFFFFF;
+  --sidebar-muted: rgba(255, 255, 255, 0.65);
+  --sidebar-border: #24356E;
+  --header-bg: #14214F;
+  --header-text: #FFFFFF;
+  --header-border: #24356E;
+}
+
+/* 3. Tema Ensoñación (Luminoso, matices etéreos de cielo y arena dorada) */
+[data-theme="ensoniacion"] {
+  --surface: #F4F7FC;
+  --surface-raised: #FFFFFF;
+  --surface-brand: #22376E;
+  --text: #172449;
+  --text-muted: #5D6F93;
+  --border: #D3DEED;
+  --accent: #3F78B6;
+  --accent-hover: #2C5F97;
+  --focus: #89743A;
+  --success: #20873B;
+  --warning: #B36B00;
+  --danger: #C02626;
+  --badge-bg: rgba(63, 120, 182, 0.12);
+  --sidebar-bg: #1B2B5C;
+  --sidebar-text: #FFFFFF;
+  --sidebar-muted: rgba(255, 255, 255, 0.75);
+  --sidebar-border: rgba(255, 255, 255, 0.15);
+  --header-bg: #FFFFFF;
+  --header-text: #172449;
+  --header-border: #D3DEED;
+}
+
+/* 4. Tema Moderno (Geometría nítida de alto contraste con navy estricto y dorado puro) */
+[data-theme="moderno"] {
+  --surface: #FFFFFF;
+  --surface-raised: #F8F9FA;
+  --surface-brand: #101B40;
+  --text: #0D142B;
+  --text-muted: #4B5563;
+  --border: #CFD8E3;
+  --accent: #89743A;
+  --accent-hover: #73612E;
+  --focus: #14214F;
+  --success: #15803D;
+  --warning: #B45309;
+  --danger: #B91C1C;
+  --badge-bg: rgba(137, 116, 58, 0.1);
+  --sidebar-bg: #101B40;
+  --sidebar-text: #FFFFFF;
+  --sidebar-muted: rgba(255, 255, 255, 0.8);
+  --sidebar-border: rgba(255, 255, 255, 0.14);
+  --header-bg: #FFFFFF;
+  --header-text: #101B40;
+  --header-border: #CFD8E3;
+}
+
+/* 5. Tema Fantasma (Baja saturación mineral con toques fríos institucionales) */
+[data-theme="fantasma"] {
+  --surface: #F1F4F8;
+  --surface-raised: #FAFCFE;
+  --surface-brand: #29385C;
+  --text: #192238;
+  --text-muted: #64748B;
+  --border: #CBD5E1;
+  --accent: #55678B;
+  --accent-hover: #3E4E70;
+  --focus: #3F78B6;
+  --success: #15803D;
+  --warning: #A16207;
+  --danger: #991B1B;
+  --badge-bg: rgba(85, 103, 139, 0.1);
+  --sidebar-bg: #1E293B;
+  --sidebar-text: #F8FAFC;
+  --sidebar-muted: rgba(248, 250, 252, 0.7);
+  --sidebar-border: rgba(255, 255, 255, 0.1);
+  --header-bg: #FAFCFE;
+  --header-text: #192238;
+  --header-border: #CBD5E1;
+}
+
+/* 6. Rebelde (Expresivo, energía en arena dorada y cielo sobre contraste nocturno) */
+[data-theme="rebelde"] {
+  --surface: #0E1838;
+  --surface-raised: #182859;
+  --surface-brand: #253C7D;
+  --text: #F8FAFC;
+  --text-muted: #D1B875;
+  --border: #2F4789;
+  --accent: #D4AF37;
+  --accent-hover: #F0C43D;
+  --focus: #60A5FA;
+  --success: #34D399;
+  --warning: #FBBF24;
+  --danger: #F87171;
+  --badge-bg: rgba(212, 175, 55, 0.18);
+  --sidebar-bg: #091026;
+  --sidebar-text: #FFFFFF;
+  --sidebar-muted: rgba(255, 255, 255, 0.75);
+  --sidebar-border: #2F4789;
+  --header-bg: #182859;
+  --header-text: #F8FAFC;
+  --header-border: #2F4789;
+}
+
+/* Reglas tipográficas globales */
+body {
+  font-family: var(--font-body);
+  background-color: var(--surface);
+  color: var(--text);
+  min-height: 100vh;
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, .font-display {
+  font-family: var(--font-display);
+}
+
+.font-mono, [data-tabular="true"] {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Filete corto dorado ocre característico del manual ISFDyT N° 26 */
+.brand-fillet {
+  width: 48px;
+  height: 2px;
+  background-color: var(--brand-gold);
+  border-radius: 1px;
+}
+
+/* Contraste y foco accesible */
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+/* Estilo para tablas accesibles */
+.app-table th {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}

@@ -1,0 +1,6 @@
+{
+  "name": "Panel de Alumno - ISFDyT N° 26",
+  "description": "Panel de Alumno de Asistencia Terciario para el Instituto Superior de Formación Docente y Técnica N° 26",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
