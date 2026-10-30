@@ -23,6 +23,8 @@ La matriz `docs/ESTADO_VALIDACION.md` distingue implementado, probado en local, 
 
 ## Bitácora
 
+- 2026-10-30 — GPT/Codex — Publicado el panel de AI Studio `alumnos-julian/app v2/` en el proyecto Vercel independiente [alumnos-julian-v2.vercel.app](https://alumnos-julian-v2.vercel.app). Build de producción listo y HTTP 200 confirmado. No cambia el sitio unificado; la app todavía usa datos locales de demostración y no está conectada a la base institucional.
+
 - 2026-10-30 — GPT/Codex — Preparación de publicación de Alumnos V2: el build incorpora `alumnos-julian/app v2/` en `/alumnos-julian/app-v2/`, Vercel recibe rewrite SPA y la landing ofrece V2 como acceso principal conservando la versión previa. Se adaptaron las rutas de logo y video al `BASE_URL` de Vite para que carguen bajo el subdirectorio. La publicación productiva queda pendiente de acceso al repo de despliegue `mjsis20052/sistema-gestion-i26`.
 
 - 2026-10-28 — GPT/Codex — Aclaración de alcance pedida por el usuario: matriz de pruebas y pendientes

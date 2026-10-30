@@ -6,7 +6,7 @@ Repositorio del equipo con los módulos de gestión y asistencia. Sitio publicad
 
 | Carpeta | Responsable | App de desarrollo | Documentación |
 |---|---|---|---|
-| alumnos-julian/ | Julián | Nueva app: alumnos-julian/app v2/ → /alumnos-julian/app-v2/; versión anterior en /alumnos-julian/app/. | alumnos-julian/README.md y alumnos-julian/docs/ |
+| alumnos-julian/ | Julián | V2 de AI Studio: [publicada en Vercel](https://alumnos-julian-v2.vercel.app); ruta prevista en el sitio unificado: /alumnos-julian/app-v2/. | alumnos-julian/README.md y alumnos-julian/docs/ |
 | alumnos-lucia/ | Lucía | alumnos-lucia/app/ | documentacion/ |
 | directivos-jesica-agustin/ | Jesica y Agustín | directivos-jesica-agustin/app/ | index.html y Handbook/ |
 | preceptoria-benjamin/ | Benjamín | Sin app React independiente | handbook.html |
@@ -22,13 +22,13 @@ La landing en index.html enlaza a los módulos. Tener una carpeta en GitHub no p
 
 Vercel ejecuta node scripts/build.mjs, configurado en vercel.json. El proceso compila solo las aplicaciones declaradas en scripts/build.mjs y las deja dentro de dist/.
 
-**Estado de la app nueva de Julián:** el build general compila `alumnos-julian/app v2/` en `dist/alumnos-julian/app-v2/`, la landing la ofrece como entrada principal y la versión anterior permanece en `/alumnos-julian/app/`. La configuración del repositorio está lista para publicarla en Vercel; este commit aún debe integrarse en el repositorio productivo `mjsis20052/sistema-gestion-i26` para que el sitio público cambie.
+**Estado de Alumnos V2 (Google AI Studio):** publicada en producción como proyecto Vercel independiente en [alumnos-julian-v2.vercel.app](https://alumnos-julian-v2.vercel.app), con respuesta HTTP 200. Esto no modifica la landing ni el dominio unificado [sistema-gestion-i26.vercel.app](https://sistema-gestion-i26.vercel.app). Para que aparezca allí en `/alumnos-julian/app-v2/`, la persona que administra el repositorio productivo `mjsis20052/sistema-gestion-i26` debe integrar los cambios del build general y desplegar ese repo.
 
 ## Desarrollo de la nueva app de alumno
 
 Proyecto de Google AI Studio: https://ai.studio/apps/bf731764-b335-4afd-af62-3b5d690f9070
 
-Desde la raíz del repositorio, ingresá a alumnos-julian/app v2/, ejecutá npm install y npm run dev. Vite usa el puerto 3000. El build del sitio completo la publica bajo `/alumnos-julian/app-v2/`.
+Desde la raíz del repositorio, ingresá a alumnos-julian/app v2/, ejecutá npm install y npm run dev. Vite usa el puerto 3000. El proyecto independiente de Vercel se despliega desde esa carpeta. El build del sitio unificado también está configurado para publicarla bajo `/alumnos-julian/app-v2/` cuando se integre en el repositorio productivo.
 
 La app nueva usa datos de demostración guardados en localStorage. No tiene login ni integración HTTP con el backend institucional. Sus formularios y acciones no cambian registros oficiales. Consultá docs/Contrato_backend_alumno_julian.md para el estado y la propuesta de integración.
 

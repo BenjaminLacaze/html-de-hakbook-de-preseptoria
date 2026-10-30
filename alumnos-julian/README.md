@@ -27,13 +27,13 @@ Estos datos compartidos existen en la API del sistema, pero la app v2 todavía u
 
 | Ruta | Estado | Uso |
 |---|---|---|
-| app v2/ | Nueva app de desarrollo | Versión actual del panel y proyecto de AI Studio |
+| app v2/ | Publicada en Vercel | [Abrir Alumnos V2](https://alumnos-julian-v2.vercel.app) · [Proyecto AI Studio](https://ai.studio/apps/bf731764-b335-4afd-af62-3b5d690f9070) |
 | app/ | Versión anterior | Conservada como referencia; sus documentos de API no describen la nueva app |
 | portal_definitivo/ | Prototipo HTML anterior | Referencia visual histórica |
 | index.html, index_detalle.html, index_conexiones.html | Documentación visual anterior | Consultar junto con los documentos Markdown actualizados |
 | Logo/ | Recursos gráficos | Logos del módulo |
 
-**Publicación en Vercel:** el build del repositorio ahora compila `app v2/` en `/alumnos-julian/app-v2/`. La landing enlaza esa versión como principal y conserva `/alumnos-julian/app/` para la anterior. Para que el dominio público refleje el cambio, estos cambios deben llegar al repositorio productivo `mjsis20052/sistema-gestion-i26`.
+**Publicación en Vercel:** Alumnos V2 está publicada como sitio independiente en [alumnos-julian-v2.vercel.app](https://alumnos-julian-v2.vercel.app) (producción verificada con HTTP 200). Esto no cambia la landing principal [sistema-gestion-i26.vercel.app](https://sistema-gestion-i26.vercel.app). El build del repositorio también puede generarla en `/alumnos-julian/app-v2/`, pero para incorporarla al dominio unificado la persona administradora debe integrar los cambios en `mjsis20052/sistema-gestion-i26` y desplegar ese proyecto.
 
 ## Documentación vigente
 

@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 2026-10-30 — Publicación de Alumnos V2 en Vercel
+
+- Publicado el frontend de Google AI Studio desde `alumnos-julian/app v2/` en [alumnos-julian-v2.vercel.app](https://alumnos-julian-v2.vercel.app).
+- Vercel completó el build y el despliegue de producción; la URL respondió HTTP 200.
+- Es un proyecto Vercel independiente. No actualiza la landing institucional `sistema-gestion-i26.vercel.app`; para integrarla allí hace falta desplegar los cambios desde el repositorio productivo.
+- Alumnos V2 continúa con datos de demostración locales; la publicación no crea ni conecta una base de datos.
+
 ## 2026-10-30 — Integración de Alumnos V2 al build del sitio
 
 - El build general incorpora `alumnos-julian/app v2/` bajo `/alumnos-julian/app-v2/` y configura el rewrite de navegación SPA en Vercel.
