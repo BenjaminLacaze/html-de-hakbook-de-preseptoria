@@ -1,73 +1,43 @@
 # Sistema de Gestión Escolar — ISFDyT N.° 26
 
-Repositorio del equipo con los módulos del sistema de gestión y asistencia.
-Publicado en Vercel: <https://sistema-gestion-i26.vercel.app/>
+Repositorio del equipo con los módulos de gestión y asistencia. Sitio publicado: https://sistema-gestion-i26.vercel.app/
 
-## Estructura
+## Módulos
 
-Cada módulo tiene su carpeta, siempre con la misma forma:
-
-```
-<modulo>-<autor>/
-├── README.md        qué es el módulo
-├── *.html           informes / handbooks (se publican tal cual)
-├── docs/            documentación en markdown (opcional)
-└── app/             la app React + Vite (opcional)
-```
-
-| Carpeta | Autor | App | Documentación |
+| Carpeta | Responsable | App de desarrollo | Documentación |
 |---|---|---|---|
-| `alumnos-julian/` | Julián | `/alumnos-julian/app/` | `index.html`, `portal_definitivo/`, `docs/` |
-| `alumnos-lucia/` | Lucía | `/alumnos-lucia/app/` (Panel Alumno · Sistema de Asistencia Escolar) | `documentacion/` |
-| `directivos-jesica-agustin/` | Jesica y Agustín | `/directivos-jesica-agustin/app/` | `index.html`, `Handbook/` |
-| `preceptoria-benjamin/` | Benjamín | — | `handbook.html` |
-| `profesores-nicolas/` | Nicolás | `/profesores-nicolas/app/` | `profesores.html`, `docs/` |
-| `consolidacion/` | rescatado de la app completa de Julián | `/consolidacion/app/` (Preceptoría, Auxiliares, Centro de Estudiantes) | `consolidacion/README.md` |
-| `backend/` + `api/` | equipo | API en `/api/v1` | `backend/README.md` (base Neon, login, cuentas) |
-| `shared/` | equipo | — | `types.ts`: modelo de datos unificado que usan todas las apps (`import … from '@shared/types'`); ver `shared/README.md` |
-| `docs/` | equipo | — | `INTEGRACION_TECNICA.md` (arquitectura), `BACKLOG_INTEGRACION.md` (tareas), `LOGIN_PANTALLAS.md`, `AJUSTES_INTEGRACION_BACKEND.md` y contratos por módulo |
+| alumnos-julian/ | Julián | Nueva app: alumnos-julian/app v2/. La compilación actual de Vercel todavía usa alumnos-julian/app/. | alumnos-julian/README.md y alumnos-julian/docs/ |
+| alumnos-lucia/ | Lucía | alumnos-lucia/app/ | documentacion/ |
+| directivos-jesica-agustin/ | Jesica y Agustín | directivos-jesica-agustin/app/ | index.html y Handbook/ |
+| preceptoria-benjamin/ | Benjamín | Sin app React independiente | handbook.html |
+| profesores-nicolas/ | Nicolás | profesores-nicolas/app/ | profesores.html y docs/ |
+| consolidacion/ | Equipo | consolidacion/app/ | consolidacion/README.md |
+| backend/ y api/ | Equipo | API del sistema en /api/v1 | backend/README.md |
+| shared/ | Equipo | Tipos compartidos | shared/README.md |
+| docs/ | Equipo | Integración general y contratos por módulo | INTEGRACION_TECNICA.md y documentos de contratos |
 
-La landing (`index.html` de la raíz) enlaza a todo.
+La landing en index.html enlaza a los módulos. Tener una carpeta en GitHub no publica automáticamente su aplicación.
 
-## Cómo se publica
+## Publicación
 
-Vercel corre `node scripts/build.mjs` (configurado en `vercel.json`):
+Vercel ejecuta node scripts/build.mjs, configurado en vercel.json. El proceso compila solo las aplicaciones declaradas en scripts/build.mjs y las deja dentro de dist/.
 
-1. Copia todo el repo a `dist/`.
-2. Compila cada `app/` con Vite y la deja en `dist/<modulo>/app/`.
+**Estado de la app nueva de Julián:** alumnos-julian/app v2/ está guardada en el repositorio y vinculada a Google AI Studio, pero el build general todavía compila alumnos-julian/app/. Para reemplazar la versión publicada hay que actualizar y verificar scripts/build.mjs, vercel.json y los enlaces de la landing.
 
-Las apps **no se pueden publicar sin compilar**: su `index.html` pide
-`/src/main.tsx`, que solo existe con `npm run dev`.
+## Desarrollo de la nueva app de alumno
 
-Para probarlo en tu máquina antes de subir:
+Proyecto de Google AI Studio: https://ai.studio/apps/bf731764-b335-4afd-af62-3b5d690f9070
 
-```bash
-node scripts/build.mjs
-npx serve dist
-```
+Desde la raíz del repositorio, ingresá a alumnos-julian/app v2/, ejecutá npm install y npm run dev. Vite usa el puerto 3000. npm run build compila esta app de forma independiente; el build del sitio completo todavía no la incorpora.
 
-## Login y API
+La app nueva usa datos de demostración guardados en localStorage. No tiene login ni integración HTTP con el backend institucional. Sus formularios y acciones no cambian registros oficiales. Consultá docs/Contrato_backend_alumno_julian.md para el estado y la propuesta de integración.
 
-- **Documentación técnica:** `docs/INTEGRACION_TECNICA.md`. **Backlog:** `docs/BACKLOG_INTEGRACION.md`.
+## Backend y login del resto del sistema
 
-- Las cuentas se crean desde **Directivos → Usuarios y Permisos**. Guía para las pantallas de login: `docs/LOGIN_PANTALLAS.md`.
-- API y base de datos: `backend/README.md`. En local: `npm install` y `npm run dev:api` en la raíz (puerto 4000).
-- Cada app usa la API con `VITE_USE_MOCK="false"` en `.env.development.local`; sin eso sigue en modo demo.
+La integración general se documenta en docs/INTEGRACION_TECNICA.md y docs/BACKLOG_INTEGRACION.md. Las cuentas del sistema se crean desde Directivos → Usuarios y Permisos. La API y la base de datos se describen en backend/README.md.
 
-## Trabajar en tu app
+Cada módulo debe documentar por separado si está conectado a servicios reales o si funciona con datos de demostración.
 
-```bash
-cd profesores-nicolas/app
-npm install --legacy-peer-deps
-npm run dev      # Directivos 5173 · Profesores 5174 · Julián 5175 · Lucía 5176 · Consolidación 5177
-```
+## Publicar cambios
 
-## Sumar un módulo o una app nueva
-
-1. Carpeta nueva `<modulo>-<autor>/` (minúsculas, sin espacios ni tildes).
-2. Si tiene app: ponerla en `<modulo>-<autor>/app/`, agregar la carpeta a
-   `modulesWithApp` en `scripts/build.mjs` y su rewrite en `vercel.json`.
-3. Agregar la tarjeta en `index.html` de la raíz.
-4. `node scripts/build.mjs` para probar, y recién ahí push.
-
-**No subir** `node_modules/`, `dist/` ni archivos `.env` (ya están en `.gitignore`).
+Antes de publicar el sitio completo, ejecutá node scripts/build.mjs y verificá que termine sin errores. No subas node_modules/, dist/ ni archivos .env. El archivo .env.example es una plantilla y no equivale a un secreto.

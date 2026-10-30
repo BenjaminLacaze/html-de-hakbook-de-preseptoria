@@ -1,101 +1,40 @@
-# Alcance Funcional y MVP — Módulo Alumno
+# Alcance funcional — Portal del Alumno app v2
 
-> **Proyecto:** Sistema de Gestión Académica — Módulo Alumno  
-> **Integrantes:** Julián y Lucía  
+**Versión documentada:** alumnos-julian/app v2/
+**Estado:** prototipo funcional de interfaz en modo demostración; sin autenticación ni conexión confirmada al backend institucional.
 
----
+## Funciones disponibles
 
-## 📋 Resumen del Alcance del MVP
+| Área | Funcionalidad | Estado de datos |
+|---|---|---|
+| Inicio | Resumen académico, métricas de asistencia, próximos eventos, avisos y notas | Demo |
+| Perfil | Datos del alumno y solicitud de corrección | La solicitud se guarda localmente |
+| Agenda | Eventos y recordatorios | Recordatorios simulados |
+| Materias | Materias, docentes, horarios y detalle de cursada | Demo |
+| Notas | Evaluaciones y calificaciones | No son notas oficiales |
+| Faltas | Registros de asistencia y solicitud de justificación | Justificación simulada |
+| Asistencia QR | Lectura y registro de código QR | Sin validación institucional |
+| Historial | Línea de tiempo académica | Demo |
+| Comunidad | Avisos y estado de lectura | Estado local |
+| Foros | Publicaciones y respuestas | Operaciones locales sobre la demo |
+| Opciones | Preferencias, modo demo y restablecimiento | Persistencia local |
+| Apariencia | Seis temas, tamaño de texto, densidad y reducción de movimiento | Preferencias locales |
 
-El **Minimum Viable Product (MVP)** del Módulo Alumno tiene como objetivo proporcionar la experiencia mínima indispensable para que un estudiante pueda consultar su situación académica en tiempo real de manera autónoma.
+También hay introducción institucional, búsqueda global, notificaciones, navegación móvil y estados de carga y error.
 
----
+## Comportamiento de demostración
 
-## 01. Acceso y Contexto Académico
+StudentApi usa demoDB; no hace solicitudes HTTP. Los datos iniciales vienen de JULIAN/mocks/dataset.ts y los cambios se guardan en localStorage bajo alumno-demo-db-v1. La demora y algunos errores de carga se pueden simular.
 
-Esta sección agrupa las funciones necesarias para que el alumno ingrese de forma segura al portal y consulte sus datos institucionales.
+Las acciones de perfil, asistencia QR, justificaciones, foros, avisos, recordatorios y preferencias no crean trámites ni registros institucionales. La opción de restablecer la demo devuelve el conjunto local al estado inicial.
 
-### Feature 1.1: Iniciar sesión con rol Alumno
-* **Identificador técnico:** `usuarios`
-* **Estado en MVP:** `✓ Incluido`
-* **Descripción:** Permite al alumno autenticarse en el sistema utilizando su email institucional y contraseña.
-* **Criterios de Aceptación:**
-  * Al validar credenciales con el flag `rol = 'ALUMNO'`, el sistema redirige automáticamente al Dashboard del Alumno.
-  * Si el usuario no posee el rol `ALUMNO`, la sesión es denegada para este portal.
+## Fuera del alcance conectado
 
-### Feature 1.2: Ver Perfil Académico
-* **Identificador técnico:** `alumnos`
-* **Estado en MVP:** `✓ Incluido`
-* **Descripción:** Pantalla de consulta con la información personal e institucional del alumno logueado.
-* **Datos Visibles:** Legajo, DNI, Nombre y Apellido, Email Institucional, Carrera / Plan de Estudios, Estado de Cursada (Regular / Pasivo).
-* **Restricción:** Vista de solo lectura. Modificaciones únicamente solicitadas a Bedelía/Admin.
+- Inicio de sesión, renovación de sesión y permisos institucionales.
+- Lectura o escritura en el backend o la base de datos oficial.
+- Validación oficial de asistencia QR, calificaciones o solicitudes.
+- Carga segura de certificados y adjuntos.
+- Notificaciones reales por correo o push.
+- Publicación de app v2 en el build general de Vercel.
 
----
-
-## 02. Materias y Comisiones
-
-Visualización del conjunto de asignaturas en las que el estudiante se encuentra matriculado.
-
-### Feature 2.1: Ver Mis Materias y Comisiones
-* **Identificador técnico:** `alumno_comision`
-* **Estado en MVP:** `✓ Incluido`
-* **Descripción:** Panel de inicio donde se listan las materias y comisiones asociadas al alumno en el ciclo lectivo/cuatrimestre activo.
-* **Datos Visibles:** Nombre de la Materia, Código de Comisión, Cuatrimestre, Turno.
-
-### Feature 2.2: Detalle de la Comisión y Cuerpo Docente
-* **Identificador técnico:** `comisiones`
-* **Estado en MVP:** `✓ Incluido`
-* **Descripción:** Vista extendida al seleccionar una materia del panel principal.
-* **Datos Visibles:** Días y horarios de cursada, número de aula/espacio físico, nombre de los profesores y jefes de trabajos prácticos asignados.
-
----
-
-## 03. Asistencia
-
-Permite al alumno realizar un seguimiento transparente de sus inasistencias por materia.
-
-### Feature 3.1: Consultar Historial de Asistencia por Materia
-* **Identificador técnico:** `asistencias`
-* **Estado en MVP:** `✓ Incluido`
-* **Descripción:** Listado cronológico de las clases dictadas en cada materia con su estado correspondiente.
-* **Estados contemplados:** `Presente`, `Ausente`, `Tardanza`.
-
-### Feature 3.2: Ver Porcentaje de Asistencia Acumulado
-* **Identificador técnico:** `asistencias`
-* **Estado en MVP:** `✓ Incluido`
-* **Descripción:** Cálculo automático en pantalla que muestra el porcentaje de asistencias alcanzado frente al mínimo institucional requerido (ej. 75%).
-* **Indicador:** Alerta visual preventiva si el alumno está cerca de perder la regularidad por inasistencias.
-
----
-
-## 04. Calificaciones
-
-Acceso a las notas registradas por los docentes durante el cuatrimestre.
-
-### Feature 4.1: Consultar Libreta Digital de Notas
-* **Identificador técnico:** `calificaciones`
-* **Estado en MVP:** `✓ Incluido`
-* **Descripción:** Consolidado de evaluaciones cargadas por la cátedra para cada materia en curso.
-* **Datos Visibles:** Nota Primer Parcial, Nota Segundo Parcial, Trabajos Prácticos, Recuperatorios y Condición Final (Promocionado, Regular, Libre).
-
----
-
-## 05. Funcionalidades Fuera del MVP (Roadmap v2.0)
-
-Para evitar sobrecargar la entrega inicial del módulo, se excluyen las siguientes funcionalidades:
-
-| Funcionalidad | Tag Técnico | Módulo Responsable Futuro |
-| :--- | :--- | :--- |
-| **Inscripción y cambio de comisiones online** | `cursadas` | Módulo Administración / Cursadas |
-| **Carga de certificados de inasistencia** | `justificativos` | Módulo Preceptores / Asistencia |
-| **Descarga de certificado de alumno regular en PDF** | `certificados` | Módulo Administración |
-| **Solicitud de revisión / reclamo de notas** | `revisiones` | Módulo Profesor / Cátedra |
-| **Encuestas de evaluación docente** | `encuestas` | Módulo Calidad Académica |
-
----
-
-## 06. Reglas del Módulo Alumno
-
-1. **Aislamiento de Ámbito (Row-Level Security):** Cada consulta realizada por el portal envía implícitamente el token JWT con el `alumno_id` verificado. Ningún parámetro en la URL puede permitir ver la información de otro legajo.
-2. **Sin Privilegios de Mutation (POST/PUT/DELETE):** El rol Alumno no posee endpoints habilitados para alterar ningún estado de la base de datos académica.
-3. **Dependencia Fuerte de Módulos Emisores:** Si el módulo Profesor no oficializa una nota, o si el módulo Asistencia no registra la clase, el Módulo Alumno reflejará el estado pendiente sin generar estimaciones locales.
+Para considerar una función institucional, hacen falta una API autorizada, validación en servidor, una sesión confiable, reglas de privacidad y una fuente oficial. Consultá [el contrato backend propuesto](Contrato_backend_alumno_julian.md).
