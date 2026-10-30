@@ -9,7 +9,7 @@
 - **Cuatro módulos funcionales:** cada app consume los endpoints autorizados de su rol; no se conecta directamente a Neon.
 - **Identidad común:** `User` y sesiones institucionales; Alumno tiene una ficha `Student` vinculada opcionalmente, Centro identifica participantes por `User`, y Auxiliares opera con rol `STAFF`.
 - **Datos en común con propiedad clara:** Preceptoría y Profesores comparten planillas de asistencia; Alumno consulta sus propios datos; Centro administra su comunidad; Auxiliares administra el edificio. Compartir infraestructura no mezcla permisos ni pantallas.
-- **Preceptoría gobierna la información académica de alumnos dentro del alcance institucional acordado.** El código actual limita al preceptor a comisiones asignadas; no hay acceso directo de ningún panel a la base.
+- **Decisión del usuario (2026-10-30):** todos los preceptores gestionan las fichas de todos los alumnos del instituto y pueden leer sus datos sensibles. El backend ejecuta los permisos; ningún panel accede directamente a Neon.
 
 ## Inventario que ya existe
 
@@ -24,11 +24,11 @@ El esquema Prisma ya contiene identidad y sesiones, carreras, planes, materias, 
 | Módulo | Ya conectado | Trabajo pendiente principal |
 |---|---|---|
 | Alumno | La V2 local tiene login institucional y adaptadores API para sus lecturas académicas, agenda, avisos, foros y notificaciones | Publicar y validar la V2; acordar y habilitar trámites de justificación, correcciones y QR; reemplazar datos locales de preferencias si deben compartirse |
-| Preceptoría | Lee alumnos dentro del alcance y registra asistencia/justificaciones por API compartida | Alta/edición de ficha académica bajo permisos; avisos, agenda y foro siguen parcialmente en memoria; usar catálogos reales en vez de carreras de ejemplo |
+| Preceptoría | Permisos locales para padrón global, fichas, inscripciones y lectura sensible; pantalla inicial de padrón; asistencia/justificaciones por API en comisiones asignadas | Compilar y validar la pantalla con QA; avisos, agenda y foro siguen parcialmente en memoria; reemplazar sus datos de ejemplo |
 | Centro de Estudiantes | Eventos, participación, foro, anuncios y reclamos tienen endpoints | Revisar todas las pantallas en modo API y completar validación por rol |
 | Auxiliares | Tareas, instalaciones, incidencias y mantenimiento tienen endpoints protegidos por rol | Terminar turnos y validar visualmente las operaciones; conservar datos aislados del alumno |
 
-La API ya tiene rutas de personas y estructura (`/structure/students`, `/structure/enrollments`), asistencia (`/attendance/*`), datos propios (`/me/*`), Centro (`/centro/*`) y Auxiliares (`/staff/*`). Las rutas actuales de alta/edición de ficha de alumno están reservadas a Dirección, Administración y Superadmin; Preceptoría solo lee su roster y opera asistencia/justificaciones en las comisiones asignadas.
+La API ya tiene rutas de personas y estructura (`/structure/students`, `/structure/enrollments`), asistencia (`/attendance/*`), datos propios (`/me/*`), Centro (`/centro/*`) y Auxiliares (`/staff/*`). En esta etapa se abrió localmente a PRECEPTOR el padrón global, alta/edición de fichas, gestión de inscripciones y lectura de datos sensibles. Vincular una cuenta al legajo y modificar datos sensibles siguen reservados a Dirección/Administración/Superadmin. La asistencia y revisión de justificaciones permanecen restringidas a comisiones asignadas.
 
 ## Relación principal de datos
 
@@ -51,25 +51,25 @@ erDiagram
   USER ||--o{ REP_EVENT_PARTICIPANT : se_inscribe
 ```
 
-El vínculo de Preceptoría con el roster se obtiene mediante las comisiones asignadas y sus inscripciones. Los datos sensibles (`StudentSensitiveData`) están separados de la ficha académica y requieren permiso específico. Los datos de Auxiliares no se relacionan con la ficha del alumno salvo auditoría o configuración institucional expresamente definida.
+El preceptor tiene acceso institucional al padrón y a la lectura de datos sensibles por decisión explícita del usuario. El modelo separa `StudentSensitiveData` de la ficha ordinaria; su actualización y la vinculación de cuenta siguen siendo operaciones administrativas. Las operaciones de asistencia y justificaciones conservan alcance por comisión asignada. Los datos de Auxiliares no se relacionan con la ficha del alumno salvo auditoría o configuración institucional expresamente definida.
 
 ## Etapas de implementación
 
-### Etapa 1 — Reglas de gobierno y permisos
+### Etapa 1 — Reglas de gobierno y permisos (decisión cerrada)
 
-Definir si cada preceptor ve y edita **solo los alumnos de sus comisiones asignadas** o si necesita un alcance institucional más amplio. Recomendación inicial: roster asignado; Dirección/Administración conserva altas de identidad y estructura; Preceptoría gestiona los datos académicos y administrativos autorizados de ese roster. Separar siempre datos sensibles.
+Todos los preceptores tienen alcance institucional sobre fichas, inscripciones y lectura de datos sensibles. Dirección/Administración conserva la vinculación de cuentas y la escritura de datos sensibles. La operación de asistencia/justificaciones continúa limitada por comisiones asignadas; ajustar ese alcance será una decisión separada.
 
 ### Etapa 2 — Diferencias de esquema y consistencia
 
 Comparar Prisma, migraciones y datos actuales de Neon; identificar únicamente diferencias necesarias. Revisar la referencia de `preceptorUserId`, índices y reglas de baja. Preparar migración reversible y pruebas en PostgreSQL local aislado. **No crear ni aplicar migraciones en Neon antes de aprobar el diff y el respaldo.**
 
-### Etapa 3 — Endpoints de Preceptoría para alumnos
+### Etapa 3 — Endpoints de Preceptoría para alumnos (permisos base implementados)
 
-Diseñar y luego implementar endpoints limitados por rol/alcance para consultar el roster, actualizar los campos que se le deleguen, inscribir alumnos o modificar condiciones si corresponde, y auditar cada cambio. No dar permiso de SQL ni acceso general a tablas. Mantener alta de usuario, vínculo de identidad y campos sensibles bajo una política explícita.
+`/structure/students` permite a PRECEPTOR consultar todos los alumnos y crear/actualizar ficha; `/structure/careers` entrega el catálogo para el formulario; `/structure/enrollments` permite consultar/crear/cambiar condiciones a escala institucional. `/structure/students/:id/sensitive` permite lectura global a PRECEPTOR. Las operaciones administrativas de vinculación de cuenta, escritura de datos sensibles y borrado físico de inscripción permanecen restringidas. No hay permiso SQL ni acceso directo a tablas.
 
-### Etapa 4 — Conectar las cuatro apps
+### Etapa 4 — Conectar las cuatro apps (Preceptoría: padrón inicial implementado)
 
-Consumir el mismo cliente de sesión/API en los frontends. Reemplazar stores demo en cada flujo; eliminar IDs o carreras fijas; definir estados de carga, error, reintento y éxito real; mantener separados los dominios del Centro y Auxiliares. Hacer que Alumno refleje asistencia/justificaciones y que Preceptoría vea el mismo registro al volver a consultar.
+La app consolidada ya incorpora una pantalla de padrón para PRECEPTOR con búsqueda, alta/edición de ficha y consulta puntual de datos sensibles. Falta compilarla en el entorno del módulo y completar su revisión visual. En las cuatro apps, consumir el mismo cliente de sesión/API; reemplazar stores demo restantes; eliminar IDs o carreras fijas; mantener dominios Centro/Auxiliares separados; hacer que Alumno refleje las escrituras compartidas.
 
 ### Etapa 5 — QA de extremo a extremo
 
@@ -85,9 +85,9 @@ Aplicar cualquier migración aprobada primero en el entorno de publicación prev
 - El servidor deriva la identidad de la cookie HttpOnly y autoriza cada endpoint.
 - Preceptoría no obtiene acceso irrestricto a toda Neon por ser responsable del dominio.
 - El alumno solo recibe su información; Auxiliares no recibe el legajo académico.
-- Los datos personales sensibles se consultan y modifican por permisos específicos, con auditoría y minimización.
+- Los datos personales sensibles se consultan y modifican por permisos específicos, con auditoría de cambios y minimización. Falta incorporar auditoría de lectura sensible antes de publicar el nuevo alcance global.
 - Ninguna operación se anuncia como guardada si el backend no confirma éxito.
 
 ## Próximo paso concreto
 
-Cerrar la matriz de alcance de Preceptoría y campos editables (Etapa 1). Con esa definición, preparar el contrato de endpoints faltantes y el diff de esquema; recién después iniciar la migración local.
+Validar la pantalla de Padrón con QA; completar después la gestión visual de inscripciones y sustituir stores de avisos/agenda/foro. Antes de publicar el acceso global a datos sensibles, agregar auditoría de lecturas. No se requiere crear tablas para los permisos actuales; revisar la relación de preceptor asignado a comisión como mejora de integridad antes de cambiar el esquema.

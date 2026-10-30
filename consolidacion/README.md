@@ -8,7 +8,7 @@ Publicada en: `/consolidacion/app/` (tarjeta "Preceptoría, Auxiliares y Centro 
 
 | Sección | Rol que entra | Qué tiene | Estado de integración |
 |---|---|---|---|
-| **Preceptoría** | Preceptor/a | Toma de asistencia por materia y fecha, justificaciones, historial, alumnos en riesgo, comunicados, foros, agenda | ✅ **Asistencia y justificaciones contra la API** (misma planilla que Profesores). El resto, en memoria |
+| **Preceptoría** | Preceptor/a | Padrón de alumnos, toma de asistencia por materia y fecha, justificaciones, historial, alumnos en riesgo, comunicados, foros, agenda | ✅ **Padrón global (código local), asistencia y justificaciones contra la API** (misma planilla que Profesores). Lo demás sigue parcialmente en memoria |
 | **Auxiliares** | Auxiliar | Tareas del día, plano de instalaciones, incidencias, mantenimiento, turnos | ✅ Tareas, instalaciones, incidencias y mantenimiento contra la API (`useApiStaff.ts`). Turnos, en memoria |
 | **Centro de Estudiantes** | Centro de Estudiantes | Eventos e inscripción, comunicados, foro de la comunidad, reclamos | ✅ Eventos, foro, comunicados y reclamos contra la API (`useApiCentro.ts`) |
 
@@ -26,6 +26,8 @@ consolidacion/app/src/
 ├── legacy/                  pantallas rescatadas, casi sin cambios (ver abajo)
 └── styles.css               diseño unificado + tema original + tema "institucional"
 ```
+
+El padrón de Preceptoría ya permite consultar, crear y editar fichas en el código local. Todos los preceptores tienen alcance institucional sobre las fichas y lectura de datos sensibles; el vínculo de cuentas y la escritura de datos sensibles siguen bajo Dirección/Administración/Superadmin. La consulta sensible se carga bajo demanda. La UI todavía debe compilarse y probarse con una cuenta QA.
 
 - **Modo demo** (por defecto, y en el sitio publicado): pantalla para elegir la sección; datos de
   ejemplo en memoria; nada se guarda.

@@ -32,6 +32,8 @@ El login/cambio de contraseña usa cookie HttpOnly y permisos de backend. `VITE_
 | Foro comunitario del Centro | STUDENT_REP gestiona; alumnos participan | Temas, respuestas y anuncios propios de este dominio |
 | Operación de Auxiliares | STAFF y roles de gestión autorizados | Sin acceso para el rol STUDENT |
 
+La decisión del usuario para Ecosistema 2.0 es que **todos los PRECEPTOR** gestionen las fichas e inscripciones institucionales y lean datos sensibles de cualquier alumno. La escritura de datos sensibles y la vinculación del legajo con una cuenta siguen reservadas a Dirección/Administración/Superadmin. La asistencia y las justificaciones de Preceptoría continúan acotadas a las comisiones asignadas.
+
 No mezclar el foro académico con el foro del Centro, ni los eventos/comunicados del Centro con el calendario y comunicados institucionales. Comparten backend, pero tienen responsables, tablas y reglas distintas.
 
 ## 3. Endpoints compartidos existentes

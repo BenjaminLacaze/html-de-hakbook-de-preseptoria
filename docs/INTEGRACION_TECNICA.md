@@ -388,7 +388,7 @@ Todo lo que las apps guardaban en memoria y es de interés común ahora vive en 
 
 **Reglas que aplica la API:**
 
-- Datos sensibles del alumno: solo Directivo, Secretaría, Superadmin y Preceptor (este último, de sus alumnos).
+- Datos sensibles del alumno: Directivo, Secretaría, Superadmin y todos los Preceptores (lectura institucional global aprobada por el usuario); su escritura permanece bajo roles de gestión.
 - Foro académico: lo que publica un alumno queda **pendiente** hasta que Preceptoría lo aprueba. Si el autor lo
   edita, vuelve a revisión. Un tema cerrado no admite respuestas.
 - Notas: solo las carga el docente de esa comisión (o Directivos). El alumno ve solo las **publicadas**.

@@ -1,6 +1,7 @@
 // Estructura académica y personas: alta, edición y listados.
-// Escriben: Directivo, Administrativo (Secretaría) y Superadmin. Leen además Preceptor y Profesor
-// (los listados de comisiones se limitan a su alcance).
+// Estructura académica: gestión global por Dirección/Administración/Superadmin.
+// Preceptoría gestiona fichas e inscripciones de alumnos en alcance institucional; docentes y
+// preceptores conservan el alcance asignado para comisiones y operación de cursada.
 //
 //   POST/PATCH /structure/careers[/:id]        POST /structure/plans
 //   POST/PATCH /structure/subjects[/:id]       POST/PATCH /structure/cycles[/:id]  (activar = cierra el anterior)
@@ -24,13 +25,14 @@ import { audit } from '../audit.js';
 import { requireAuth, requireRoles, type AppEnv } from '../auth/middleware.js';
 import { prisma } from '../db.js';
 import { commissionInclude, commissionView, studentDTO, teacherDTO } from '../dto.js';
-import { AppError, notFound } from '../errors.js';
+import { AppError, forbidden, notFound } from '../errors.js';
 import type { Prisma } from '../generated/prisma/client.js';
-import { activeCycle, commissionScope, isManagement, parseDate, toISO, toISODate } from '../scope.js';
+import { activeCycle, commissionScope, hasRole, isManagement, parseDate, toISO, toISODate } from '../scope.js';
 import { parseBody } from '../validation.js';
 
 const WRITE = ['SUPER_ADMIN', 'DIRECTOR', 'ADMINISTRATIVE'] as const;
 const READ = [...WRITE, 'PRECEPTOR', 'TEACHER'] as const;
+const STUDENT_MANAGERS = [...WRITE, 'PRECEPTOR'] as const;
 /** Quién ve datos sensibles del alumno (domicilio, contacto de emergencia, salud). */
 const SENSITIVE_READ = ['SUPER_ADMIN', 'DIRECTOR', 'ADMINISTRATIVE', 'PRECEPTOR'] as const;
 
@@ -53,10 +55,19 @@ async function unique<T>(p: Promise<T>, what: string): Promise<T> {
   }
 }
 
+async function assertPlanBelongsToCareer(planId: string, careerId: string): Promise<void> {
+  const plan = await prisma.studyPlan.findFirst({ where: { id: planId, careerId }, select: { id: true } });
+  if (!plan) throw new AppError('VALIDATION_ERROR', 'El plan de estudios no corresponde a la carrera seleccionada.');
+}
+
 export const structureRoutes = new Hono<AppEnv>()
   .use(requireAuth)
 
   // ------------------------------------------------------- carreras y planes
+  .get('/careers', requireRoles(...READ), async (c) => {
+    const rows = await prisma.career.findMany({ orderBy: { name: 'asc' } });
+    return c.json(rows.map(({ id, code, name, durationYears, active }) => ({ id, code, name, durationYears, active })));
+  })
   .post('/careers', requireRoles(...WRITE), async (c) => {
     const b = await parseBody(c, z.object({ code, name: text(), durationYears: z.number().int().min(1).max(8) }));
     const r = await unique(prisma.career.create({ data: b }), 'una carrera');
@@ -277,12 +288,12 @@ export const structureRoutes = new Hono<AppEnv>()
           }
         : {}),
     };
-    // Preceptor y Profesor: solo alumnos de sus comisiones.
-    if (!isManagement(user)) where.enrollments = { some: { commission: await commissionScope(user) } };
+    // Preceptoría administra el padrón institucional; Profesor conserva alcance por comisión.
+    if (!isManagement(user) && !hasRole(user, 'PRECEPTOR')) where.enrollments = { some: { commission: await commissionScope(user) } };
     const rows = await prisma.student.findMany({ where, orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }], take: 2000 });
     return c.json(rows.map(studentDTO));
   })
-  .post('/students', requireRoles(...WRITE), async (c) => {
+  .post('/students', requireRoles(...STUDENT_MANAGERS), async (c) => {
     const b = await parseBody(
       c,
       z.object({
@@ -298,27 +309,42 @@ export const structureRoutes = new Hono<AppEnv>()
         status: z.enum(STUDENT_STATUSES).default('ACTIVE'),
       }),
     );
+    await assertPlanBelongsToCareer(b.planId, b.careerId);
     const r = await unique(prisma.student.create({ data: { ...b, admissionDate: parseDate(b.admissionDate, 'admissionDate') } }), 'un alumno (legajo o DNI)');
     await audit(c, c.get('user'), { action: 'CREATE', entity: 'Student', entityId: r.id, summary: `Alumno ${r.lastName}, ${r.firstName} (${r.fileNumber})` });
     return c.json(studentDTO(r), 201);
   })
-  .patch('/students/:id', requireRoles(...WRITE), async (c) => {
+  .patch('/students/:id', requireRoles(...STUDENT_MANAGERS), async (c) => {
     const b = await parseBody(
       c,
       z
         .object({
+          fileNumber: code,
+          dni: z.string().trim().regex(/^[0-9A-Za-z.-]{6,15}$/, 'DNI inválido.'),
           firstName: text(80),
           lastName: text(80),
           email: z.string().trim().toLowerCase().email(),
           phone: z.string().max(40).nullable(),
+          careerId: z.string().uuid(),
+          planId: z.string().uuid(),
+          admissionDate: z.string(),
           status: z.enum(STUDENT_STATUSES),
           userId: z.string().uuid().nullable(),
         })
         .partial(),
     );
+    const user = c.get('user');
+    if (!isManagement(user) && Object.prototype.hasOwnProperty.call(b, 'userId')) {
+      throw forbidden('Solo Dirección o Administración puede vincular una cuenta de acceso al legajo.');
+    }
     const before = await prisma.student.findUnique({ where: { id: c.req.param('id') } });
     if (!before) throw notFound('No existe el alumno.');
-    const r = await unique(prisma.student.update({ where: { id: before.id }, data: b }), 'otro alumno vinculado a esa cuenta');
+    if (b.careerId || b.planId) await assertPlanBelongsToCareer(b.planId ?? before.planId, b.careerId ?? before.careerId);
+    const { admissionDate, ...fields } = b;
+    const r = await unique(prisma.student.update({
+      where: { id: before.id },
+      data: { ...fields, ...(admissionDate ? { admissionDate: parseDate(admissionDate, 'admissionDate') } : {}) },
+    }), 'otro alumno con ese legajo, DNI o cuenta');
     await audit(c, c.get('user'), {
       action: b.status && b.status !== before.status ? 'STATUS_CHANGE' : 'UPDATE',
       entity: 'Student',
@@ -330,7 +356,7 @@ export const structureRoutes = new Hono<AppEnv>()
   .get('/students/:id/sensitive', requireRoles(...SENSITIVE_READ), async (c) => {
     const id = c.req.param('id');
     const user = c.get('user');
-    if (!isManagement(user)) {
+    if (!isManagement(user) && !hasRole(user, 'PRECEPTOR')) {
       const ok = await prisma.enrollment.findFirst({ where: { studentId: id, commission: await commissionScope(user) } });
       if (!ok) throw notFound();
     }
@@ -426,7 +452,8 @@ export const structureRoutes = new Hono<AppEnv>()
   .get('/enrollments', requireRoles(...READ), async (c) => {
     const q = c.req.query();
     if (!q.commissionId && !q.studentId) throw new AppError('VALIDATION_ERROR', 'Indicá commissionId o studentId.');
-    const scope = await commissionScope(c.get('user'));
+    const user = c.get('user');
+    const scope = isManagement(user) || hasRole(user, 'PRECEPTOR') ? {} : await commissionScope(user);
     const rows = await prisma.enrollment.findMany({
       where: { commission: scope, ...(q.commissionId ? { commissionId: q.commissionId } : {}), ...(q.studentId ? { studentId: q.studentId } : {}) },
       orderBy: { createdAt: 'asc' },
@@ -443,16 +470,26 @@ export const structureRoutes = new Hono<AppEnv>()
     }));
     return c.json(out);
   })
-  .post('/enrollments', requireRoles(...WRITE), async (c) => {
+  .post('/enrollments', requireRoles(...STUDENT_MANAGERS), async (c) => {
     const b = await parseBody(c, z.object({ studentId: z.string().uuid(), commissionId: z.string().uuid() }));
+    const [student, commission] = await Promise.all([
+      prisma.student.findUnique({ where: { id: b.studentId }, select: { id: true, planId: true } }),
+      prisma.commission.findUnique({ where: { id: b.commissionId }, select: { id: true, subject: { select: { planId: true } } } }),
+    ]);
+    if (!student || !commission) throw notFound('No existe el alumno o la comisión.');
+    if (student.planId !== commission.subject.planId) {
+      throw new AppError('VALIDATION_ERROR', 'La comisión no pertenece al plan de estudios del alumno.');
+    }
     const r = await unique(prisma.enrollment.create({ data: b }), 'una inscripción del alumno en esa comisión');
     await audit(c, c.get('user'), { action: 'CREATE', entity: 'Enrollment', entityId: r.id, summary: 'Inscripción a comisión' });
     return c.json({ id: r.id }, 201);
   })
-  .patch('/enrollments/:id', requireRoles(...WRITE, 'TEACHER'), async (c) => {
+  .patch('/enrollments/:id', requireRoles(...STUDENT_MANAGERS, 'TEACHER'), async (c) => {
     const user = c.get('user');
     const b = await parseBody(c, z.object({ condition: z.enum(ENROLLMENT_CONDITIONS) }));
-    const e = await prisma.enrollment.findFirst({ where: { id: c.req.param('id'), commission: await commissionScope(user) } });
+    const e = await prisma.enrollment.findFirst({
+      where: { id: c.req.param('id'), ...(!isManagement(user) && !hasRole(user, 'PRECEPTOR') ? { commission: await commissionScope(user) } : {}) },
+    });
     if (!e) throw notFound('No existe la inscripción o no la tenés a cargo.');
     await prisma.enrollment.update({ where: { id: e.id }, data: { condition: b.condition, conditionChangedAt: new Date() } });
     await audit(c, user, { action: 'STATUS_CHANGE', entity: 'Enrollment', entityId: e.id, summary: `Condición ${e.condition} → ${b.condition}` });

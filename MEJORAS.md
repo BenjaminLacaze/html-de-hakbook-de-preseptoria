@@ -3,7 +3,10 @@
 ## Ecosistema 2.0 — 2026-10-30
 
 - La base Neon y el backend Hono/Prisma compartidos ya existen para los cuatro módulos; el trabajo pendiente es completar contratos, permisos e integración, no crear una base vacía.
-- Preceptoría gobierna la operación académica de su alcance asignado. El backend todavía reserva alta/edición de fichas de alumno a Dirección/Administración/Superadmin; acordar la delegación antes de abrir endpoints.
+- Decisión del usuario: todos los preceptores gestionan el padrón institucional y pueden leer datos sensibles. La cuenta de acceso y la escritura de datos sensibles continúan bajo Dirección/Administración/Superadmin.
+- Permisos de padrón e inscripciones ampliados localmente para `PRECEPTOR`; asistencia y justificaciones mantienen alcance por comisión asignada.
+- Pantalla de Padrón añadida a Preceptoría con búsqueda, altas, edición y consulta sensible bajo demanda; el backend valida carrera/plan e inscripción.
+- La compilación del backend/UI queda pendiente porque este checkout no tiene instaladas las dependencias TypeScript del monolito. No se ejecutaron pruebas ni migraciones en Neon.
 - Plan de arquitectura por etapas: [`docs/ECOSISTEMA_2.0.md`](docs/ECOSISTEMA_2.0.md).
 - No hubo consultas ni escrituras nuevas en Neon y no se generaron migraciones.
 

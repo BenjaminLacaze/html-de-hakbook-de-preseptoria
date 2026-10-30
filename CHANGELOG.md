@@ -1,5 +1,17 @@
 # CHANGELOG
 
+## 2026-10-30 — Padrón institucional en Preceptoría
+
+- La app consolidada agrega una pestaña `Alumnos` para PRECEPTOR: lista/búsqueda global, alta y edición de ficha y consulta bajo demanda de datos sensibles.
+- Se añadió lectura del catálogo completo de carreras para los formularios del padrón. Backend valida que el plan corresponda a la carrera y que una inscripción use una comisión del plan del alumno; PRECEPTOR no puede vincular la cuenta de acceso ni escribir datos sensibles.
+- El estado es código local sin publicación ni base modificada. La compilación/types no pudo ejecutarse porque faltan dependencias TypeScript del monolito en este checkout; se mantiene pendiente validar con QA. No se creó migración.
+
+## 2026-10-30 — Alcance institucional de Preceptoría
+
+- Por decisión del usuario, todos los preceptores gestionan las fichas e inscripciones de todos los alumnos y pueden leer datos sensibles; vinculación de cuenta y escritura sensible siguen bajo Dirección/Administración/Superadmin.
+- `backend/src/routes/structure.ts` amplía localmente `/structure/students`, `/structure/enrollments` y lectura `/students/:id/sensitive` a PRECEPTOR. El alcance de profesores y operaciones de asistencia/justificaciones no se amplía.
+- No se crean tablas ni se ejecutan migraciones; pendiente integrar las pantallas de gestión de alumnos, validar permisos localmente y definir trazabilidad de lecturas sensibles.
+
 ## 2026-10-30 — Plan Ecosistema 2.0
 
 - Inventario de Neon, Prisma, endpoints y módulos Alumno, Preceptoría, Centro de Estudiantes y Auxiliares.

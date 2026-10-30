@@ -1,10 +1,10 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { SessionGate } from '@shared/auth/SessionGate';
 import { apiFetch } from '@shared/api';
-import type { AuthMe, CommissionView, StudentView, AttendanceRecordView, JustificationView, StaffTask, Installation, Incident, RepEvent, RepClaim, RepAnnouncement, RepThread, RepReply, DirectoryEntry, PrivateMessage, AppNotification, UserNote, UserProfile, ForumThread, ForumReply, Notice } from '@shared/types';
+import type { AuthMe, CommissionView, StudentView, Student, StudentSensitiveData, StudentStatus, AttendanceRecordView, JustificationView, StaffTask, Installation, Incident, RepEvent, RepClaim, RepAnnouncement, RepThread, RepReply, DirectoryEntry, PrivateMessage, AppNotification, UserNote, UserProfile, ForumThread, ForumReply, Notice } from '@shared/types';
 import './operational.css';
 
-type Tab = 'attendance' | 'justifications' | 'notices' | 'academicForum' | 'tasks' | 'installations' | 'incidents' | 'events' | 'claims' | 'announcements' | 'forum' | 'messages' | 'notes' | 'profile' | 'notifications';
+type Tab = 'students' | 'attendance' | 'justifications' | 'notices' | 'academicForum' | 'tasks' | 'installations' | 'incidents' | 'events' | 'claims' | 'announcements' | 'forum' | 'messages' | 'notes' | 'profile' | 'notifications';
 const TODAY = () => new Date().toLocaleDateString('en-CA');
 const EMPTY = 'Todavía no hay registros. Los datos guardados aparecerán acá.';
 
@@ -17,7 +17,7 @@ function Workspace({ me }: { me: AuthMe }) {
   const staff = me.user.roles.some(r => ['STAFF', 'SUPER_ADMIN'].includes(r));
   const centro = me.user.roles.some(r => ['STUDENT_REP', 'SUPER_ADMIN'].includes(r));
   const tabs: [Tab, string][] = [
-    ...(preceptor ? [['attendance', 'Asistencia'], ['justifications', 'Justificaciones'], ['notices', 'Avisos académicos'], ['academicForum', 'Foro académico']] : []),
+    ...(preceptor ? [['students', 'Alumnos'], ['attendance', 'Asistencia'], ['justifications', 'Justificaciones'], ['notices', 'Avisos académicos'], ['academicForum', 'Foro académico']] : []),
     ...(staff ? [['tasks', 'Tareas'], ['installations', 'Instalaciones'], ['incidents', 'Incidencias']] : []),
     ...(centro ? [['events', 'Eventos'], ['claims', 'Reclamos'], ['announcements', 'Comunicados'], ['forum', 'Foro del Centro']] : []),
     ['messages', 'Mensajes'], ['notes', 'Mis notas'], ['profile', 'Mi perfil'], ['notifications', 'Notificaciones'],
@@ -27,16 +27,17 @@ function Workspace({ me }: { me: AuthMe }) {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [busy, setBusy] = useState(false);
-  const run = async (action: () => Promise<unknown>) => {
+  const run = async (action: () => Promise<unknown>): Promise<boolean> => {
     setBusy(true); setError(''); setSuccess('');
-    try { await action(); setRevision(v => v + 1); setSuccess('Guardado en la base compartida.'); }
-    catch (e) { setError(e instanceof Error ? e.message : 'No se pudo guardar.'); }
+    try { await action(); setRevision(v => v + 1); setSuccess('Guardado en la base compartida.'); return true; }
+    catch (e) { setError(e instanceof Error ? e.message : 'No se pudo guardar.'); return false; }
     finally { setBusy(false); }
   };
   return <main className="ops"><header><p>ISFDyT N.° 26 · Gestión institucional</p><h1>{preceptor ? 'Preceptoría' : staff ? 'Auxiliares' : 'Centro de Estudiantes'}</h1><p>La información se guarda y comparte según los permisos de cada persona.</p></header>
     <nav className="ops-tabs" aria-label="Secciones">{tabs.map(([id, label]) => <button key={id} aria-current={tab === id ? 'page' : undefined} onClick={() => {setTab(id); setError(''); setSuccess('');}}>{label}</button>)}<button onClick={() => setRevision(v => v + 1)}>Actualizar</button></nav>
     {error && <p className="ops-error" role="alert">{error}</p>}{success && <p className="ops-success" role="status">{success}</p>}
     <section className="ops-body" aria-busy={busy}>
+      {tab === 'students' && <StudentRegistry revision={revision} run={run} busy={busy}/>}
       {tab === 'attendance' && <Attendance revision={revision} run={run} busy={busy}/>}
       {tab === 'justifications' && <List<JustificationView> path="/attendance/justifications" revision={revision} render={j => <article><h3>{j.studentName}</h3><p>{j.fromDate} a {j.toDate} · {j.status}</p><p>{j.reason}</p>{j.status === 'PENDING' && <div className="ops-actions"><button disabled={busy} onClick={() => void run(() => apiFetch(`/attendance/justifications/${j.id}`, {method:'PATCH', body:{status:'APPROVED'}}))}>Aprobar</button><button disabled={busy} onClick={() => void run(() => apiFetch(`/attendance/justifications/${j.id}`, {method:'PATCH', body:{status:'REJECTED'}}))}>Rechazar</button></div>}</article>}/>}
       {tab === 'tasks' && <><Form title="Nueva tarea" busy={busy} fields={[['title','Título'],['date','Fecha','date'],['startTime','Hora','time'],['location','Lugar'],['details','Detalle','textarea']]} onSubmit={v => run(() => apiFetch('/staff/tasks',{method:'POST',body:{...v,type:'ROUTINE'}}))}/><List<StaffTask> path="/staff/tasks" revision={revision} render={t => <article><h3>{t.title}</h3><p>{t.date} · {t.startTime} · {t.location}</p><p>{t.details}</p><button disabled={busy || t.status === 'DONE'} onClick={() => void run(() => apiFetch(`/staff/tasks/${t.id}`,{method:'PATCH',body:{status:'DONE'}}))}>{t.status === 'DONE' ? 'Completada' : 'Completar'}</button></article>}/></>}
@@ -76,7 +77,81 @@ type Field = [string,string,('date'|'time'|'textarea'|'text')?];
 function Form({title,fields,onSubmit,busy}:{title:string;fields:Field[];onSubmit:(v:Record<string,string>)=>Promise<unknown>;busy:boolean}) {
   return <form className="ops-form" onSubmit={e => {e.preventDefault(); const form=e.currentTarget; const values=Object.fromEntries(new FormData(form).entries()) as Record<string,string>; void onSubmit(values);}}><h2>{title}</h2>{fields.map(([name,label,type]) => <label key={name}>{label}{type==='textarea' ? <textarea name={name} required rows={3} maxLength={2000}/> : <input name={name} type={type ?? 'text'} required defaultValue={type==='date'?TODAY():undefined} maxLength={200}/>}</label>)}<button disabled={busy}>{busy?'Guardando…':'Guardar'}</button></form>;
 }
-type Run = (a:()=>Promise<unknown>)=>Promise<void>;
+type Run = (a:()=>Promise<unknown>)=>Promise<boolean>;
+
+type CareerOption = { id: string; code: string; name: string; active: boolean };
+type PlanOption = { id: string; careerId: string; code: string; name: string; startYear: number; active: boolean };
+const STUDENT_STATUS_OPTIONS: [StudentStatus, string][] = [['ACTIVE', 'Activo'], ['INACTIVE', 'Inactivo'], ['GRADUATED', 'Egresado'], ['WITHDRAWN', 'Baja']];
+
+function StudentRegistry({revision,run,busy}:{revision:number;run:Run;busy:boolean}) {
+  const {value:students,error,loading} = useData<Student[]>('/structure/students',revision);
+  const {value:careers} = useData<CareerOption[]>('/structure/careers',revision);
+  const [query,setQuery] = useState('');
+  const [editing,setEditing] = useState<Student|null>(null);
+  const [careerId,setCareerId] = useState('');
+  const [planId,setPlanId] = useState('');
+  const [formRevision,setFormRevision] = useState(0);
+  const {value:plans} = useData<PlanOption[]>(careerId ? `/structure/plans?careerId=${encodeURIComponent(careerId)}` : '/structure/plans',revision);
+  const visible = (students??[]).filter(s => `${s.firstName} ${s.lastName} ${s.fileNumber} ${s.dni}`.toLocaleLowerCase().includes(query.toLocaleLowerCase()));
+
+  const save = async (event:React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const values = Object.fromEntries(new FormData(event.currentTarget).entries()) as Record<string,string>;
+    const payload = {...values,careerId,planId,status:values.status as StudentStatus};
+    if (!careerId || !planId) return;
+    const saved = await run(() => apiFetch(editing ? `/structure/students/${editing.id}` : '/structure/students', {
+      method: editing ? 'PATCH' : 'POST', body: payload,
+    }));
+    if (saved) { setEditing(null); setCareerId(''); setPlanId(''); setFormRevision(v=>v+1); }
+  };
+
+  const startEdit = (student:Student) => { setEditing(student); setCareerId(student.careerId); setPlanId(student.planId); };
+  const cancelEdit = () => { setEditing(null); setCareerId(''); setPlanId(''); };
+  const careerNames = new Map((careers??[]).map(c => [c.id,c.name]));
+
+  return <>
+    <header><h2>Padrón institucional de alumnos</h2><p>Preceptoría puede gestionar las fichas y consultar los datos sensibles autorizados. El vínculo con la cuenta institucional lo gestiona Dirección.</p></header>
+    <form className="ops-form" key={`${editing?.id??'new-student'}-${formRevision}`} onSubmit={e=>void save(e)}>
+      <h3>{editing ? `Editar: ${editing.lastName}, ${editing.firstName}` : 'Alta de alumno'}</h3>
+      <div className="ops-fields">
+        <label>Legajo<input name="fileNumber" required maxLength={40} defaultValue={editing?.fileNumber}/></label>
+        <label>DNI<input name="dni" required minLength={6} maxLength={15} defaultValue={editing?.dni}/></label>
+        <label>Nombre<input name="firstName" required maxLength={80} defaultValue={editing?.firstName}/></label>
+        <label>Apellido<input name="lastName" required maxLength={80} defaultValue={editing?.lastName}/></label>
+        <label>Email<input name="email" type="email" required defaultValue={editing?.email}/></label>
+        <label>Teléfono<input name="phone" maxLength={40} defaultValue={editing?.phone}/></label>
+        <label>Carrera<select required value={careerId} onChange={e=>{setCareerId(e.target.value);setPlanId('');}}><option value="">Elegir carrera</option>{(careers??[]).filter(c=>editing||c.active).map(c=><option key={c.id} value={c.id}>{c.name}{c.active?'':' (inactiva)'}</option>)}</select></label>
+        <label>Plan de estudios<select required value={planId} onChange={e=>setPlanId(e.target.value)}><option value="">Elegir plan</option>{(plans??[]).filter(p=>(!careerId||p.careerId===careerId)&&(editing||p.active)).map(p=><option key={p.id} value={p.id}>{p.name}{p.active?'':' (inactivo)'} ({p.code})</option>)}</select></label>
+        <label>Fecha de ingreso<input name="admissionDate" type="date" required defaultValue={editing?.admissionDate??TODAY()}/></label>
+        <label>Estado<select name="status" defaultValue={editing?.status??'ACTIVE'}>{STUDENT_STATUS_OPTIONS.map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>
+      </div>
+      <div className="ops-actions"><button disabled={busy||!careerId||!planId}>{busy?'Guardando…':editing?'Guardar cambios':'Crear ficha'}</button>{editing&&<button type="button" disabled={busy} onClick={cancelEdit}>Cancelar</button>}</div>
+    </form>
+    <div className="ops-fields"><label>Buscar alumno<input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Nombre, apellido, legajo o DNI"/></label></div>
+    {loading?<p role="status">Cargando padrón…</p>:error?<p className="ops-error" role="alert">{error}</p>:<div className="ops-list">{visible.length ? visible.map(student=><StudentCard key={student.id} student={student} career={careerNames.get(student.careerId)} onEdit={()=>startEdit(student)}/>):<p>{EMPTY}</p>}</div>}
+  </>;
+}
+
+function StudentCard({student,career,onEdit}:{student:Student;career?:string;onEdit:()=>void}) {
+  const [showSensitive,setShowSensitive] = useState(false);
+  const [sensitive,setSensitive] = useState<StudentSensitiveData|null>(null);
+  const [error,setError] = useState('');
+  const loadSensitive = async () => {
+    setShowSensitive(v=>!v); setError('');
+    if (!showSensitive && !sensitive) {
+      try { setSensitive(await apiFetch<StudentSensitiveData>(`/structure/students/${student.id}/sensitive`)); }
+      catch (e) { setError(e instanceof Error?e.message:'No se pudieron cargar los datos sensibles.'); }
+    }
+  };
+  return <article>
+    <h3>{student.lastName}, {student.firstName}</h3>
+    <p>Legajo {student.fileNumber} · DNI {student.dni} · {career??'Carrera sin nombre'} · {student.status}</p>
+    <p>{student.email}{student.phone?` · ${student.phone}`:''}</p>
+    <div className="ops-actions"><button type="button" onClick={onEdit}>Editar ficha</button><button type="button" onClick={()=>void loadSensitive()}>{showSensitive?'Ocultar datos sensibles':'Consultar datos sensibles'}</button></div>
+    {error&&<p role="alert" className="ops-error">{error}</p>}
+    {showSensitive&&sensitive&&<div className="ops-sensitive"><p>Nacimiento: {sensitive.birthDate??'Sin informar'}</p><p>Domicilio: {sensitive.address??'Sin informar'}</p><p>Contacto: {sensitive.emergencyContactName??'Sin informar'} · {sensitive.emergencyContactPhone??'Sin teléfono'} · {sensitive.emergencyContactEmail??'Sin email'}</p><p>Observación de salud: {sensitive.healthNotes??'Sin informar'}</p></div>}
+  </article>;
+}
 
 function Attendance({revision,run,busy}:{revision:number;run:Run;busy:boolean}) {
   const {value:commissions,error} = useData<CommissionView[]>('/structure/commissions',revision);
