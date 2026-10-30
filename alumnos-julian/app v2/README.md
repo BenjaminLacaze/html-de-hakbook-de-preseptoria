@@ -12,6 +12,17 @@ No está conectada al backend institucional. StudentApi delega en demoDB, que le
 
 No hace falta configurar una clave para ejecutar esta demostración. .env.example contiene valores de plantilla de AI Studio; la app actual no los usa para conectarse al backend ni para llamar a Gemini.
 
+## Relación con el sistema compartido
+
+La API del proyecto ya tiene servicios para Alumno y para los paneles de Preceptoría, Auxiliares y Centro de Estudiantes. La nueva interfaz todavía no consume esos servicios.
+
+- El endpoint de asistencia de Preceptoría y el de Profesores escriben en registros comunes. El panel Alumno debe usar las lecturas personales /me/*; nunca el endpoint de toma de asistencia.
+- Para eventos, avisos y comunidad hay dos dominios: calendario/comunicados institucionales y actividades/comunicados del Centro. No mezclarlos como si tuvieran el mismo autor o permisos.
+- El foro académico moderado por Preceptoría es distinto del foro comunitario administrado por el Centro.
+- Los endpoints /staff/* pertenecen al rol Auxiliar y no deben aparecer como datos accesibles para un alumno.
+
+El estado y las rutas verificadas están en [la arquitectura del módulo](../docs/ARQUITECTURA_E_INTEGRACIONES.md) y [el contrato backend](../docs/Contrato_backend_alumno_julian.md).
+
 ## Ejecución local
 
 Requisitos: Node.js y npm.
@@ -36,12 +47,8 @@ La sección activa se refleja en el parámetro tab de la URL. El parámetro skip
 - JULIAN/features/: pantallas por función.
 - JULIAN/shared/types/: tipos y esquemas Zod.
 - JULIAN/shared/services/api.ts: fachada StudentApi de demostración.
-- JULIAN/mocks/: dataset, reglas de la demo y persistencia local.
+- JULIAN/mocks/: dataset, comportamiento y persistencia local.
 - JULIAN/shared/lib/ y JULIAN/shared/ui/: utilidades, temas y componentes.
 - JULIAN/styles/theme.css: tokens visuales y temas.
-
-## Integración futura
-
-StudentApi puede funcionar como frontera para servicios reales, pero hoy solo usa demoDB. Antes de conectar producción hay que acordar autenticación, permisos, rutas, DTOs, privacidad y responsabilidades de cada módulo. Consultá [el contrato propuesto](../docs/Contrato_backend_alumno_julian.md).
 
 La guía general está en [alumnos-julian/README.md](../README.md).

@@ -41,3 +41,7 @@ Cada módulo debe documentar por separado si está conectado a servicios reales 
 ## Publicar cambios
 
 Antes de publicar el sitio completo, ejecutá node scripts/build.mjs y verificá que termine sin errores. No subas node_modules/, dist/ ni archivos .env. El archivo .env.example es una plantilla y no equivale a un secreto.
+
+### Alumno y Consolidación
+
+El portal Alumno debe consumir las rutas personales `/me/*` para consultar datos que Preceptoría y Profesores registran en la planilla de asistencia compartida. Los eventos, comunicados y foros del Centro son un dominio distinto; los datos operativos de Auxiliares, disponibles en `/staff/*`, no están autorizados para el rol Alumno. La app v2 todavía usa datos de demostración. Ver `consolidacion/README.md` y `alumnos-julian/docs/ARQUITECTURA_E_INTEGRACIONES.md`.

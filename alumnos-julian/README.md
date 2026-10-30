@@ -12,6 +12,17 @@ Es un panel React, TypeScript y Vite. Hoy funciona como demostración: StudentAp
 
 Para ejecutarla localmente, consultá [app v2/README.md](app%20v2/README.md). La documentación funcional, técnica, visual y de integración está en [docs/](docs/).
 
+## Relación con los otros paneles
+
+La app Alumno debe integrarse con la API compartida que también usan los módulos de [Consolidación](../consolidacion/README.md), Directivos y Profesores, respetando los permisos de cada rol:
+
+- **Preceptoría y Profesores** registran asistencia en una planilla compartida. Alumno consulta únicamente su propio resumen, registros y justificaciones.
+- **Centro de Estudiantes** publica eventos, comunicados y conversaciones comunitarias. El alumno puede consultar y participar en las funciones habilitadas para su rol.
+- **Auxiliares** gestionan tareas, instalaciones, incidencias y mantenimiento. Esos datos operativos no forman parte del panel Alumno ni están disponibles para el rol STUDENT.
+- **Foro académico** y **foro del Centro** son espacios distintos, con reglas de moderación y responsables diferentes.
+
+Estos datos compartidos existen en la API del sistema, pero la app v2 todavía usa mocks locales. Ver [Arquitectura e integraciones](docs/ARQUITECTURA_E_INTEGRACIONES.md) y [Contrato backend](docs/Contrato_backend_alumno_julian.md).
+
 ## Versiones y publicación
 
 | Ruta | Estado | Uso |

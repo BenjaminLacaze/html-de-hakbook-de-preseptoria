@@ -90,3 +90,14 @@ Las pantallas de inicio de sesión de esta app son el próximo paso.
   `useApiAttendance.ts`); con carreras reales hay que traer la lista desde la API.
 - INT-90: análisis con IA desde el backend.
 - INT-91: el QR de asistencia es solo demostración.
+
+## Relación con el Portal del Alumno
+
+Los paneles de Consolidación y el Portal del Alumno comparten la API institucional, pero cada rol mantiene su alcance:
+
+- **Preceptoría y Profesores** registran asistencia en la misma planilla. El Alumno debe leer solo sus registros, su resumen y sus justificaciones desde las rutas personales `/me/*`.
+- **Centro de Estudiantes** administra eventos, comunicados y el foro comunitario. Con sesión, el Alumno puede consultar ese contenido y participar en las operaciones autorizadas; la gestión de eventos y comunicados queda en `STUDENT_REP` y `SUPER_ADMIN`.
+- El foro académico `/social/forum` tiene moderación de Preceptoría y es distinto de `/centro/threads`.
+- **Auxiliares** usan las rutas `/staff/*` para tareas, instalaciones, incidencias y mantenimiento. El rol `STUDENT` no tiene acceso a esos datos.
+
+La nueva app de Julián está en `alumnos-julian/app v2/`, pero todavía usa `demoDB` y no consume la API común. La integración pendiente está detallada en [`alumnos-julian/docs/Contrato_backend_alumno_julian.md`](../alumnos-julian/docs/Contrato_backend_alumno_julian.md).
