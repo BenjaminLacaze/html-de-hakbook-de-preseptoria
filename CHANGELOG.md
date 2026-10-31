@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 2026-10-30 — Contrato de unificación para los equipos
+
+- Nuevo `docs/CONTRATO_UNIFICACION.html`: hoja técnica autocontenida (se abre sin servidor) para que cada equipo y su agente de IA prototipen en local con SQLite + Prisma siguiendo el modelo central. Equipos: Julián (Alumnos, Preceptoría, Centro, Auxiliares), Jesica y Agustín (Directivos), Nicolás (Profesores).
+- Contenido: reglas de oro, dueño de cada dato por app, nombres y formatos, catálogo completo de valores (enums de `schema.prisma` al 30/10), modelos que se cruzan, equivalencias SQLite ↔ PostgreSQL (único cambio fuerte: `roles Role[]` como JSON detrás de `getRoles/setRoles`), convenciones de API y códigos de error de `backend/src/errors.ts`, endpoints existentes, cruces entre apps, formato de `PROPUESTAS.md`, checklist de entrega y texto para el CLAUDE.md/AGENTS.md de cada equipo.
+- Para usarla: cada equipo copia el archivo a la raíz de su proyecto. Si cambia el esquema central, actualizar las secciones 6, 7 y 10.
+- Sin cambios de código, base ni despliegue. Verificado en navegador: 14 secciones, sin enlaces internos rotos ni desborde horizontal a 375 px (no se pudo sacar captura).
+
 ## 2026-10-30 — Padrón institucional en Preceptoría
 
 - La app consolidada agrega una pestaña `Alumnos` para PRECEPTOR: lista/búsqueda global, alta y edición de ficha y consulta bajo demanda de datos sensibles.
