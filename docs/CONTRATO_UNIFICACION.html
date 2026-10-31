@@ -1,0 +1,565 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Contrato de Unificación i26</title>
+<meta name="description" content="Hoja técnica que todos los equipos (y sus agentes de IA) siguen al prototipar en local con SQLite + Prisma, para que después la integración al backend central (Hono + Prisma + Neon) sea mecánica.">
+<style>
+:root{
+  --blue:#14214f; --blue-2:#22336e; --gold:#89743a; --gold-text:#6b5b2e; --sand:#af9b63;
+  --bg:#f4f6f9; --card:#ffffff; --ink:#1b2333; --muted:#5b6476; --line:#dde2ea;
+  --ok:#1f7a4a; --ok-bg:#e6f4ec; --warn:#8a5a00; --warn-bg:#fff4dc; --bad:#a3262a; --bad-bg:#fde8e8;
+  --code-bg:#f0f2f6;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header.top{background:var(--blue);color:#fff;padding:32px 16px 28px}
+header.top .wrap{max-width:1080px;margin:0 auto}
+header.top h1{font-family:Outfit,Inter,system-ui,sans-serif;font-size:30px;line-height:1.2;margin:6px 0 8px}
+header.top .kicker{color:var(--sand);font-weight:600;letter-spacing:.06em;text-transform:uppercase;font-size:12px}
+header.top p{margin:0;color:#d7dcea;max-width:760px}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.meta span{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:999px;padding:3px 10px;font-size:12.5px}
+.layout{max-width:1080px;margin:0 auto;padding:24px 16px 64px;display:grid;grid-template-columns:220px 1fr;gap:28px}
+nav.toc{position:sticky;top:16px;align-self:start;font-size:13.5px}
+nav.toc b{display:block;color:var(--muted);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px}
+nav.toc a{display:block;color:var(--blue);text-decoration:none;padding:4px 8px;border-left:2px solid var(--line)}
+nav.toc a:hover{border-left-color:var(--gold);background:#fff}
+main{min-width:0}
+section{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:22px 24px;margin-bottom:18px}
+h2{font-family:Outfit,Inter,system-ui,sans-serif;color:var(--blue);font-size:21px;margin:0 0 4px}
+h2 .n{color:var(--gold);margin-right:6px}
+h3{color:var(--blue-2);font-size:16px;margin:20px 0 6px}
+.lead{color:var(--muted);margin:0 0 14px}
+p{margin:8px 0}
+code{font-family:"JetBrains Mono",Consolas,monospace;font-size:13px;background:var(--code-bg);padding:1px 5px;border-radius:4px}
+pre{font-family:"JetBrains Mono",Consolas,monospace;font-size:12.8px;line-height:1.5;background:#0f1733;color:#e6e9f2;padding:14px 16px;border-radius:8px;overflow-x:auto;margin:10px 0}
+pre code{background:none;padding:0;color:inherit}
+pre .c{color:#8f9bbd}
+.tbl{overflow-x:auto;margin:10px 0}
+table{border-collapse:collapse;width:100%;font-size:13.8px}
+th,td{text-align:left;vertical-align:top;padding:7px 10px;border-bottom:1px solid var(--line)}
+th{background:#f7f8fb;color:var(--blue);font-weight:600;white-space:nowrap}
+td code{white-space:nowrap}
+.callout{border-left:4px solid var(--gold);background:#faf7ef;padding:10px 14px;border-radius:0 8px 8px 0;margin:12px 0}
+.callout.bad{border-color:var(--bad);background:var(--bad-bg)}
+.callout.ok{border-color:var(--ok);background:var(--ok-bg)}
+.callout.warn{border-color:#c98a00;background:var(--warn-bg)}
+.badge{display:inline-block;font-size:11.5px;font-weight:600;padding:1px 8px;border-radius:999px;white-space:nowrap}
+.b-own{background:var(--blue);color:#fff}
+.b-read{background:#e7ebf5;color:var(--blue)}
+.b-ok{background:var(--ok-bg);color:var(--ok)}
+.b-no{background:var(--bad-bg);color:var(--bad)}
+.b-prop{background:var(--warn-bg);color:var(--warn)}
+.team{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-top:12px}
+.member{border:1px solid var(--line);border-radius:10px;padding:14px;background:#fbfcfe}
+.member h4{margin:0 0 2px;color:var(--blue);font-size:15.5px}
+.member .who{color:var(--gold-text);font-weight:600;font-size:13px}
+.member ul{margin:8px 0 0;padding-left:18px;font-size:13.5px}
+ol.rules{padding-left:20px}
+ol.rules li{margin:8px 0}
+ol.rules b{color:var(--blue)}
+.enum{display:flex;flex-wrap:wrap;gap:4px}
+.enum code{font-size:12px}
+ul.check{list-style:none;padding:0}
+ul.check li{padding:4px 0 4px 26px;position:relative}
+ul.check li:before{content:"";position:absolute;left:2px;top:8px;width:14px;height:14px;border:2px solid var(--gold);border-radius:3px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+footer{color:var(--muted);font-size:12.5px;text-align:center;padding:0 16px 32px}
+@media (max-width:860px){
+  .layout{grid-template-columns:1fr}
+  nav.toc{position:static;display:flex;flex-wrap:wrap;gap:4px}
+  nav.toc b{width:100%}
+  nav.toc a{border:1px solid var(--line);border-radius:6px;background:#fff}
+  .two{grid-template-columns:1fr}
+  section{padding:18px 16px}
+}
+@media print{
+  body{background:#fff;font-size:12px}
+  nav.toc{display:none}
+  .layout{display:block;padding:0}
+  section{break-inside:avoid-page;border:none;padding:8px 0}
+  header.top{background:#fff;color:var(--ink);padding:0 0 12px;border-bottom:2px solid var(--blue)}
+  header.top p,.meta span{color:var(--ink)}
+  pre{background:#f4f4f4;color:#111}
+}
+</style>
+</head>
+<body>
+
+<header class="top"><div class="wrap">
+  <div class="kicker">Sistema de Gestión i26 · ISFDyT N.° 26 Dolores · Hoja técnica</div>
+  <h1>Contrato de Unificación</h1>
+  <p>Reglas comunes para que cada equipo prototipe su app en local (SQLite + Prisma) y que después
+  su trabajo se pueda llevar al backend central <b>sin reescribirlo</b>. Si sos un agente de IA trabajando
+  en una de las apps: leé este documento entero antes de crear tablas, endpoints o pantallas con datos.</p>
+  <div class="meta">
+    <span>Versión 1.0 · 30/10/2026</span>
+    <span>Fuente de verdad: <code style="background:none;color:inherit">backend/prisma/schema.prisma</code> + <code style="background:none;color:inherit">shared/types.ts</code></span>
+    <span>Backend central: Hono 4 · Prisma 7.10.1 · PostgreSQL (Neon)</span>
+  </div>
+</div></header>
+
+<div class="layout">
+<nav class="toc">
+  <b>Contenido</b>
+  <a href="#uso">1. Cómo usar esta hoja</a>
+  <a href="#equipo">2. Equipo y apps</a>
+  <a href="#reglas">3. Reglas de oro</a>
+  <a href="#duenos">4. Quién es dueño de cada dato</a>
+  <a href="#nombres">5. Nombres y formatos</a>
+  <a href="#valores">6. Catálogo de valores</a>
+  <a href="#modelo">7. Modelo central</a>
+  <a href="#sqlite">8. SQLite local ↔ Neon</a>
+  <a href="#api">9. Convenciones de la API</a>
+  <a href="#endpoints">10. Endpoints que ya existen</a>
+  <a href="#cruces">11. Cruces entre apps</a>
+  <a href="#nuevo">12. Cómo proponer algo nuevo</a>
+  <a href="#entrega">13. Checklist de entrega</a>
+  <a href="#prompt">14. Texto para tu agente</a>
+</nav>
+
+<main>
+
+<section id="uso">
+  <h2><span class="n">1.</span>Cómo usar esta hoja</h2>
+  <p class="lead">Cada equipo trabaja en su propia carpeta y su agente <b>no ve</b> las apps de los demás ni el backend central. Esta hoja es lo que tienen en común.</p>
+  <div class="two">
+    <div class="callout ok"><b>Lo que buscamos.</b> Que al integrar, la base local de cada equipo se pueda copiar casi tal cual al esquema central, y que sus pantallas solo cambien la dirección de la API, no la forma de los datos.</div>
+    <div class="callout warn"><b>Lo que queremos evitar.</b> Cinco bases distintas con cinco nombres para "alumno", cinco listas de estados de asistencia y cinco sistemas de login que después hay que traducir a mano.</div>
+  </div>
+  <p><b>Prioridad cuando hay dudas:</b> 1) este contrato → 2) el contrato propio de tu app (si tu equipo tiene uno) → 3) lo que ya haga tu prototipo. Si tu app necesita algo que contradice el contrato, no lo cambies en silencio: anotalo como propuesta (<a href="#nuevo">sección 12</a>).</p>
+  <p><b>Dónde guardarla:</b> copiá este archivo a la raíz de tu proyecto local como <code>CONTRATO_UNIFICACION.html</code> y agregá a tu <code>CLAUDE.md</code> / instrucciones del agente: <i>"Antes de tocar datos, leé CONTRATO_UNIFICACION.html"</i> (texto completo en la <a href="#prompt">sección 14</a>).</p>
+</section>
+
+<section id="equipo">
+  <h2><span class="n">2.</span>Equipo y apps</h2>
+  <p class="lead">Una app por rol. Los roles son los mismos códigos que usa el backend central.</p>
+  <div class="team">
+    <div class="member">
+      <div class="who">Julián</div>
+      <h4>Alumnos · Preceptoría · Centro · Auxiliares</h4>
+      <ul>
+        <li><b>Alumnos</b> → rol <code>STUDENT</code></li>
+        <li><b>Preceptoría</b> → rol <code>PRECEPTOR</code></li>
+        <li><b>Centro de Estudiantes</b> → rol <code>STUDENT_REP</code></li>
+        <li><b>Auxiliares</b> → rol <code>STAFF</code></li>
+      </ul>
+    </div>
+    <div class="member">
+      <div class="who">Jesica y Agustín</div>
+      <h4>Administración / Directivos</h4>
+      <ul>
+        <li>Roles <code>DIRECTOR</code>, <code>ADMINISTRATIVE</code>, <code>SUPER_ADMIN</code></li>
+        <li>Crea las cuentas de todos (no hay registro libre)</li>
+        <li>Estructura académica, legajos, inscripciones, configuración</li>
+      </ul>
+    </div>
+    <div class="member">
+      <div class="who">Nicolás</div>
+      <h4>Profesores</h4>
+      <ul>
+        <li>Rol <code>TEACHER</code></li>
+        <li>Clases, asistencia por comisión, notas, observaciones</li>
+        <li>Ve solo sus comisiones</li>
+      </ul>
+    </div>
+    <div class="member">
+      <div class="who">Equipo central</div>
+      <h4>Backend + integración</h4>
+      <ul>
+        <li>Mantiene el esquema central en Neon y la API <code>/api/v1</code></li>
+        <li>Recibe las entregas y las integra</li>
+        <li>Decide sobre las propuestas de cambio</li>
+      </ul>
+    </div>
+  </div>
+  <div class="callout">Una misma persona puede tener <b>varios roles</b> (por ejemplo un docente que también es preceptor). Nunca guardes "el rol" como un solo valor: es una lista.</div>
+</section>
+
+<section id="reglas">
+  <h2><span class="n">3.</span>Reglas de oro</h2>
+  <p class="lead">Si solo leés una sección, que sea esta.</p>
+  <ol class="rules">
+    <li><b>Usá los nombres del modelo central.</b> Si el dato ya existe en la <a href="#modelo">sección 7</a>, la tabla y los campos se llaman igual, en inglés y con el mismo tipo. No inventes <code>alumno</code>, <code>estudiante</code>, <code>student_list</code>: es <code>Student</code>.</li>
+    <li><b>Los valores fijos se copian del catálogo.</b> Estados, roles, turnos, tipos: siempre los códigos de la <a href="#valores">sección 6</a> (<code>PRESENT</code>, no <code>"presente"</code> ni <code>"P"</code>). El texto en castellano va solo en la pantalla.</li>
+    <li><b>Si un dato es de otra app, no lo modeles como propio.</b> Leelo con la forma del modelo central y cargá datos de ejemplo locales con esa forma (<a href="#duenos">sección 4</a>).</li>
+    <li><b>Toda lectura y escritura pasa por una sola capa de API en tu frontend</b> (por ejemplo <code>src/api/</code>). Nada de <code>fetch</code> sueltos en los componentes. Al integrar se cambia esa capa y nada más.</li>
+    <li><b>Nada de datos de negocio en <code>localStorage</code>.</b> Solo preferencias de pantalla (tema, filtro elegido). Los datos van a la base.</li>
+    <li><b>No hay registro ni contraseñas en el código.</b> Las cuentas las crea Directivos. En local podés tener un login de prueba, pero con la misma forma que <code>/auth/login</code> y <code>/auth/me</code>, y los usuarios de prueba en un <i>seed</i>, no escritos en las pantallas.</li>
+    <li><b>Los IDs son UUID de texto</b> generados por la base. Nunca números autoincrementales, nunca el DNI como ID.</li>
+    <li><b>Tu app no decide permisos confiando en lo que manda el navegador.</b> El backend saca quién es el usuario de la sesión. Si en local simulás eso, simulalo en el servidor, no en la pantalla.</li>
+    <li><b>Nada de claves en el frontend.</b> Ni de IA (Gemini, OpenAI), ni de bases, ni de servicios. Si hace falta IA, se pide al backend.</li>
+    <li><b>Todo lo que sea nuevo se anota.</b> Tabla, campo, valor o endpoint que no esté en este contrato → archivo de propuestas (<a href="#nuevo">sección 12</a>). Lo que no está anotado no se integra.</li>
+  </ol>
+</section>
+
+<section id="duenos">
+  <h2><span class="n">4.</span>Quién es dueño de cada dato</h2>
+  <p class="lead"><span class="badge b-own">escribe</span> crea y modifica · <span class="badge b-read">lee</span> solo consulta (en local, con datos de ejemplo con la forma del modelo central).</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Dato (modelo)</th><th>Directivos</th><th>Profesores</th><th>Preceptoría</th><th>Alumnos</th><th>Centro</th><th>Auxiliares</th></tr></thead>
+    <tbody>
+      <tr><td>Cuentas y roles · <code>User</code></td><td><span class="badge b-own">escribe</span></td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+      <tr><td>Carreras, planes, materias · <code>Career</code> <code>StudyPlan</code> <code>Subject</code></td><td><span class="badge b-own">escribe</span></td><td><span class="badge b-read">lee</span></td><td><span class="badge b-read">lee</span></td><td><span class="badge b-read">lee</span></td><td>—</td><td>—</td></tr>
+      <tr><td>Ciclo lectivo y comisiones · <code>AcademicCycle</code> <code>Commission</code> <code>CommissionTeacher</code></td><td><span class="badge b-own">escribe</span></td><td><span class="badge b-read">lee (las suyas)</span></td><td><span class="badge b-read">lee</span></td><td><span class="badge b-read">lee (las suyas)</span></td><td>—</td><td>—</td></tr>
+      <tr><td>Legajo del alumno · <code>Student</code></td><td><span class="badge b-own">escribe</span></td><td><span class="badge b-read">lee</span></td><td><span class="badge b-own">escribe</span> padrón</td><td><span class="badge b-read">lee (el propio)</span></td><td>—</td><td>—</td></tr>
+      <tr><td>Datos sensibles · <code>StudentSensitiveData</code></td><td><span class="badge b-own">escribe</span></td><td>—</td><td><span class="badge b-read">lee</span></td><td>—</td><td>—</td><td>—</td></tr>
+      <tr><td>Legajo docente · <code>Teacher</code></td><td><span class="badge b-own">escribe</span></td><td><span class="badge b-read">lee (el propio)</span></td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+      <tr><td>Inscripción a comisión · <code>Enrollment</code></td><td><span class="badge b-own">escribe</span></td><td><span class="badge b-read">lee</span></td><td><span class="badge b-read">lee</span></td><td><span class="badge b-read">lee (las propias)</span></td><td>—</td><td>—</td></tr>
+      <tr><td>Clases y asistencia · <code>ClassSession</code> <code>AttendanceRecord</code></td><td><span class="badge b-read">lee</span> · reabre</td><td><span class="badge b-own">escribe</span></td><td><span class="badge b-own">escribe</span></td><td><span class="badge b-read">lee (la propia)</span></td><td>—</td><td>—</td></tr>
+      <tr><td>Justificaciones · <code>Justification</code></td><td><span class="badge b-read">lee</span></td><td><span class="badge b-read">lee</span></td><td><span class="badge b-own">aprueba</span></td><td><span class="badge b-own">pide</span></td><td>—</td><td>—</td></tr>
+      <tr><td>Notas · <code>Grade</code></td><td><span class="badge b-read">lee</span></td><td><span class="badge b-own">escribe y publica</span></td><td><span class="badge b-read">lee</span></td><td><span class="badge b-read">lee (publicadas)</span></td><td>—</td><td>—</td></tr>
+      <tr><td>Observaciones pedagógicas · <code>Observation</code></td><td><span class="badge b-read">lee</span></td><td><span class="badge b-own">escribe</span></td><td><span class="badge b-own">escribe</span></td><td>—</td><td>—</td><td>—</td></tr>
+      <tr><td>Comunicados institucionales · <code>Notice</code></td><td><span class="badge b-own">escribe</span></td><td><span class="badge b-read">lee</span></td><td><span class="badge b-own">escribe</span></td><td><span class="badge b-read">lee</span></td><td><span class="badge b-read">lee</span></td><td><span class="badge b-read">lee</span></td></tr>
+      <tr><td>Calendario · <code>SchoolEvent</code></td><td><span class="badge b-own">escribe</span></td><td><span class="badge b-read">lee</span></td><td><span class="badge b-read">lee</span></td><td><span class="badge b-read">lee</span></td><td><span class="badge b-read">lee</span></td><td><span class="badge b-read">lee</span></td></tr>
+      <tr><td>Configuración · <code>InstitutionSettings</code> · auditoría <code>AuditLog</code></td><td><span class="badge b-own">escribe</span></td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+      <tr><td>Centro · <code>RepEvent</code> <code>RepThread</code> <code>RepAnnouncement</code> <code>RepClaim</code></td><td><span class="badge b-read">lee</span></td><td>—</td><td>—</td><td><span class="badge b-read">lee</span> · se inscribe, opina, reclama</td><td><span class="badge b-own">escribe</span></td><td>—</td></tr>
+      <tr><td>Mantenimiento · <code>StaffTask</code> <code>Installation</code> <code>Incident</code> <code>MaintenanceLog</code></td><td><span class="badge b-read">lee</span></td><td>—</td><td>—</td><td>—</td><td>—</td><td><span class="badge b-own">escribe</span></td></tr>
+      <tr><td>Social · <code>UserProfile</code> <code>UserNote</code> <code>PrivateMessage</code> <code>ForumThread</code> <code>Notification</code></td><td colspan="6">Común a todas las apps: cada usuario escribe lo propio. El foro académico lo modera Preceptoría.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="nombres">
+  <h2><span class="n">5.</span>Nombres y formatos</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>Qué</th><th>Regla</th><th>Ejemplo</th></tr></thead>
+    <tbody>
+      <tr><td>Modelo Prisma</td><td>Inglés, singular, PascalCase</td><td><code>ClassSession</code></td></tr>
+      <tr><td>Tabla en la base</td><td>Inglés, plural, snake_case, con <code>@@map</code></td><td><code>@@map("class_sessions")</code></td></tr>
+      <tr><td>Campo</td><td>Inglés, camelCase. Claves foráneas terminan en <code>Id</code></td><td><code>commissionId</code>, <code>firstName</code></td></tr>
+      <tr><td>Valores fijos (códigos)</td><td>Inglés, MAYÚSCULAS_CON_GUION_BAJO</td><td><code>FIRST_TERM</code>, <code>STUDENT_REP</code></td></tr>
+      <tr><td>Textos de pantalla</td><td>Castellano, en un diccionario aparte (nunca guardados en la base como código)</td><td><code>{ PRESENT: 'Presente' }</code></td></tr>
+      <tr><td>ID</td><td>UUID como texto, generado por la base</td><td><code>id String @id @default(uuid())</code></td></tr>
+      <tr><td>Fecha (día)</td><td>En la API: texto <code>YYYY-MM-DD</code>. En la base: <code>DateTime</code> a las 00:00 UTC</td><td><code>"2026-10-30"</code></td></tr>
+      <tr><td>Fecha y hora</td><td>ISO 8601 con zona</td><td><code>"2026-10-30T13:05:00.000Z"</code></td></tr>
+      <tr><td>Zona horaria</td><td>Se muestra en <code>America/Argentina/Buenos_Aires</code></td><td>"hoy" se calcula en hora argentina</td></tr>
+      <tr><td>Auditoría</td><td>Toda tabla editable tiene <code>createdAt</code> y <code>updatedAt</code>; lo que registra una persona guarda quién (<code>createdBy</code>, <code>recordedBy</code>)</td><td><code>updatedAt DateTime @updatedAt</code></td></tr>
+      <tr><td>Borrado</td><td>Datos académicos no se borran: cambian de estado (<code>INACTIVE</code>, <code>ARCHIVED</code>, <code>DROPPED</code>)</td><td>Alumno que deja → <code>WITHDRAWN</code></td></tr>
+      <tr><td>Personas</td><td>Nombre y apellido separados</td><td><code>firstName</code>, <code>lastName</code></td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="valores">
+  <h2><span class="n">6.</span>Catálogo de valores</h2>
+  <p class="lead">Copiá estas listas tal cual. Podés <b>agregar</b> un valor nuevo como propuesta, nunca renombrar ni borrar uno existente.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Lista</th><th>Valores</th><th>Notas</th></tr></thead>
+    <tbody>
+      <tr><td><code>Role</code></td><td><div class="enum"><code>SUPER_ADMIN</code><code>DIRECTOR</code><code>ADMINISTRATIVE</code><code>PRECEPTOR</code><code>TEACHER</code><code>STUDENT</code><code>STAFF</code><code>STUDENT_REP</code></div></td><td>STAFF = auxiliar · STUDENT_REP = Centro de Estudiantes</td></tr>
+      <tr><td><code>UserStatus</code></td><td><div class="enum"><code>ACTIVE</code><code>INACTIVE</code></div></td><td></td></tr>
+      <tr><td><code>Shift</code></td><td><div class="enum"><code>MORNING</code><code>AFTERNOON</code><code>EVENING</code></div></td><td>Mañana · Tarde · Vespertino/Noche</td></tr>
+      <tr><td><code>AcademicPeriod</code></td><td><div class="enum"><code>FIRST_TERM</code><code>SECOND_TERM</code><code>ANNUAL</code></div></td><td>1.er cuatrimestre · 2.º · anual</td></tr>
+      <tr><td><code>CycleStatus</code></td><td><div class="enum"><code>PLANNED</code><code>ACTIVE</code><code>CLOSED</code></div></td><td>Hay un solo ciclo <code>ACTIVE</code></td></tr>
+      <tr><td><code>StudentStatus</code></td><td><div class="enum"><code>ACTIVE</code><code>INACTIVE</code><code>GRADUATED</code><code>WITHDRAWN</code></div></td><td></td></tr>
+      <tr><td><code>TeacherStatus</code></td><td><div class="enum"><code>ACTIVE</code><code>ON_LEAVE</code><code>INACTIVE</code></div></td><td>ON_LEAVE = de licencia</td></tr>
+      <tr><td><code>EnrollmentCondition</code></td><td><div class="enum"><code>IN_PROGRESS</code><code>REGULAR</code><code>FREE</code><code>PROMOTED</code><code>PASSED</code><code>DROPPED</code></div></td><td>Cursando · Regular · Libre · Promocionó · Aprobó · Abandonó</td></tr>
+      <tr><td><code>AttendanceStatus</code></td><td><div class="enum"><code>PRESENT</code><code>ABSENT</code><code>LATE</code></div></td><td><b>"Justificado" no es un estado</b>: es <code>ABSENT</code> + una <code>Justification</code> aprobada</td></tr>
+      <tr><td><code>AttendanceSource</code></td><td><div class="enum"><code>TEACHER</code><code>PRECEPTOR</code><code>QR</code><code>IMPORT</code></div></td><td>Quién cargó el registro</td></tr>
+      <tr><td><code>SessionStatus</code></td><td><div class="enum"><code>OPEN</code><code>CLOSED</code></div></td><td>Una clase cerrada solo la reabre Directivos</td></tr>
+      <tr><td><code>JustificationStatus</code></td><td><div class="enum"><code>PENDING</code><code>APPROVED</code><code>REJECTED</code></div></td><td></td></tr>
+      <tr><td><code>AssessmentType</code></td><td><div class="enum"><code>PARTIAL</code><code>MAKEUP</code><code>ASSIGNMENT</code><code>COLLOQUIUM</code><code>FINAL_EXAM</code></div></td><td>Parcial · Recuperatorio · Trabajo práctico · Coloquio · Final</td></tr>
+      <tr><td><code>ObservationCategory</code></td><td><div class="enum"><code>PEDAGOGICAL_FOLLOW_UP</code><code>PARTICIPATION</code><code>SUPPORT_ADJUSTMENT</code><code>GENERAL</code></div></td><td></td></tr>
+      <tr><td><code>NoticeStatus</code> / <code>NoticeCategory</code></td><td><div class="enum"><code>DRAFT</code><code>PUBLISHED</code><code>EXPIRED</code><code>ARCHIVED</code> · <code>URGENT</code><code>INSTITUTIONAL</code><code>PEDAGOGICAL</code><code>ACADEMIC</code></div></td><td></td></tr>
+      <tr><td><code>EventType</code></td><td><div class="enum"><code>INSTITUTIONAL_DAY</code><code>CEREMONY</code><code>EXAM_PERIOD</code><code>GRADES_DEADLINE</code><code>HOLIDAY</code><code>CLASS</code><code>OTHER</code></div></td><td>Calendario institucional</td></tr>
+      <tr><td><code>AuditAction</code></td><td><div class="enum"><code>CREATE</code><code>UPDATE</code><code>STATUS_CHANGE</code><code>DELETE</code><code>SETTINGS_CHANGE</code><code>EXPORT</code><code>LOGIN</code><code>SESSION_REOPEN</code></div></td><td></td></tr>
+      <tr><td>Auxiliares</td><td><div class="enum"><code>StaffTaskType</code>: <code>CLEANING</code><code>MAINTENANCE</code><code>ROUTINE</code> · <code>StaffTaskStatus</code>: <code>PENDING</code><code>DONE</code> · <code>InstallationStatus</code>: <code>OK</code><code>MAINTENANCE</code><code>OUT_OF_SERVICE</code> · <code>IncidentPriority</code>: <code>LOW</code><code>MEDIUM</code><code>HIGH</code> · <code>IncidentStatus</code>: <code>OPEN</code><code>IN_PROGRESS</code><code>RESOLVED</code></div></td><td></td></tr>
+      <tr><td>Centro</td><td><div class="enum"><code>RepEventType</code>: <code>ACADEMIC</code><code>CULTURAL</code><code>SPORTS</code><code>MEETING</code> · <code>RepForumCategory</code>: <code>GENERAL</code><code>PROPOSALS</code><code>EVENTS</code> · <code>RepClaimCategory</code>: <code>ACADEMIC</code><code>INFRASTRUCTURE</code><code>ADMINISTRATIVE</code><code>SUGGESTION</code> · <code>RepClaimStatus</code>: <code>PENDING</code><code>IN_REVIEW</code><code>RESOLVED</code><code>ARCHIVED</code></div></td><td></td></tr>
+      <tr><td>Social</td><td><div class="enum"><code>ForumThreadStatus</code>: <code>PENDING</code><code>APPROVED</code><code>REJECTED</code><code>NEEDS_REVISION</code> · <code>NotificationType</code>: <code>ANNOUNCEMENT</code><code>ABSENCE</code><code>JUSTIFICATION_REQUEST</code><code>JUSTIFICATION_APPROVED</code><code>JUSTIFICATION_REJECTED</code><code>MESSAGE</code><code>FORUM</code><code>EVENT</code><code>CLAIM</code><code>GENERAL</code></div></td><td></td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="modelo">
+  <h2><span class="n">7.</span>Modelo central</h2>
+  <p class="lead">Modelo terciario: la asistencia y las notas cuelgan de la <b>comisión</b> (una materia dictada en un ciclo, un turno y con sus docentes), no de un "curso" o "división" de secundaria.</p>
+  <pre><code>Career (carrera) ─┬─ StudyPlan (plan) ── Subject (materia, con correlativas)
+                  │                           │
+                  │   AcademicCycle (2026) ── Commission (materia + ciclo + turno + horario)
+                  │                           ├── CommissionTeacher ── Teacher ── User
+                  │                           ├── Enrollment ── Student ── User
+                  │                           │       └── Grade (nota)
+                  │                           └── ClassSession (una clase = comisión + fecha)
+                  │                                   └── AttendanceRecord (uno por alumno)
+                  └── Student ── Justification (rango de fechas)   Observation   Notice   SchoolEvent</code></pre>
+
+  <h3>Los modelos que más se cruzan entre apps</h3>
+  <p>Campos tal como están en el esquema central (los de tipo <code>@db.*</code> se explican en la <a href="#sqlite">sección 8</a>).</p>
+<pre><code>model User {
+  id                 String     @id @default(uuid())
+  email              String     @unique
+  firstName          String
+  lastName           String
+  roles              Role[]               <span class="c">// lista: una persona puede tener varios roles</span>
+  status             UserStatus @default(ACTIVE)
+  passwordHash       String               <span class="c">// bcrypt. Nunca la contraseña en texto</span>
+  mustChangePassword Boolean    @default(true)
+  createdAt DateTime @default(now())  updatedAt DateTime @updatedAt
+}
+
+model Student {
+  id            String   @id @default(uuid())
+  userId        String?  @unique          <span class="c">// la cuenta; puede no existir todavía</span>
+  fileNumber    String   @unique          <span class="c">// n.º de legajo</span>
+  dni           String   @unique
+  firstName     String
+  lastName      String
+  email         String
+  phone         String?
+  careerId      String
+  planId        String
+  admissionDate DateTime                  <span class="c">// día</span>
+  status        StudentStatus @default(ACTIVE)
+}
+
+model Teacher {
+  id String @id  userId String? @unique  fileNumber String @unique  dni String @unique
+  firstName String  lastName String  email String  phone String?  title String?
+  status TeacherStatus @default(ACTIVE)
+}
+
+model Commission {
+  id              String @id
+  code            String                  <span class="c">// único por ciclo</span>
+  cycleId         String
+  subjectId       String
+  period          AcademicPeriod
+  shift           Shift
+  preceptorUserId String?
+  schedule        Json   @default("[]")   <span class="c">// [{ "day": 1, "start": "18:00", "end": "20:00", "room": "A3" }]</span>
+  capacity        Int?
+}
+
+model Enrollment {
+  id String @id  studentId String  commissionId String
+  condition EnrollmentCondition @default(IN_PROGRESS)
+  enrolledAt DateTime            <span class="c">// día</span>
+  @@unique([studentId, commissionId])
+}
+
+model ClassSession {
+  id String @id  commissionId String  date DateTime <span class="c">// día</span>  topic String?
+  status SessionStatus @default(OPEN)  closedAt DateTime?  closedBy String?
+}
+
+model AttendanceRecord {
+  id String @id  sessionId String  studentId String
+  status AttendanceStatus  minutesLate Int?  notes String?
+  source AttendanceSource  recordedBy String  recordedAt DateTime @default(now())
+  @@unique([sessionId, studentId])     <span class="c">// un registro por alumno por clase</span>
+}
+
+model Justification {
+  id String @id  studentId String  fromDate DateTime  toDate DateTime  <span class="c">// días</span>
+  reason String  documentUrl String?  status JustificationStatus @default(PENDING)
+  createdBy String  reviewedBy String?  reviewedAt DateTime?  reviewNotes String?
+}
+
+model Grade {
+  id String @id  enrollmentId String  type AssessmentType  instance Int @default(1)
+  date DateTime  value Decimal?  <span class="c">// 0 a 10 con 2 decimales</span>  absent Boolean @default(false)
+  published Boolean @default(false)  publishedAt DateTime?  notes String?  recordedBy String
+  @@unique([enrollmentId, type, instance])   <span class="c">// "2.º parcial" = PARTIAL + instance 2</span>
+}
+
+model Notice {
+  id String @id  cycleId String  title String  content String  category NoticeCategory
+  audience Json @default("{}")  <span class="c">// { "roles": [...], "careerIds": [...], "years": [...], "commissionIds": [...] }</span>
+  status NoticeStatus @default(DRAFT)  pinned Boolean @default(false)
+  publishedAt DateTime?  expiresAt DateTime?  createdBy String
+}</code></pre>
+  <div class="callout">El esquema central completo tiene 39 tablas. Si tu app necesita una tabla que no está acá (Centro, Auxiliares, foro, mensajes, notificaciones, configuración), pedí al equipo central el bloque exacto del <code>schema.prisma</code> antes de crearla: probablemente ya existe.</div>
+</section>
+
+<section id="sqlite">
+  <h2><span class="n">8.</span>SQLite local ↔ Neon (PostgreSQL)</h2>
+  <p class="lead">Trabajar en SQLite está bien: es un archivo, no hay que instalar nada. Lo importante es escribir el esquema de forma que pasar a PostgreSQL sea copiar y pegar.</p>
+  <div class="callout ok"><b>Versión de Prisma:</b> usá la misma que el central, <code>prisma@7.10.1</code> y <code>@prisma/client@7.10.1</code>. Desde Prisma 6.2, SQLite acepta <code>enum</code> y <code>Json</code>, así que la mayoría del esquema queda idéntico.</div>
+  <div class="tbl"><table>
+    <thead><tr><th>En el central (PostgreSQL)</th><th>En tu local (SQLite)</th><th>Por qué</th></tr></thead>
+    <tbody>
+      <tr><td><code>provider = "postgresql"</code></td><td><code>provider = "sqlite"</code> · <code>url = "file:./dev.db"</code></td><td>Lo único que debería cambiar en el encabezado</td></tr>
+      <tr><td><code>enum Role { … }</code></td><td><span class="badge b-ok">igual</span> copiá el bloque entero</td><td>Prisma 7 los soporta en SQLite. Si tu versión no, usá <code>String</code> y validá contra la lista</td></tr>
+      <tr><td><code>roles Role[]</code></td><td><code>roles String @default("[]")</code> (JSON) <span class="badge b-prop">único cambio fuerte</span></td><td>SQLite no tiene listas. Leé y escribí <b>solo</b> con dos funciones <code>getRoles(user)</code> / <code>setRoles(…)</code>; al integrar se cambia solo eso</td></tr>
+      <tr><td><code>@db.Uuid</code></td><td>sacalo · dejá <code>@default(uuid())</code></td><td>Tipo nativo de Postgres</td></tr>
+      <tr><td><code>@db.Date</code></td><td>sacalo · guardá el día a las 00:00 UTC</td><td>Tipo nativo de Postgres. La API igual devuelve <code>YYYY-MM-DD</code></td></tr>
+      <tr><td><code>@db.Decimal(4, 2)</code></td><td><code>Decimal</code> sin el <code>@db</code></td><td>Tipo nativo de Postgres</td></tr>
+      <tr><td><code>Json</code></td><td><span class="badge b-ok">igual</span></td><td>No filtres por campos internos del JSON en las consultas (cambia entre bases)</td></tr>
+      <tr><td><code>@@map</code>, <code>@@unique</code>, <code>@@index</code>, relaciones</td><td><span class="badge b-ok">igual</span></td><td></td></tr>
+    </tbody>
+  </table></div>
+  <h3>Cosas que funcionan distinto y conviene no usar</h3>
+  <ul>
+    <li><code>mode: 'insensitive'</code> en búsquedas: no existe en SQLite. Buscá por un campo ya normalizado o filtrá en el código.</li>
+    <li><code>createMany({ skipDuplicates: true })</code>: no existe en SQLite. Usá <code>upsert</code>.</li>
+    <li>SQL escrito a mano (<code>$queryRaw</code>): evitalo; si es imprescindible, anotalo en la entrega.</li>
+    <li>Transacciones largas: Neon corta las que pasan los 5 s por defecto. Mantenelas cortas.</li>
+  </ul>
+  <h3>Ejemplo: el mismo modelo en las dos bases</h3>
+  <div class="two">
+<pre><code><span class="c">// central (PostgreSQL)</span>
+model ClassSession {
+  id           String   @id @default(uuid()) @db.Uuid
+  commissionId String   @db.Uuid
+  date         DateTime @db.Date
+  status       SessionStatus @default(OPEN)
+  @@index([commissionId, date])
+  @@map("class_sessions")
+}</code></pre>
+<pre><code><span class="c">// local (SQLite)</span>
+model ClassSession {
+  id           String   @id @default(uuid())
+  commissionId String
+  date         DateTime
+  status       SessionStatus @default(OPEN)
+  @@index([commissionId, date])
+  @@map("class_sessions")
+}</code></pre>
+  </div>
+  <div class="callout bad"><b>Nunca</b> subas al repo el archivo <code>.db</code>, ni <code>.env</code> con conexiones o claves. En el <code>.gitignore</code>: <code>*.db</code>, <code>*.db-journal</code>, <code>.env</code>, <code>.env.*</code>, <code>!.env.example</code>. Comprobalo con <code>git check-ignore -v dev.db .env</code>.</div>
+</section>
+
+<section id="api">
+  <h2><span class="n">9.</span>Convenciones de la API</h2>
+  <p class="lead">Si tu prototipo tiene un servidor local (Express, Hono, rutas de Next), que hable igual que el central.</p>
+  <div class="tbl"><table>
+    <tbody>
+      <tr><th>Base</th><td><code>/api/v1</code> · JSON en el cuerpo y en la respuesta · nombres de campos iguales a los del modelo</td></tr>
+      <tr><th>Sesión</th><td>Cookie <code>sga_session</code> (HttpOnly). El frontend manda <code>credentials: 'include'</code> y <b>no</b> guarda tokens. <code>POST /auth/login</code> con <code>{ email, password }</code>; <code>GET /auth/me</code> devuelve la persona y sus roles</td></tr>
+      <tr><th>Quién soy</th><td>Lo propio se pide sin ID: <code>GET /me/attendance</code>, no <code>GET /students/{miId}/attendance</code>. El servidor sabe quién sos por la sesión</td></tr>
+      <tr><th>Listas</th><td>Devuelven un arreglo. Filtros por query: <code>?commissionId=…&amp;date=2026-10-30</code></td></tr>
+      <tr><th>Crear / editar</th><td><code>POST</code> crea · <code>PATCH /{id}</code> cambia algunos campos · <code>PUT</code> reemplaza un conjunto (ej. toda la planilla de una clase) · <code>DELETE</code> solo para lo que no es académico</td></tr>
+      <tr><th>Códigos de error</th><td>Solo estos siete (el <code>code</code> del error y su estado HTTP): <code>VALIDATION_ERROR</code> 400 · <code>UNAUTHENTICATED</code> 401 · <code>FORBIDDEN</code> 403 · <code>NOT_FOUND</code> 404 · <code>CONFLICT</code> 409 (duplicado, clase cerrada) · <code>TOO_MANY_ATTEMPTS</code> 429 (5 intentos fallidos → 15 min bloqueada) · <code>INTERNAL_ERROR</code> 500. Éxito: <code>200</code>, o <code>201</code> al crear</td></tr>
+      <tr><th>Errores</th><td>Siempre con esta forma (<code>details</code> y <code>traceId</code> opcionales):</td></tr>
+    </tbody>
+  </table></div>
+<pre><code>{ "error": { "code": "VALIDATION_ERROR", "message": "La fecha no puede ser futura", "details": { "field": "date" }, "traceId": "…" } }</code></pre>
+  <h3>La capa de API del frontend</h3>
+<pre><code><span class="c">// src/api/client.ts — el ÚNICO lugar que conoce la URL del backend</span>
+const BASE = import.meta.env.VITE_API_URL ?? '/api/v1';
+
+export async function api&lt;T&gt;(path: string, init: RequestInit = {}): Promise&lt;T&gt; {
+  const res = await fetch(BASE + path, {
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json', ...init.headers },
+    ...init,
+  });
+  if (!res.ok) throw (await res.json()).error;   <span class="c">// { code, message, details }</span>
+  return res.status === 204 ? (undefined as T) : res.json();
+}
+
+<span class="c">// src/api/attendance.ts — una función por endpoint, con nombres del contrato</span>
+export const getSessionSheet = (id: string) => api&lt;SessionSheet&gt;(`/attendance/sessions/${id}`);</code></pre>
+</section>
+
+<section id="endpoints">
+  <h2><span class="n">10.</span>Endpoints que ya existen en el central</h2>
+  <p class="lead">Si tu app necesita algo de esta lista, usá <b>la misma ruta y el mismo nombre</b> en tu servidor local. Todas cuelgan de <code>/api/v1</code>.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Grupo</th><th>Rutas</th><th>Para quién</th></tr></thead>
+    <tbody>
+      <tr><td><code>/auth</code></td><td><code>POST /login</code> · <code>POST /logout</code> · <code>GET /me</code> · <code>POST /change-password</code></td><td>Todas</td></tr>
+      <tr><td><code>/users</code></td><td><code>GET /</code> · <code>POST /</code> · <code>PATCH /:id</code> · <code>POST /:id/reset-password</code></td><td>Directivos</td></tr>
+      <tr><td><code>/structure</code></td><td><code>careers</code>, <code>plans</code>, <code>subjects</code>, <code>cycles</code>, <code>commissions</code>, <code>teachers</code>, <code>enrollments</code> (GET / POST / PATCH) · <code>students</code> + <code>GET|PUT /students/:id/sensitive</code> · <code>DELETE /enrollments/:id</code></td><td>Directivos (Preceptoría: padrón)</td></tr>
+      <tr><td><code>/academic</code></td><td><code>GET /cycles/active</code> · <code>GET /careers</code> · <code>GET /subjects</code> · <code>GET /scope</code> (qué comisiones ve el usuario)</td><td>Lectura para todas</td></tr>
+      <tr><td><code>/attendance</code></td><td><code>GET /</code> · <code>POST /by-subject</code> · <code>GET /summary</code> · <code>GET|POST /commissions/:id/sessions</code> · <code>GET|PUT /sessions/:id</code> · <code>GET|POST /justifications</code> · <code>PATCH /justifications/:id</code></td><td>Profesores, Preceptoría, Directivos</td></tr>
+      <tr><td><code>/records</code></td><td><code>GET|PUT /grades</code> · <code>POST /grades/publish</code> · <code>GET|POST /observations</code> · <code>GET|POST /notices</code>, <code>PATCH /notices/:id</code> · <code>GET|POST /events</code>, <code>PATCH|DELETE /events/:id</code> · <code>GET /audit</code> · <code>GET|PATCH /settings</code></td><td>Profesores, Preceptoría, Directivos</td></tr>
+      <tr><td><code>/me</code></td><td><code>GET /student</code> · <code>/subjects</code> · <code>/attendance</code> · <code>/summary</code> · <code>/grades</code> · <code>/justifications</code></td><td>Alumnos</td></tr>
+      <tr><td><code>/centro</code></td><td><code>events</code> (+ <code>/:id/participants</code>, <code>POST|DELETE /:id/join</code>) · <code>threads</code> (+ <code>/:id/replies</code>) · <code>announcements</code> · <code>claims</code></td><td>Centro; Alumnos se suman</td></tr>
+      <tr><td><code>/staff</code></td><td><code>tasks</code> · <code>installations</code> · <code>incidents</code> · <code>maintenance</code></td><td>Auxiliares</td></tr>
+      <tr><td><code>/social</code></td><td><code>GET /directory</code> · <code>profiles</code> (<code>PUT /profiles/me</code>) · <code>notes</code> · <code>messages</code> (<code>/conversations</code>, <code>/with/:userId</code>) · <code>forum</code> (+ <code>/:id/replies</code>) · <code>notifications</code> (<code>POST /read</code>)</td><td>Todas</td></tr>
+      <tr><td>Sistema</td><td><code>GET /health</code> · <code>GET /ready</code></td><td>Monitoreo</td></tr>
+    </tbody>
+  </table></div>
+  <div class="callout">La forma exacta de cada respuesta está en <code>shared/types.ts</code> del repo del equipo. Si no tenés acceso, pedí al equipo central el tipo del endpoint que vas a usar en vez de adivinarlo.</div>
+</section>
+
+<section id="cruces">
+  <h2><span class="n">11.</span>Cruces entre apps (lo que otro equipo espera de vos)</h2>
+  <h3>Asistencia: una sola planilla</h3>
+  <p>Profesores carga <b>por comisión y clase</b> (<code>PUT /attendance/sessions/:id</code>); Preceptoría carga <b>por materia y fecha</b> (<code>POST /attendance/by-subject</code>). Las dos escriben en las mismas tablas: una <code>ClassSession</code> por comisión y fecha, un <code>AttendanceRecord</code> por alumno. Lo que carga uno lo ve el otro. Si la clase está <code>CLOSED</code>, solo Directivos la reabre.</p>
+  <h3>Justificaciones</h3>
+  <p>El alumno (o el preceptor por él) la pide con un rango <code>fromDate</code>–<code>toDate</code> → queda <code>PENDING</code> → Preceptoría la aprueba o rechaza → se notifica al alumno. Las ausencias de esos días se cuentan como justificadas: <b>no se modifica el <code>AttendanceRecord</code></b>.</p>
+  <h3>Porcentaje de asistencia</h3>
+  <p>Se calcula en un solo lugar del backend (<code>GET /attendance/summary</code>, <code>GET /me/summary</code>) con los parámetros de <code>InstitutionSettings</code> (mínimo 75 %, cuánto pesa una llegada tarde, umbral de riesgo). <b>Ninguna app calcula su propio porcentaje</b>: si lo necesitás en local, imitá la respuesta de esos endpoints.</p>
+  <h3>Cuentas</h3>
+  <p>Directivos crea la persona (<code>User</code>) y la vincula a su legajo (<code>Student.userId</code> / <code>Teacher.userId</code>). Las demás apps nunca crean usuarios. Primer ingreso: contraseña temporal + <code>mustChangePassword</code>.</p>
+  <h3>Comunicados y notificaciones</h3>
+  <p>Un <code>Notice</code> se dirige con <code>audience</code> (roles, carreras, años, comisiones). Cada app muestra los que le corresponden; nadie mantiene su propia lista de avisos. Los avisos personales (justificación aprobada, mensaje nuevo) son <code>Notification</code>.</p>
+  <h3>Dos foros distintos</h3>
+  <p>El foro académico (<code>/social/forum</code>, moderado por Preceptoría) no es el foro del Centro (<code>/centro/threads</code>). No los mezcles.</p>
+</section>
+
+<section id="nuevo">
+  <h2><span class="n">12.</span>Cómo proponer algo nuevo</h2>
+  <p class="lead">Es normal que tu app necesite cosas que el central todavía no tiene. Hacelas, pero que se vean.</p>
+  <ol class="rules">
+    <li><b>Primero buscá si ya existe</b> en las secciones 4, 7 y 10. Un campo que falta casi siempre es mejor que una tabla nueva.</li>
+    <li><b>Marcalo en el esquema</b> con un comentario en la línea de arriba: <code>// PROPUESTA profesores: …motivo…</code></li>
+    <li><b>Nombres según la sección 5</b>, y si es una tabla propia de tu app con un prefijo claro (como ya hacen <code>Rep*</code> para Centro y <code>Staff*</code> para Auxiliares).</li>
+    <li><b>No renombres ni cambies el tipo</b> de algo del central. Si creés que está mal, proponelo; no lo cambies en tu copia.</li>
+    <li><b>Anotalo</b> en <code>PROPUESTAS.md</code> en la raíz de tu proyecto, con este formato:</li>
+  </ol>
+<pre><code>## P-PROF-03 · Material de clase adjunto a la sesión
+- App: Profesores (Nicolás) · Fecha: 2026-11-04
+- Tipo: tabla nueva | campo nuevo | valor nuevo | endpoint nuevo
+- Modelo: ClassMaterial { id, sessionId → ClassSession, title, url, createdBy, createdAt }
+- Endpoint: GET|POST /records/materials?sessionId=…  →  [{ id, title, url, createdAt }]
+- Quién escribe / quién lee: TEACHER escribe · STUDENT de la comisión lee
+- Afecta a otras apps: Alumnos debería mostrarlo en la materia
+- Estado: propuesta</code></pre>
+  <p>El equipo central responde cada propuesta como <span class="badge b-ok">aceptada</span>, <span class="badge b-prop">aceptada con cambios</span> o <span class="badge b-no">rechazada</span> (con la alternativa), y actualiza este contrato.</p>
+</section>
+
+<section id="entrega">
+  <h2><span class="n">13.</span>Checklist de entrega para integrar</h2>
+  <p class="lead">Lo que tiene que acompañar tu app cuando se la pasás al equipo central.</p>
+  <ul class="check">
+    <li><code>prisma/schema.prisma</code> local, con las propuestas marcadas</li>
+    <li><code>PROPUESTAS.md</code> al día</li>
+    <li><code>prisma/seed.ts</code> con datos de ejemplo <b>ficticios</b> (sin DNIs, mails ni teléfonos reales)</li>
+    <li>Lista de endpoints que usa tu frontend: ruta, método, qué manda, qué recibe (los que ya existen y los nuevos)</li>
+    <li>Toda la comunicación con el servidor dentro de <code>src/api/</code></li>
+    <li>Sin datos de negocio en <code>localStorage</code>; sin claves ni contraseñas en el código</li>
+    <li>Sin <code>.db</code> ni <code>.env</code> en el repo (verificado con <code>git check-ignore</code>)</li>
+    <li>Textos de pantalla separados de los códigos (diccionario de etiquetas)</li>
+    <li><code>CHANGELOG.md</code> con lo hecho, lo que quedó a medias y lo que no se probó</li>
+    <li>Cómo levantarla: comandos exactos (<code>npm install</code>, <code>npx prisma migrate dev</code>, <code>npm run dev</code>)</li>
+  </ul>
+</section>
+
+<section id="prompt">
+  <h2><span class="n">14.</span>Texto para pegar en las instrucciones de tu agente</h2>
+  <p class="lead">En <code>CLAUDE.md</code> (Claude Code), <code>AGENTS.md</code> o las instrucciones del agente que uses.</p>
+<pre><code>## Contrato de unificación (obligatorio)
+
+Esta app es parte del Sistema de Gestión i26 y después se integra a un backend
+central (Hono + Prisma + PostgreSQL en Neon). Antes de crear o cambiar tablas,
+campos, valores fijos, endpoints o pantallas que manejen datos, leé
+CONTRATO_UNIFICACION.html en la raíz del proyecto y seguilo.
+
+Resumen:
+- Modelos, campos y códigos en inglés con los nombres del contrato (Student,
+  Commission, AttendanceRecord, PRESENT/ABSENT/LATE…). Castellano solo en pantalla.
+- IDs UUID de texto. Fechas de día como "YYYY-MM-DD" en la API.
+- Prisma 7.10.1 con SQLite; esquema escrito para pasar a PostgreSQL copiando
+  (ver sección 8: roles como JSON con getRoles/setRoles, sin @db.*).
+- Datos de otras apps: solo lectura, con la forma del contrato.
+- API en /api/v1, errores { error: { code, message } }, sesión por cookie,
+  lo propio por /me. Todo fetch dentro de src/api/.
+- Nada en localStorage salvo preferencias. Sin claves ni contraseñas en el código.
+  Sin registro de usuarios: las cuentas las crea Directivos.
+- Todo lo que no esté en el contrato se marca "// PROPUESTA <app>: motivo" y se
+  anota en PROPUESTAS.md. No renombrar ni cambiar nada del contrato.
+- Al terminar: CHANGELOG.md con lo hecho y lo que no se probó.</code></pre>
+</section>
+
+</main>
+</div>
+<footer>Sistema de Gestión i26 · Contrato de Unificación v1.0 · 30/10/2026 · Cambios a este documento: los decide el equipo central y se anotan en el CHANGELOG del repo.</footer>
+</body>
+</html>
