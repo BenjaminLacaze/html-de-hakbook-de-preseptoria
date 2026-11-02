@@ -1,0 +1,6 @@
+{
+  "name": "Panel del Centro de Estudiantes · ISFDyT N° 26",
+  "description": "Sistema de gestión, publicaciones, agenda comunitaria y atención de reclamos del Centro de Estudiantes del Instituto Superior de Formación Docente y Técnica N° 26.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,6 @@
+{
+  "name": "Panel de Preceptores — ISFDyT N° 26",
+  "description": "Sistema de gestión y toma de asistencia terciaria para el cuerpo de preceptores del Instituto Superior de Formación Docente y Técnica N° 26.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

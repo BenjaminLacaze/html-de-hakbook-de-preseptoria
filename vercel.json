@@ -17,7 +17,12 @@
     },
     {
       "source": "/Julian(.*)Alumnos/(.*)",
-      "destination": "/alumnos-julian/$2",
+      "destination": "/ecosistema-julian/alumnos/$2",
+      "permanent": true
+    },
+    {
+      "source": "/alumnos-julian/:path*",
+      "destination": "/ecosistema-julian/alumnos/:path*",
       "permanent": true
     },
     {
@@ -50,12 +55,24 @@
       "destination": "/directivos-jesica-agustin/app/index.html"
     },
     {
-      "source": "/alumnos-julian/app/:path*",
-      "destination": "/alumnos-julian/app/index.html"
+      "source": "/ecosistema-julian/alumnos/app/:path*",
+      "destination": "/ecosistema-julian/alumnos/app/index.html"
     },
     {
-      "source": "/alumnos-julian/app-v2/:path*",
-      "destination": "/alumnos-julian/app-v2/index.html"
+      "source": "/ecosistema-julian/alumnos/app-v2/:path*",
+      "destination": "/ecosistema-julian/alumnos/app-v2/index.html"
+    },
+    {
+      "source": "/ecosistema-julian/centro/:path*",
+      "destination": "/ecosistema-julian/centro/index.html"
+    },
+    {
+      "source": "/ecosistema-julian/auxiliares/:path*",
+      "destination": "/ecosistema-julian/auxiliares/index.html"
+    },
+    {
+      "source": "/ecosistema-julian/preceptoria/:path*",
+      "destination": "/ecosistema-julian/preceptoria/index.html"
     },
     {
       "source": "/alumnos-lucia/app/:path*",

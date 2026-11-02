@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 64" fill="none" width="100%" height="100%">
+  <!-- ISFDyT N° 26 Centro de Estudiantes - Logo Positivo (Marca sobre fondo claro) -->
+  <g id="isotipo" transform="translate(6, 6)">
+    <!-- Escudo / Laurel / Libro de Formación Docente y Técnica -->
+    <rect x="0" y="0" width="52" height="52" rx="10" fill="#14214F"/>
+    <!-- Corona exterior dorada -->
+    <path d="M12 16 C12 28, 26 42, 26 42 C26 42, 40 28, 40 16 Z" stroke="#AF9B63" stroke-width="1.5" stroke-dasharray="2 1.5" fill="none"/>
+    <!-- Libro abierto institucional -->
+    <path d="M16 32 C20 30, 24 30.5, 26 33 C28 30.5, 32 30, 36 32 V21 C32 19, 28 19.5, 26 22 C24 19.5, 20 19, 16 21 Z" fill="#FFFFFF"/>
+    <path d="M26 22 V33" stroke="#14214F" stroke-width="1.5"/>
+    <!-- Antorcha de la educación terciaria -->
+    <path d="M26 11 C26 11, 28 13.5, 28 15 C28 16.1, 27.1 17, 26 17 C24.9 17, 24 16.1, 24 15 C24 13.5, 26 11, 26 11 Z" fill="#89743A"/>
+    <circle cx="26" cy="14" r="1.5" fill="#AF9B63"/>
+  </g>
+  <!-- Textos de marca oficiales -->
+  <g id="logotipo" transform="translate(68, 14)">
+    <text x="0" y="14" font-family="'Outfit', sans-serif" font-weight="800" font-size="15" fill="#14214F" letter-spacing="0.5">ISFDyT N° 26</text>
+    <text x="0" y="30" font-family="'Outfit', sans-serif" font-weight="700" font-size="11" fill="#89743A" letter-spacing="1.2">CENTRO DE ESTUDIANTES</text>
+    <text x="0" y="42" font-family="'DM Sans', sans-serif" font-weight="500" font-size="8.5" fill="#3F78B6" letter-spacing="0.4">ASISTENCIA TERCIARIO</text>
+  </g>
+</svg>

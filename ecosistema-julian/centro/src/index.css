@@ -1,0 +1,159 @@
+@import "tailwindcss";
+
+@import "@fontsource/outfit/600.css";
+@import "@fontsource/outfit/700.css";
+@import "@fontsource/outfit/800.css";
+@import "@fontsource/dm-sans/400.css";
+@import "@fontsource/dm-sans/500.css";
+@import "@fontsource/dm-sans/600.css";
+@import "@fontsource/dm-sans/700.css";
+@import "@fontsource/jetbrains-mono/400.css";
+@import "@fontsource/jetbrains-mono/500.css";
+@import "@fontsource/jetbrains-mono/600.css";
+
+@theme {
+  --font-sans: "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-heading: "Outfit", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+
+  --color-brand-navy: #14214F;
+  --color-brand-gold: #89743A;
+  --color-brand-blue: #3F78B6;
+  --color-brand-gold-sand: #AF9B63;
+  --color-brand-white: #FFFFFF;
+  --color-brand-black: #000000;
+
+  --color-surface: var(--theme-surface);
+  --color-surface-card: var(--theme-surface-card);
+  --color-surface-hover: var(--theme-surface-hover);
+  --color-surface-muted: var(--theme-surface-muted);
+  --color-surface-navy: var(--theme-surface-navy);
+  --color-foreground: var(--theme-foreground);
+  --color-foreground-muted: var(--theme-foreground-muted);
+  --color-border-subtle: var(--theme-border-subtle);
+  --color-border-strong: var(--theme-border-strong);
+}
+
+:root {
+  /* Brand Tokens - Manual de Marca ISFDyT N° 26 */
+  --brand-navy: #14214F;
+  --brand-gold: #89743A;
+  --brand-blue: #3F78B6;
+  --brand-gold-sand: #AF9B63;
+  --brand-white: #FFFFFF;
+  --brand-black: #000000;
+
+  /* Theme: Celestial (default) */
+  --theme-surface: #F8FAFC;
+  --theme-surface-card: #FFFFFF;
+  --theme-surface-hover: #F1F5F9;
+  --theme-surface-muted: #E2E8F0;
+  --theme-surface-navy: #14214F;
+  --theme-foreground: #0F172A;
+  --theme-foreground-muted: #475569;
+  --theme-border-subtle: #E2E8F0;
+  --theme-border-strong: #CBD5E1;
+
+  /* Typography scale */
+  --app-text-scale: 1rem;
+}
+
+/* Theme: Oscuro */
+[data-theme="oscuro"] {
+  --theme-surface: #0B1124;
+  --theme-surface-card: #131C38;
+  --theme-surface-hover: #1B264B;
+  --theme-surface-muted: #1F2C54;
+  --theme-surface-navy: #0E1733;
+  --theme-foreground: #F8FAFC;
+  --theme-foreground-muted: #94A3B8;
+  --theme-border-subtle: #24335E;
+  --theme-border-strong: #364A82;
+}
+
+/* Theme: Ensoñación (Atardecer cálido) */
+[data-theme="ensonacion"] {
+  --theme-surface: #FBF8F5;
+  --theme-surface-card: #FFFFFF;
+  --theme-surface-hover: #F5EFE8;
+  --theme-surface-muted: #EADBCE;
+  --theme-surface-navy: #182245;
+  --theme-foreground: #241D1A;
+  --theme-foreground-muted: #665B54;
+  --theme-border-subtle: #E8DDD2;
+  --theme-border-strong: #D5C2B1;
+}
+
+/* Theme: Moderno (Minimalista de alto contraste) */
+[data-theme="moderno"] {
+  --theme-surface: #FFFFFF;
+  --theme-surface-card: #F9FAFB;
+  --theme-surface-hover: #F3F4F6;
+  --theme-surface-muted: #E5E7EB;
+  --theme-surface-navy: #111B3D;
+  --theme-foreground: #0A0D14;
+  --theme-foreground-muted: #4B5565;
+  --theme-border-subtle: #D8DFE8;
+  --theme-border-strong: #94A3B8;
+}
+
+/* Theme: Fantasma (Monocromo etéreo / grafito) */
+[data-theme="fantasma"] {
+  --theme-surface: #F4F6F8;
+  --theme-surface-card: #FFFFFF;
+  --theme-surface-hover: #EBF0F5;
+  --theme-surface-muted: #DFE5EC;
+  --theme-surface-navy: #1B253D;
+  --theme-foreground: #1A212D;
+  --theme-foreground-muted: #566375;
+  --theme-border-subtle: #CFD8E3;
+  --theme-border-strong: #9DAEC2;
+}
+
+/* Theme: Rebelde (Contraste vibrante y deportivo) */
+[data-theme="rebelde"] {
+  --theme-surface: #F5F7FD;
+  --theme-surface-card: #FFFFFF;
+  --theme-surface-hover: #E9EEFA;
+  --theme-surface-muted: #D9E2F7;
+  --theme-surface-navy: #14214F;
+  --theme-foreground: #0B1330;
+  --theme-foreground-muted: #3D4868;
+  --theme-border-subtle: #C7D3EB;
+  --theme-border-strong: #879CC9;
+}
+
+/* Accessibility: Text sizing */
+[data-text-size="large"] {
+  font-size: 1.125rem;
+}
+
+/* Accessibility: Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+[data-reduced-motion="true"] * {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* Focus styles for keyboard accessibility */
+:focus-visible {
+  outline: 2px solid #3F78B6;
+  outline-offset: 2px;
+}
+
+/* Section heading underline fillet as specified in brand manual: ~48x2px */
+.brand-fillet {
+  width: 48px;
+  height: 2px;
+  background-color: var(--brand-gold);
+}

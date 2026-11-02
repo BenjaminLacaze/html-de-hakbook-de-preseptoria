@@ -1,0 +1,226 @@
+@import "@fontsource/outfit/400.css";
+@import "@fontsource/outfit/600.css";
+@import "@fontsource/outfit/700.css";
+@import "@fontsource/outfit/800.css";
+
+@import "@fontsource/dm-sans/400.css";
+@import "@fontsource/dm-sans/500.css";
+@import "@fontsource/dm-sans/600.css";
+@import "@fontsource/dm-sans/700.css";
+
+@import "@fontsource/jetbrains-mono/400.css";
+@import "@fontsource/jetbrains-mono/600.css";
+
+@import "tailwindcss";
+
+:root {
+  /* Official brand colors from ISFDyT N° 26 manual */
+  --brand-navy: #14214F;       /* Principal */
+  --brand-gold: #AF9B63;       /* Dorado arena / ocre */
+  --brand-gold-sand: #C8A14D;  /* Dorado brillante */
+  --brand-blue: #3F78B6;       /* Secundario azul cielo */
+  --brand-white: #FFFFFF;
+  --brand-black: #000000;
+
+  /* Default Institutional Portal Theme (Matches Portal del Alumno exact aesthetic) */
+  --bg-app: #080E1E;
+  --bg-sidebar: #0A1124;
+  --bg-surface: #0E1730;
+  --bg-surface-elevated: #132042;
+  --bg-card: #0F1A35;
+  --bg-card-hover: #142347;
+  --bg-subtle: #172445;
+  --text-main: #FFFFFF;
+  --text-muted: #94A3B8;
+  --text-inverse: #0A1124;
+  --border-light: #1C2E56;
+  --border-focus: #3F78B6;
+
+  /* Functional status colors (con contraste WCAG AA) */
+  --status-ok-bg: #064E3B;
+  --status-ok-border: #059669;
+  --status-ok-text: #A7F3D0;
+  --status-ok-icon: #34D399;
+
+  --status-warn-bg: #451A03;
+  --status-warn-border: #92400E;
+  --status-warn-text: #FDE68A;
+  --status-warn-icon: #FBBF24;
+
+  --status-danger-bg: #450A0A;
+  --status-danger-border: #991B1B;
+  --status-danger-text: #FECACA;
+  --status-danger-icon: #F87171;
+
+  --status-neutral-bg: #1E293B;
+  --status-neutral-border: #334155;
+  --status-neutral-text: #CBD5E1;
+  --status-neutral-icon: #94A3B8;
+
+  /* Base font sizing */
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--text-main);
+  background-color: var(--bg-app);
+}
+
+/* 6 Official Themes */
+html[data-theme="celestial"] {
+  --bg-app: #080E1E;
+  --bg-sidebar: #0A1124;
+  --bg-surface: #0E1730;
+  --bg-surface-elevated: #132042;
+  --bg-card: #0F1A35;
+  --bg-card-hover: #142347;
+  --bg-subtle: #172445;
+  --text-main: #FFFFFF;
+  --text-muted: #94A3B8;
+  --border-light: #1C2E56;
+  --brand-navy: #14214F;
+  --brand-gold: #C8A14D;
+}
+
+html[data-theme="oscuro"] {
+  --bg-app: #050811;
+  --bg-sidebar: #070B16;
+  --bg-surface: #0A1020;
+  --bg-surface-elevated: #0F1830;
+  --bg-card: #0D152A;
+  --bg-card-hover: #121D3A;
+  --bg-subtle: #162242;
+  --text-main: #F8FAFC;
+  --text-muted: #8E9FB8;
+  --border-light: #182647;
+  --brand-navy: #16244C;
+  --brand-gold: #C2A557;
+}
+
+html[data-theme="ensonacion"] {
+  --bg-app: #0E1526;
+  --bg-sidebar: #101930;
+  --bg-surface: #152240;
+  --bg-surface-elevated: #1A2A50;
+  --bg-card: #162444;
+  --bg-card-hover: #1C2E58;
+  --bg-subtle: #203462;
+  --text-main: #FDFBF7;
+  --text-muted: #A3B1CC;
+  --border-light: #243A6B;
+  --brand-navy: #1B2958;
+  --brand-gold: #E5C365;
+}
+
+html[data-theme="moderno"] {
+  --bg-app: #09101F;
+  --bg-sidebar: #0C1428;
+  --bg-surface: #101B36;
+  --bg-surface-elevated: #16254A;
+  --bg-card: #121F3E;
+  --bg-card-hover: #182A52;
+  --bg-subtle: #1E3364;
+  --text-main: #F1F5F9;
+  --text-muted: #94A3B8;
+  --border-light: #1F335E;
+  --brand-navy: #14214F;
+  --brand-gold: #D4AF37;
+}
+
+html[data-theme="fantasma"] {
+  --bg-app: #0B0F19;
+  --bg-sidebar: #0E1320;
+  --bg-surface: #131A2B;
+  --bg-surface-elevated: #1A233A;
+  --bg-card: #151D30;
+  --bg-card-hover: #1C2640;
+  --bg-subtle: #222E4E;
+  --text-main: #F9FAFB;
+  --text-muted: #9CA3AF;
+  --border-light: #232F4D;
+  --brand-navy: #18223C;
+  --brand-gold: #B89B48;
+}
+
+html[data-theme="rebelde"] {
+  --bg-app: #070B1A;
+  --bg-sidebar: #090E22;
+  --bg-surface: #0E1636;
+  --bg-surface-elevated: #152252;
+  --bg-card: #101B42;
+  --bg-card-hover: #182862;
+  --bg-subtle: #203582;
+  --text-main: #FFFFFF;
+  --text-muted: #A5B4FC;
+  --border-light: #283C7D;
+  --brand-navy: #1A2860;
+  --brand-gold: #FFD700;
+}
+
+/* Accessible text sizing */
+html[data-font-size="normal"] {
+  font-size: 16px;
+}
+html[data-font-size="large"] {
+  font-size: 18px;
+}
+html[data-font-size="xlarge"] {
+  font-size: 20px;
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+html[data-reduce-motion="true"] *,
+html[data-reduce-motion="true"] ::before,
+html[data-reduce-motion="true"] ::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* Custom font utility classes */
+.font-heading {
+  font-family: 'Outfit', sans-serif;
+}
+.font-sans {
+  font-family: 'DM Sans', sans-serif;
+}
+.font-mono {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Focus indicator standard */
+*:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
+/* Mobile-first touch minimums */
+.touch-target {
+  min-height: 48px;
+  min-width: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-light);
+  border-radius: 9999px;
+}

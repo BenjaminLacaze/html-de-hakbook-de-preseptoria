@@ -1,0 +1,3732 @@
+diff --git a/backend/README.md b/backend/README.md
+index 6373bb1..c266435 100644
+--- a/backend/README.md
++++ b/backend/README.md
+@@ -19,9 +19,11 @@ desarrollo) o un PostgreSQL instalado en tu máquina.
+ 
+ ```bash
+ npm install
+-cp .env.example .env        # completar DATABASE_URL y SEED_ADMIN_*
++cp .env.example .env        # valores seguros apuntan a PostgreSQL local; completar clave local
+ npm run db:deploy           # crea las tablas
+ npm run db:seed             # crea la primera cuenta (superadministrador)
++npm run db:test-users       # cuentas ficticias, solo para desarrollo local
++npm run db:demo-data        # datos ficticios de los cuatro módulos
+ npm run dev:api             # API en http://localhost:4000/api/v1
+ ```
+ 
+@@ -42,12 +44,33 @@ Probar: `http://localhost:4000/api/v1/health` tiene que responder `{"ok":true,
+ | `npm run db:demo-data` | Carga los datos de ejemplo (carreras, alumnos, asistencias, Auxiliares, Centro) |
+ | `npm run db:demo-data:off` | Borra los datos de ejemplo (todo lo marcado `demo`) |
+ 
++### PostgreSQL local preparado en este equipo
++
++La base de desarrollo local es `i26_dev` en `127.0.0.1:5440`; el clúster queda en
++`backend/.local-dev/pgdata/` (ignorado por Git). Iniciar el servidor desde la raíz:
++
++```powershell
++& "C:\Program Files\PostgreSQL\17\bin\pg_ctl.exe" -D "backend/.local-dev/pgdata" -l "backend/.local-dev/postgres.log" -o "-p 5440 -h 127.0.0.1" start
++```
++
++Apagarlo:
++
++```powershell
++& "C:\Program Files\PostgreSQL\17\bin\pg_ctl.exe" -D "backend/.local-dev/pgdata" stop -m fast
++```
++
++El clúster escucha solo en loopback y usa autenticación local de desarrollo. Cargar únicamente
++datos ficticios o de prueba. La base PostgreSQL no se sube a GitHub: allí se publican
++`schema.prisma`, las migraciones y el código que puede reconstruirla. No cargar `.env`, respaldos
++ni archivos `pgdata` al repositorio.
++
+ ## Base en Neon
+ 
+-**Ya está creada (2026-10-24):** proyecto Neon, base `neondb`, región us-east-1, migración `init`
+-aplicada, institución cargada, cuenta `direccion@isfdyt26.edu.ar` y usuarios de prueba
+-(`npm run db:test-users`). Para trabajar en local: pedirle las cadenas de conexión a Mauricio.
+-Los pasos de abajo son por si hay que crearla de nuevo (por ejemplo, una base de pruebas).
++**Registro histórico del repo (2026-10-24):** documenta un proyecto Neon `neondb`, región
++us-east-1, migraciones y cuentas de prueba. El usuario informa que actualmente no dispone de un
++proyecto Neon para este entorno. Hasta volver a verificar titularidad/estado, tratar esos datos
++como históricos y no conectarse ni migrar a Neon. La base local de desarrollo de arriba es la
++única base habilitada en este paso.
+ 
+ ### Crear la base desde cero
+ 
+diff --git a/backend/prisma/migrations/20261030120000_auditar_lecturas_datos_sensibles/migration.sql b/backend/prisma/migrations/20261030120000_auditar_lecturas_datos_sensibles/migration.sql
+new file mode 100644
+index 0000000..5668da3
+--- /dev/null
++++ b/backend/prisma/migrations/20261030120000_auditar_lecturas_datos_sensibles/migration.sql
+@@ -0,0 +1,2 @@
++-- Registra las consultas a la ficha sensible sin guardar sus valores.
++ALTER TYPE "AuditAction" ADD VALUE 'SENSITIVE_DATA_READ';
+diff --git a/backend/prisma/migrations/20261101182015_paneles_alumno_preceptoria_auxiliares/migration.sql b/backend/prisma/migrations/20261101182015_paneles_alumno_preceptoria_auxiliares/migration.sql
+new file mode 100644
+index 0000000..742997a
+--- /dev/null
++++ b/backend/prisma/migrations/20261101182015_paneles_alumno_preceptoria_auxiliares/migration.sql
+@@ -0,0 +1,138 @@
++-- CreateEnum
++CREATE TYPE "CorrectionField" AS ENUM ('FIRST_NAME', 'LAST_NAME', 'DNI', 'EMAIL', 'PHONE', 'ADMISSION_DATE', 'OTHER');
++
++-- CreateEnum
++CREATE TYPE "CorrectionStatus" AS ENUM ('PENDING', 'APPROVED', 'REJECTED');
++
++-- CreateEnum
++CREATE TYPE "StaffShiftType" AS ENUM ('REGULAR', 'SWAP', 'OFF', 'HOLIDAY');
++
++-- CreateEnum
++CREATE TYPE "ShiftChangeStatus" AS ENUM ('PENDING', 'ACCEPTED', 'REJECTED', 'CANCELLED');
++
++-- CreateTable
++CREATE TABLE "notice_reads" (
++    "noticeId" UUID NOT NULL,
++    "userId" UUID NOT NULL,
++    "readAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
++
++    CONSTRAINT "notice_reads_pkey" PRIMARY KEY ("noticeId","userId")
++);
++
++-- CreateTable
++CREATE TABLE "attendance_qr_codes" (
++    "id" UUID NOT NULL,
++    "sessionId" UUID NOT NULL,
++    "codeHash" TEXT NOT NULL,
++    "expiresAt" TIMESTAMP(3) NOT NULL,
++    "revokedAt" TIMESTAMP(3),
++    "createdBy" UUID NOT NULL,
++    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
++
++    CONSTRAINT "attendance_qr_codes_pkey" PRIMARY KEY ("id")
++);
++
++-- CreateTable
++CREATE TABLE "data_correction_requests" (
++    "id" UUID NOT NULL,
++    "studentId" UUID NOT NULL,
++    "field" "CorrectionField" NOT NULL,
++    "currentValue" TEXT,
++    "proposedValue" TEXT NOT NULL,
++    "reason" TEXT NOT NULL,
++    "documentUrl" TEXT,
++    "status" "CorrectionStatus" NOT NULL DEFAULT 'PENDING',
++    "createdBy" UUID NOT NULL,
++    "reviewedBy" UUID,
++    "reviewedAt" TIMESTAMP(3),
++    "reviewNotes" TEXT,
++    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
++    "updatedAt" TIMESTAMP(3) NOT NULL,
++
++    CONSTRAINT "data_correction_requests_pkey" PRIMARY KEY ("id")
++);
++
++-- CreateTable
++CREATE TABLE "staff_shifts" (
++    "id" UUID NOT NULL,
++    "userId" UUID NOT NULL,
++    "date" DATE NOT NULL,
++    "startTime" TEXT,
++    "endTime" TEXT,
++    "type" "StaffShiftType" NOT NULL DEFAULT 'REGULAR',
++    "notes" TEXT,
++    "createdBy" UUID NOT NULL,
++    "demo" BOOLEAN NOT NULL DEFAULT false,
++    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
++    "updatedAt" TIMESTAMP(3) NOT NULL,
++
++    CONSTRAINT "staff_shifts_pkey" PRIMARY KEY ("id")
++);
++
++-- CreateTable
++CREATE TABLE "shift_change_requests" (
++    "id" UUID NOT NULL,
++    "requesterId" UUID NOT NULL,
++    "colleagueId" UUID NOT NULL,
++    "requesterShiftId" UUID NOT NULL,
++    "colleagueShiftId" UUID NOT NULL,
++    "reason" TEXT,
++    "status" "ShiftChangeStatus" NOT NULL DEFAULT 'PENDING',
++    "respondedAt" TIMESTAMP(3),
++    "respondedBy" UUID,
++    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
++    "updatedAt" TIMESTAMP(3) NOT NULL,
++
++    CONSTRAINT "shift_change_requests_pkey" PRIMARY KEY ("id")
++);
++
++-- CreateIndex
++CREATE INDEX "notice_reads_userId_idx" ON "notice_reads"("userId");
++
++-- CreateIndex
++CREATE UNIQUE INDEX "attendance_qr_codes_codeHash_key" ON "attendance_qr_codes"("codeHash");
++
++-- CreateIndex
++CREATE INDEX "attendance_qr_codes_sessionId_idx" ON "attendance_qr_codes"("sessionId");
++
++-- CreateIndex
++CREATE INDEX "data_correction_requests_studentId_status_idx" ON "data_correction_requests"("studentId", "status");
++
++-- CreateIndex
++CREATE INDEX "staff_shifts_date_idx" ON "staff_shifts"("date");
++
++-- CreateIndex
++CREATE UNIQUE INDEX "staff_shifts_userId_date_key" ON "staff_shifts"("userId", "date");
++
++-- CreateIndex
++CREATE INDEX "shift_change_requests_colleagueId_status_idx" ON "shift_change_requests"("colleagueId", "status");
++
++-- CreateIndex
++CREATE INDEX "shift_change_requests_requesterId_status_idx" ON "shift_change_requests"("requesterId", "status");
++
++-- AddForeignKey
++ALTER TABLE "notice_reads" ADD CONSTRAINT "notice_reads_noticeId_fkey" FOREIGN KEY ("noticeId") REFERENCES "notices"("id") ON DELETE CASCADE ON UPDATE CASCADE;
++
++-- AddForeignKey
++ALTER TABLE "notice_reads" ADD CONSTRAINT "notice_reads_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
++
++-- AddForeignKey
++ALTER TABLE "attendance_qr_codes" ADD CONSTRAINT "attendance_qr_codes_sessionId_fkey" FOREIGN KEY ("sessionId") REFERENCES "class_sessions"("id") ON DELETE CASCADE ON UPDATE CASCADE;
++
++-- AddForeignKey
++ALTER TABLE "data_correction_requests" ADD CONSTRAINT "data_correction_requests_studentId_fkey" FOREIGN KEY ("studentId") REFERENCES "students"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
++
++-- AddForeignKey
++ALTER TABLE "staff_shifts" ADD CONSTRAINT "staff_shifts_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
++
++-- AddForeignKey
++ALTER TABLE "shift_change_requests" ADD CONSTRAINT "shift_change_requests_requesterId_fkey" FOREIGN KEY ("requesterId") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
++
++-- AddForeignKey
++ALTER TABLE "shift_change_requests" ADD CONSTRAINT "shift_change_requests_colleagueId_fkey" FOREIGN KEY ("colleagueId") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
++
++-- AddForeignKey
++ALTER TABLE "shift_change_requests" ADD CONSTRAINT "shift_change_requests_requesterShiftId_fkey" FOREIGN KEY ("requesterShiftId") REFERENCES "staff_shifts"("id") ON DELETE CASCADE ON UPDATE CASCADE;
++
++-- AddForeignKey
++ALTER TABLE "shift_change_requests" ADD CONSTRAINT "shift_change_requests_colleagueShiftId_fkey" FOREIGN KEY ("colleagueShiftId") REFERENCES "staff_shifts"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+diff --git a/backend/prisma/migrations/20261101184446_turnos_sin_superposicion/migration.sql b/backend/prisma/migrations/20261101184446_turnos_sin_superposicion/migration.sql
+new file mode 100644
+index 0000000..9aee852
+--- /dev/null
++++ b/backend/prisma/migrations/20261101184446_turnos_sin_superposicion/migration.sql
+@@ -0,0 +1,5 @@
++-- DropIndex
++DROP INDEX "staff_shifts_userId_date_key";
++
++-- CreateIndex
++CREATE INDEX "staff_shifts_userId_date_idx" ON "staff_shifts"("userId", "date");
+diff --git a/backend/prisma/migrations/20261101200000_ecosistema_centro_auxiliares_preceptoria/migration.sql b/backend/prisma/migrations/20261101200000_ecosistema_centro_auxiliares_preceptoria/migration.sql
+new file mode 100644
+index 0000000..c893c2c
+--- /dev/null
++++ b/backend/prisma/migrations/20261101200000_ecosistema_centro_auxiliares_preceptoria/migration.sql
+@@ -0,0 +1,96 @@
++-- CreateEnum
++CREATE TYPE "RepClaimDestination" AS ENUM ('BEDELIA', 'DIRECTION', 'PRECEPTORSHIP', 'STAFF');
++
++-- CreateEnum
++CREATE TYPE "JustificationDocumentType" AS ENUM ('MEDICAL', 'WORK', 'FORCE_MAJEURE');
++
++-- CreateEnum
++CREATE TYPE "ForumChannel" AS ENUM ('GENERAL', 'QUESTIONS', 'PROPOSALS');
++
++-- CreateEnum
++CREATE TYPE "StaffAbsenceReason" AS ENUM ('SICK_LEAVE', 'FAMILY_CARE', 'OFFICIAL_PROCEDURE', 'FORCE_MAJEURE', 'EXAM_TRAINING');
++
++-- AlterEnum
++ALTER TYPE "RepClaimStatus" ADD VALUE 'FORWARDED';
++
++-- AlterTable
++ALTER TABLE "forum_threads" ADD COLUMN     "channel" "ForumChannel" NOT NULL DEFAULT 'GENERAL';
++
++-- AlterTable
++ALTER TABLE "incidents" ADD COLUMN     "notes" TEXT;
++
++-- AlterTable
++ALTER TABLE "installations" ADD COLUMN     "code" TEXT,
++ADD COLUMN     "floor" TEXT,
++ADD COLUMN     "lastCleanedBy" UUID;
++
++-- AlterTable
++ALTER TABLE "justifications" ADD COLUMN     "documentName" TEXT,
++ADD COLUMN     "documentType" "JustificationDocumentType",
++ADD COLUMN     "subjectId" UUID;
++
++-- AlterTable
++ALTER TABLE "rep_announcements" ADD COLUMN     "attachments" JSONB NOT NULL DEFAULT '[]',
++ADD COLUMN     "coverUrl" TEXT,
++ADD COLUMN     "draft" BOOLEAN NOT NULL DEFAULT false,
++ADD COLUMN     "summary" TEXT;
++
++-- AlterTable
++ALTER TABLE "rep_claims" ADD COLUMN     "anonymous" BOOLEAN NOT NULL DEFAULT false,
++ADD COLUMN     "archiveReason" TEXT,
++ADD COLUMN     "code" TEXT,
++ADD COLUMN     "forwardNote" TEXT,
++ADD COLUMN     "forwardedTo" "RepClaimDestination",
++ADD COLUMN     "history" JSONB NOT NULL DEFAULT '[]',
++ADD COLUMN     "title" TEXT;
++
++-- AlterTable
++ALTER TABLE "rep_events" ADD COLUMN     "capacity" INTEGER,
++ADD COLUMN     "coverUrl" TEXT,
++ADD COLUMN     "endTime" TEXT;
++
++-- AlterTable
++ALTER TABLE "rep_threads" ADD COLUMN     "hidden" BOOLEAN NOT NULL DEFAULT false,
++ADD COLUMN     "hiddenReason" TEXT,
++ADD COLUMN     "reportReason" TEXT,
++ADD COLUMN     "reported" BOOLEAN NOT NULL DEFAULT false;
++
++-- AlterTable
++ALTER TABLE "staff_tasks" ADD COLUMN     "installationId" UUID,
++ADD COLUMN     "priority" "IncidentPriority";
++
++-- CreateTable
++CREATE TABLE "staff_absences" (
++    "id" UUID NOT NULL,
++    "userId" UUID NOT NULL,
++    "fromDate" DATE NOT NULL,
++    "toDate" DATE NOT NULL,
++    "reason" "StaffAbsenceReason" NOT NULL,
++    "notes" TEXT NOT NULL,
++    "documentName" TEXT,
++    "documentUrl" TEXT,
++    "status" "JustificationStatus" NOT NULL DEFAULT 'PENDING',
++    "reviewedBy" UUID,
++    "reviewedAt" TIMESTAMP(3),
++    "reviewNotes" TEXT,
++    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
++    "updatedAt" TIMESTAMP(3) NOT NULL,
++
++    CONSTRAINT "staff_absences_pkey" PRIMARY KEY ("id")
++);
++
++-- CreateIndex
++CREATE INDEX "staff_absences_userId_status_idx" ON "staff_absences"("userId", "status");
++
++-- CreateIndex
++CREATE UNIQUE INDEX "rep_claims_code_key" ON "rep_claims"("code");
++
++-- AddForeignKey
++ALTER TABLE "justifications" ADD CONSTRAINT "justifications_subjectId_fkey" FOREIGN KEY ("subjectId") REFERENCES "subjects"("id") ON DELETE SET NULL ON UPDATE CASCADE;
++
++-- AddForeignKey
++ALTER TABLE "staff_tasks" ADD CONSTRAINT "staff_tasks_installationId_fkey" FOREIGN KEY ("installationId") REFERENCES "installations"("id") ON DELETE SET NULL ON UPDATE CASCADE;
++
++-- AddForeignKey
++ALTER TABLE "staff_absences" ADD CONSTRAINT "staff_absences_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
++
+diff --git a/backend/prisma/schema.prisma b/backend/prisma/schema.prisma
+index 0f69032..dfd67a7 100644
+--- a/backend/prisma/schema.prisma
++++ b/backend/prisma/schema.prisma
+@@ -152,6 +152,7 @@ enum AuditAction {
+   EXPORT
+   LOGIN
+   SESSION_REOPEN
++  SENSITIVE_DATA_READ
+ }
+ 
+ // ============================================================================
+@@ -195,6 +196,12 @@ model User {
+   forumReplies     ForumReply[]     @relation("ForumReplyAuthor")
+   notifications    Notification[]
+ 
++  noticeReads           NoticeRead[]
++  staffShifts           StaffShift[]
++  shiftChangesRequested ShiftChangeRequest[] @relation("ShiftChangeRequester")
++  shiftChangesReceived  ShiftChangeRequest[] @relation("ShiftChangeColleague")
++  staffAbsences         StaffAbsence[]
++
+   @@map("users")
+ }
+ 
+@@ -251,20 +258,21 @@ model StudyPlan {
+ }
+ 
+ model Subject {
+-  id            String         @id @default(uuid()) @db.Uuid
+-  planId        String         @db.Uuid
+-  plan          StudyPlan      @relation(fields: [planId], references: [id])
+-  code          String
+-  name          String
+-  year          Int
+-  period        AcademicPeriod
+-  weeklyHours   Int?
++  id             String          @id @default(uuid()) @db.Uuid
++  planId         String          @db.Uuid
++  plan           StudyPlan       @relation(fields: [planId], references: [id])
++  code           String
++  name           String
++  year           Int
++  period         AcademicPeriod
++  weeklyHours    Int?
+   /// Correlativas: materias que hay que tener antes.
+-  prerequisites Subject[]      @relation("Prerequisites")
+-  requiredBy    Subject[]      @relation("Prerequisites")
+-  createdAt     DateTime       @default(now())
+-  updatedAt     DateTime       @updatedAt
+-  commissions   Commission[]
++  prerequisites  Subject[]       @relation("Prerequisites")
++  requiredBy     Subject[]       @relation("Prerequisites")
++  createdAt      DateTime        @default(now())
++  updatedAt      DateTime        @updatedAt
++  commissions    Commission[]
++  justifications Justification[]
+ 
+   @@unique([planId, code])
+   @@map("subjects")
+@@ -328,29 +336,30 @@ model CommissionTeacher {
+ // ============================================================================
+ 
+ model Student {
+-  id             String                @id @default(uuid()) @db.Uuid
+-  userId         String?               @unique @db.Uuid
+-  user           User?                 @relation(fields: [userId], references: [id])
+-  fileNumber     String                @unique
+-  dni            String                @unique
++  id             String                  @id @default(uuid()) @db.Uuid
++  userId         String?                 @unique @db.Uuid
++  user           User?                   @relation(fields: [userId], references: [id])
++  fileNumber     String                  @unique
++  dni            String                  @unique
+   firstName      String
+   lastName       String
+   email          String
+   phone          String?
+-  careerId       String                @db.Uuid
+-  career         Career                @relation(fields: [careerId], references: [id])
+-  planId         String                @db.Uuid
+-  plan           StudyPlan             @relation(fields: [planId], references: [id])
+-  admissionDate  DateTime              @db.Date
+-  status         StudentStatus         @default(ACTIVE)
+-  demo           Boolean               @default(false)
+-  createdAt      DateTime              @default(now())
+-  updatedAt      DateTime              @updatedAt
++  careerId       String                  @db.Uuid
++  career         Career                  @relation(fields: [careerId], references: [id])
++  planId         String                  @db.Uuid
++  plan           StudyPlan               @relation(fields: [planId], references: [id])
++  admissionDate  DateTime                @db.Date
++  status         StudentStatus           @default(ACTIVE)
++  demo           Boolean                 @default(false)
++  createdAt      DateTime                @default(now())
++  updatedAt      DateTime                @updatedAt
+   sensitive      StudentSensitiveData?
+   enrollments    Enrollment[]
+   attendance     AttendanceRecord[]
+   justifications Justification[]
+   observations   Observation[]
++  corrections    DataCorrectionRequest[]
+ 
+   @@map("students")
+ }
+@@ -423,6 +432,7 @@ model ClassSession {
+   createdAt    DateTime           @default(now())
+   updatedAt    DateTime           @updatedAt
+   records      AttendanceRecord[]
++  qrCodes      AttendanceQrCode[]
+ 
+   @@index([commissionId, date])
+   @@map("class_sessions")
+@@ -447,20 +457,25 @@ model AttendanceRecord {
+ }
+ 
+ model Justification {
+-  id          String              @id @default(uuid()) @db.Uuid
+-  studentId   String              @db.Uuid
+-  student     Student             @relation(fields: [studentId], references: [id])
+-  fromDate    DateTime            @db.Date
+-  toDate      DateTime            @db.Date
+-  reason      String
+-  documentUrl String?
+-  status      JustificationStatus @default(PENDING)
+-  createdBy   String              @db.Uuid
+-  reviewedBy  String?             @db.Uuid
+-  reviewedAt  DateTime?
+-  reviewNotes String?
+-  createdAt   DateTime            @default(now())
+-  updatedAt   DateTime            @updatedAt
++  id           String                     @id @default(uuid()) @db.Uuid
++  studentId    String                     @db.Uuid
++  student      Student                    @relation(fields: [studentId], references: [id])
++  fromDate     DateTime                   @db.Date
++  toDate       DateTime                   @db.Date
++  reason       String
++  /// Materia a la que se limita (sin valor = todas las materias de esas fechas).
++  subjectId    String?                    @db.Uuid
++  subject      Subject?                   @relation(fields: [subjectId], references: [id])
++  documentType JustificationDocumentType?
++  documentName String?
++  documentUrl  String?
++  status       JustificationStatus        @default(PENDING)
++  createdBy    String                     @db.Uuid
++  reviewedBy   String?                    @db.Uuid
++  reviewedAt   DateTime?
++  reviewNotes  String?
++  createdAt    DateTime                   @default(now())
++  updatedAt    DateTime                   @updatedAt
+ 
+   @@index([studentId, fromDate, toDate])
+   @@map("justifications")
+@@ -521,6 +536,7 @@ model Notice {
+   createdBy   String         @db.Uuid
+   createdAt   DateTime       @default(now())
+   updatedAt   DateTime       @updatedAt
++  reads       NoticeRead[]
+ 
+   @@map("notices")
+ }
+@@ -614,21 +630,24 @@ enum IncidentStatus {
+ }
+ 
+ model StaffTask {
+-  id               String          @id @default(uuid()) @db.Uuid
+-  date             DateTime        @db.Date
++  id               String            @id @default(uuid()) @db.Uuid
++  date             DateTime          @db.Date
+   startTime        String
+   title            String
+   type             StaffTaskType
+-  status           StaffTaskStatus @default(PENDING)
++  priority         IncidentPriority?
++  installationId   String?           @db.Uuid
++  installation     Installation?     @relation(fields: [installationId], references: [id], onDelete: SetNull)
++  status           StaffTaskStatus   @default(PENDING)
+   location         String
+   details          String?
+-  assignedToUserId String?         @db.Uuid
++  assignedToUserId String?           @db.Uuid
+   completedAt      DateTime?
+-  completedBy      String?         @db.Uuid
+-  createdBy        String          @db.Uuid
+-  demo             Boolean         @default(false)
+-  createdAt        DateTime        @default(now())
+-  updatedAt        DateTime        @updatedAt
++  completedBy      String?           @db.Uuid
++  createdBy        String            @db.Uuid
++  demo             Boolean           @default(false)
++  createdAt        DateTime          @default(now())
++  updatedAt        DateTime          @updatedAt
+ 
+   @@index([date])
+   @@map("staff_tasks")
+@@ -637,10 +656,15 @@ model StaffTask {
+ model Installation {
+   id              String             @id @default(uuid()) @db.Uuid
+   name            String             @unique
++  /// Código corto del sector (ej. "AU-12").
++  code            String?
++  /// Planta (ej. "PB", "P1").
++  floor           String?
+   status          InstallationStatus @default(OK)
+   /// { col, row, colSpan, rowSpan } en el plano del edificio
+   layout          Json
+   lastCleanedAt   DateTime?
++  lastCleanedBy   String?            @db.Uuid
+   nextTask        String?
+   notes           String?
+   demo            Boolean            @default(false)
+@@ -648,6 +672,7 @@ model Installation {
+   updatedAt       DateTime           @updatedAt
+   incidents       Incident[]
+   maintenanceLogs MaintenanceLog[]
++  tasks           StaffTask[]
+ 
+   @@map("installations")
+ }
+@@ -660,6 +685,7 @@ model Incident {
+   installationId String?          @db.Uuid
+   installation   Installation?    @relation(fields: [installationId], references: [id])
+   imageUrl       String?
++  notes          String?
+   status         IncidentStatus   @default(OPEN)
+   reportedBy     String           @db.Uuid
+   resolvedAt     DateTime?
+@@ -713,19 +739,34 @@ enum RepClaimCategory {
+ enum RepClaimStatus {
+   PENDING
+   IN_REVIEW
++  /// Derivado a otra área (forwardedTo). Desde 2026-11-01.
++  FORWARDED
+   RESOLVED
+   ARCHIVED
+ }
+ 
++/// Área a la que el Centro deriva un reclamo.
++enum RepClaimDestination {
++  BEDELIA
++  DIRECTION
++  PRECEPTORSHIP
++  STAFF
++}
++
+ model RepEvent {
+   id           String                @id @default(uuid()) @db.Uuid
+   title        String
+   date         DateTime              @db.Date
+   time         String?
++  /// Hora de fin (HH:mm).
++  endTime      String?
+   location     String?
+   description  String
+   type         RepEventType
+   organizer    String
++  /// Cupo máximo de inscriptos (sin valor = sin cupo).
++  capacity     Int?
++  coverUrl     String?
+   createdBy    String                @db.Uuid
+   demo         Boolean               @default(false)
+   createdAt    DateTime              @default(now())
+@@ -748,17 +789,23 @@ model RepEventParticipant {
+ }
+ 
+ model RepThread {
+-  id        String           @id @default(uuid()) @db.Uuid
+-  authorId  String           @db.Uuid
+-  author    User             @relation(fields: [authorId], references: [id])
+-  title     String
+-  content   String
+-  category  RepForumCategory
+-  pinned    Boolean          @default(false)
+-  demo      Boolean          @default(false)
+-  createdAt DateTime         @default(now())
+-  updatedAt DateTime         @updatedAt
+-  replies   RepReply[]
++  id           String           @id @default(uuid()) @db.Uuid
++  authorId     String           @db.Uuid
++  author       User             @relation(fields: [authorId], references: [id])
++  title        String
++  content      String
++  category     RepForumCategory
++  pinned       Boolean          @default(false)
++  /// Oculto por el Centro (moderación): no se muestra a quien no gestiona.
++  hidden       Boolean          @default(false)
++  hiddenReason String?
++  /// Denunciado por alguien de la comunidad, pendiente de revisión del Centro.
++  reported     Boolean          @default(false)
++  reportReason String?
++  demo         Boolean          @default(false)
++  createdAt    DateTime         @default(now())
++  updatedAt    DateTime         @updatedAt
++  replies      RepReply[]
+ 
+   @@map("rep_threads")
+ }
+@@ -783,6 +830,13 @@ model RepAnnouncement {
+   author      User      @relation(fields: [authorId], references: [id])
+   pinned      Boolean   @default(false)
+   publishDate DateTime? @db.Date
++  /// Resumen corto para la tarjeta.
++  summary     String?
++  coverUrl    String?
++  /// Borrador: solo lo ve el Centro.
++  draft       Boolean   @default(false)
++  /// [{ name, url, kind: "image" | "pdf" | "document", sizeBytes? }] — solo enlaces, no archivos.
++  attachments Json      @default("[]")
+   demo        Boolean   @default(false)
+   createdAt   DateTime  @default(now())
+   updatedAt   DateTime  @updatedAt
+@@ -791,17 +845,27 @@ model RepAnnouncement {
+ }
+ 
+ model RepClaim {
+-  id          String           @id @default(uuid()) @db.Uuid
+-  authorId    String           @db.Uuid
+-  author      User             @relation("ClaimAuthor", fields: [authorId], references: [id])
+-  category    RepClaimCategory
+-  description String
+-  status      RepClaimStatus   @default(PENDING)
+-  response    String?
+-  responderId String?          @db.Uuid
+-  demo        Boolean          @default(false)
+-  createdAt   DateTime         @default(now())
+-  updatedAt   DateTime         @updatedAt
++  id            String               @id @default(uuid()) @db.Uuid
++  authorId      String               @db.Uuid
++  author        User                 @relation("ClaimAuthor", fields: [authorId], references: [id])
++  /// Número visible "REC-AAAA-NNN" (lo genera el backend).
++  code          String?              @unique
++  category      RepClaimCategory
++  title         String?
++  description   String
++  /// El autor pidió no mostrar su nombre: el Centro tampoco lo ve.
++  anonymous     Boolean              @default(false)
++  status        RepClaimStatus       @default(PENDING)
++  response      String?
++  responderId   String?              @db.Uuid
++  forwardedTo   RepClaimDestination?
++  forwardNote   String?
++  archiveReason String?
++  /// Línea de tiempo: [{ at, type, title, note?, actorName }]. La completa el backend.
++  history       Json                 @default("[]")
++  demo          Boolean              @default(false)
++  createdAt     DateTime             @default(now())
++  updatedAt     DateTime             @updatedAt
+ 
+   @@index([status])
+   @@map("rep_claims")
+@@ -877,6 +941,7 @@ model ForumThread {
+   author          User              @relation("ForumAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+   title           String
+   content         String
++  channel         ForumChannel      @default(GENERAL)
+   careerId        String?           @db.Uuid
+   year            Int?
+   commissionId    String?           @db.Uuid
+@@ -934,3 +999,187 @@ model Notification {
+   @@index([userId, readAt])
+   @@map("notifications")
+ }
++
++// ============================================================================
++// Paneles de Alumno, Preceptoría y Auxiliares (2026-11-01)
++// Trámites del alumno, asistencia por QR, lectura de comunicados y turnos de Auxiliares.
++// ============================================================================
++
++/// Lectura de un comunicado institucional por un usuario (reemplaza el "leído" guardado en el navegador).
++model NoticeRead {
++  noticeId String   @db.Uuid
++  notice   Notice   @relation(fields: [noticeId], references: [id], onDelete: Cascade)
++  userId   String   @db.Uuid
++  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
++  readAt   DateTime @default(now())
++
++  @@id([noticeId, userId])
++  @@index([userId])
++  @@map("notice_reads")
++}
++
++/// Código QR de una clase. El alumno lo escanea y queda PRESENT con origen QR.
++/// Se guarda solo el hash del código (SHA-256); el código en claro se muestra una vez al generarlo.
++model AttendanceQrCode {
++  id        String       @id @default(uuid()) @db.Uuid
++  sessionId String       @db.Uuid
++  session   ClassSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
++  codeHash  String       @unique
++  expiresAt DateTime
++  revokedAt DateTime?
++  createdBy String       @db.Uuid
++  createdAt DateTime     @default(now())
++
++  @@index([sessionId])
++  @@map("attendance_qr_codes")
++}
++
++enum CorrectionField {
++  FIRST_NAME
++  LAST_NAME
++  DNI
++  EMAIL
++  PHONE
++  ADMISSION_DATE
++  OTHER
++}
++
++enum CorrectionStatus {
++  PENDING
++  APPROVED
++  REJECTED
++}
++
++/// Pedido del alumno para corregir un dato de su ficha. Aprobarlo NO cambia la ficha:
++/// Preceptoría o Administración la edita aparte (queda auditado en esa edición).
++model DataCorrectionRequest {
++  id            String           @id @default(uuid()) @db.Uuid
++  studentId     String           @db.Uuid
++  student       Student          @relation(fields: [studentId], references: [id])
++  field         CorrectionField
++  currentValue  String?
++  proposedValue String
++  reason        String
++  documentUrl   String?
++  status        CorrectionStatus @default(PENDING)
++  createdBy     String           @db.Uuid
++  reviewedBy    String?          @db.Uuid
++  reviewedAt    DateTime?
++  reviewNotes   String?
++  createdAt     DateTime         @default(now())
++  updatedAt     DateTime         @updatedAt
++
++  @@index([studentId, status])
++  @@map("data_correction_requests")
++}
++
++enum StaffShiftType {
++  REGULAR
++  SWAP
++  OFF
++  HOLIDAY
++}
++
++enum ShiftChangeStatus {
++  PENDING
++  ACCEPTED
++  REJECTED
++  CANCELLED
++}
++
++/// Turno de un auxiliar en un día. Lo cargan Directivos/Administración.
++/// Una persona puede tener más de un turno el mismo día, siempre que los horarios no se superpongan
++/// (lo controla la API). Sin horario = todo el día.
++model StaffShift {
++  id        String         @id @default(uuid()) @db.Uuid
++  userId    String         @db.Uuid
++  user      User           @relation(fields: [userId], references: [id])
++  date      DateTime       @db.Date
++  startTime String?
++  endTime   String?
++  type      StaffShiftType @default(REGULAR)
++  notes     String?
++  createdBy String         @db.Uuid
++  demo      Boolean        @default(false)
++  createdAt DateTime       @default(now())
++  updatedAt DateTime       @updatedAt
++
++  requestedChanges ShiftChangeRequest[] @relation("RequesterShift")
++  offeredChanges   ShiftChangeRequest[] @relation("ColleagueShift")
++
++  @@index([userId, date])
++  @@index([date])
++  @@map("staff_shifts")
++}
++
++/// Pedido de intercambio de turno entre dos auxiliares. Al aceptarlo se intercambian los titulares.
++model ShiftChangeRequest {
++  id               String            @id @default(uuid()) @db.Uuid
++  requesterId      String            @db.Uuid
++  requester        User              @relation("ShiftChangeRequester", fields: [requesterId], references: [id])
++  colleagueId      String            @db.Uuid
++  colleague        User              @relation("ShiftChangeColleague", fields: [colleagueId], references: [id])
++  requesterShiftId String            @db.Uuid
++  requesterShift   StaffShift        @relation("RequesterShift", fields: [requesterShiftId], references: [id], onDelete: Cascade)
++  colleagueShiftId String            @db.Uuid
++  colleagueShift   StaffShift        @relation("ColleagueShift", fields: [colleagueShiftId], references: [id], onDelete: Cascade)
++  reason           String?
++  status           ShiftChangeStatus @default(PENDING)
++  respondedAt      DateTime?
++  respondedBy      String?           @db.Uuid
++  createdAt        DateTime          @default(now())
++  updatedAt        DateTime          @updatedAt
++
++  @@index([colleagueId, status])
++  @@index([requesterId, status])
++  @@map("shift_change_requests")
++}
++
++// ============================================================================
++// Ecosistema de Julián: Centro, Auxiliares y Preceptoría (2026-11-01)
++// ============================================================================
++
++/// Tipo de comprobante de una justificación.
++enum JustificationDocumentType {
++  MEDICAL
++  WORK
++  FORCE_MAJEURE
++}
++
++/// Canal del foro académico (/social/forum).
++enum ForumChannel {
++  GENERAL
++  QUESTIONS
++  PROPOSALS
++}
++
++enum StaffAbsenceReason {
++  SICK_LEAVE
++  FAMILY_CARE
++  OFFICIAL_PROCEDURE
++  FORCE_MAJEURE
++  EXAM_TRAINING
++}
++
++/// Ausencia o licencia de un auxiliar. La pide el propio auxiliar; la resuelve Dirección/Administración.
++/// (No confundir con Justification, que es de alumnos.)
++model StaffAbsence {
++  id           String              @id @default(uuid()) @db.Uuid
++  userId       String              @db.Uuid
++  user         User                @relation(fields: [userId], references: [id])
++  fromDate     DateTime            @db.Date
++  toDate       DateTime            @db.Date
++  reason       StaffAbsenceReason
++  notes        String
++  documentName String?
++  documentUrl  String?
++  status       JustificationStatus @default(PENDING)
++  reviewedBy   String?             @db.Uuid
++  reviewedAt   DateTime?
++  reviewNotes  String?
++  createdAt    DateTime            @default(now())
++  updatedAt    DateTime            @updatedAt
++
++  @@index([userId, status])
++  @@map("staff_absences")
++}
+diff --git a/backend/src/demo-data.ts b/backend/src/demo-data.ts
+index ca540fd..e03ef8d 100644
+--- a/backend/src/demo-data.ts
++++ b/backend/src/demo-data.ts
+@@ -2,6 +2,7 @@
+ //
+ //   npm run db:demo-data       carga (o recarga) los datos de ejemplo
+ //   npm run db:demo-data:off   los borra (todo lo marcado demo = true)
++//   npm run db:demo-data -- --shifts   solo (re)carga los turnos de ejemplo de Auxiliares
+ //
+ // Salen de la app "julian appcompleta" (consolidacion/app/src/legacy/constants.ts): 2 carreras,
+ // sus materias, los alumnos de ejemplo y sus asistencias, más tareas, instalaciones,
+@@ -28,8 +29,14 @@ import {
+ } from '../../consolidacion/app/src/legacy/constants.js';
+ import { AttendanceStatus, Role } from '../../consolidacion/app/src/legacy/types.js';
+ 
++import { randomBytes } from 'node:crypto';
++import { TEST_USERS_PASSWORD } from '../../shared/testUsers.js';
++import { hashPassword } from './auth/password.js';
++
+ const { prisma } = await import('./db.js');
+ const off = process.argv.includes('--off');
++/** --shifts: solo (re)carga los turnos de ejemplo de Auxiliares, sin tocar el resto. */
++const onlyShifts = process.argv.includes('--shifts');
+ 
+ /** Código de carrera en la base ↔ id de carrera en las pantallas rescatadas. */
+ export const DEMO_CAREER_CODES: Record<string, string> = { dev: 'DEMO-DEV', design: 'DEMO-DIS' };
+@@ -37,7 +44,47 @@ export const DEMO_CAREER_CODES: Record<string, string> = { dev: 'DEMO-DEV', desi
+ const day = (s: string) => new Date(`${s}T00:00:00Z`);
+ const today = () => day(new Date().toISOString().slice(0, 10));
+ 
++/**
++ * Compañero/a de ejemplo para los cambios de turno. Con una base local entra con la clave de los
++ * usuarios de prueba (para poder aceptar un cambio desde la pantalla); con cualquier otra base,
++ * la clave es al azar y nadie puede iniciar sesión.
++ */
++const DEMO_STAFF2_EMAIL = 'demo.auxiliar2@example.invalid';
++const localDatabase = /@(127\.0\.0\.1|localhost)[:/]/.test(process.env.DATABASE_URL ?? '');
++
++async function removeDemoShifts() {
++  await prisma.staffShift.deleteMany({ where: { demo: true } }); // los pedidos de cambio se borran en cascada
++}
++
++/** Turnos de lunes a viernes de las próximas dos semanas: prueba.auxiliar a la mañana y el ejemplo a la tarde. */
++async function loadDemoShifts() {
++  await removeDemoShifts();
++  const staffId = await userId('prueba.auxiliar@isfdyt26.edu.ar');
++  const access = {
++    passwordHash: await hashPassword(localDatabase ? TEST_USERS_PASSWORD : randomBytes(24).toString('base64url')),
++    mustChangePassword: !localDatabase,
++  };
++  const staff2 = await prisma.user.upsert({
++    where: { email: DEMO_STAFF2_EMAIL },
++    update: { roles: ['STAFF'], status: 'ACTIVE', ...access },
++    create: { email: DEMO_STAFF2_EMAIL, firstName: 'Auxiliar', lastName: 'Ejemplo', roles: ['STAFF'], ...access },
++  });
++  const days: Date[] = [];
++  for (let i = 0; days.length < 10; i++) {
++    const d = new Date(today().getTime() + i * 86400000);
++    if (d.getUTCDay() !== 0 && d.getUTCDay() !== 6) days.push(d);
++  }
++  await prisma.staffShift.createMany({
++    data: days.flatMap((date) => [
++      { userId: staffId, date, startTime: '07:00', endTime: '13:00', createdBy: staffId, demo: true },
++      { userId: staff2.id, date, startTime: '13:00', endTime: '19:00', createdBy: staffId, demo: true },
++    ]),
++  });
++  console.log(`Turnos de ejemplo: ${days.length * 2} (prueba.auxiliar y ${DEMO_STAFF2_EMAIL}).`);
++}
++
+ async function removeDemo() {
++  await removeDemoShifts();
+   const careers = await prisma.career.findMany({ where: { demo: true }, select: { id: true } });
+   const careerIds = careers.map((c) => c.id);
+   const students = await prisma.student.findMany({ where: { demo: true }, select: { id: true } });
+@@ -319,5 +366,9 @@ async function loadDemo() {
+ }
+ 
+ if (off) await removeDemo();
+-else await loadDemo();
++else if (onlyShifts) await loadDemoShifts();
++else {
++  await loadDemo();
++  await loadDemoShifts();
++}
+ await prisma.$disconnect();
+diff --git a/backend/src/dto.ts b/backend/src/dto.ts
+index bc14d40..e1d1e6b 100644
+--- a/backend/src/dto.ts
++++ b/backend/src/dto.ts
+@@ -1,7 +1,7 @@
+ // Conversión de filas de la base al formato de la API (shared/types.ts).
+-import type { CommissionView, ScheduleSlot, Student, Teacher } from '../../shared/types.js';
++import type { CommissionView, DataCorrectionRequest, ScheduleSlot, Student, Teacher } from '../../shared/types.js';
+ import type { Prisma } from './generated/prisma/client.js';
+-import { toISODate } from './scope.js';
++import { toISO, toISODate } from './scope.js';
+ 
+ export const commissionInclude = {
+   subject: { include: { plan: { include: { career: true } } } },
+@@ -69,3 +69,26 @@ export function teacherDTO(t: Prisma.TeacherGetPayload<object>): Teacher {
+     updatedAt: t.updatedAt.toISOString(),
+   };
+ }
++
++type CorrectionRow = Prisma.DataCorrectionRequestGetPayload<{ include: { student: true } }>;
++
++export function correctionDTO(r: CorrectionRow): DataCorrectionRequest {
++  return {
++    id: r.id,
++    studentId: r.studentId,
++    field: r.field,
++    currentValue: r.currentValue ?? undefined,
++    proposedValue: r.proposedValue,
++    reason: r.reason,
++    documentUrl: r.documentUrl ?? undefined,
++    status: r.status,
++    createdBy: r.createdBy,
++    reviewedBy: r.reviewedBy ?? undefined,
++    reviewedAt: toISO(r.reviewedAt),
++    reviewNotes: r.reviewNotes ?? undefined,
++    createdAt: r.createdAt.toISOString(),
++    updatedAt: r.updatedAt.toISOString(),
++    studentName: `${r.student.lastName}, ${r.student.firstName}`,
++    studentFileNumber: r.student.fileNumber,
++  };
++}
+diff --git a/backend/src/online-seed.ts b/backend/src/online-seed.ts
+new file mode 100644
+index 0000000..4312e2b
+--- /dev/null
++++ b/backend/src/online-seed.ts
+@@ -0,0 +1,50 @@
++// Cuentas de prueba de la versión ONLINE del ecosistema (proyecto Vercel i26-ecosistema-api).
++// Son las mismas personas que shared/testUsers.ts, pero con una contraseña PRIVADA que llega por
++// la variable ONLINE_ACCOUNTS_PASSWORD (nunca la contraseña pública del repo).
++//
++// Lo corre la publicación solo cuando se pide (ONLINE_SEED=1), ver scripts/deploy-api.mjs.
++// No imprime la contraseña.
++import { TEST_USERS } from '../../shared/testUsers.js';
++import { hashPassword } from './auth/password.js';
++
++const password = process.env.ONLINE_ACCOUNTS_PASSWORD;
++if (!password || password.length < 12) {
++  console.error('Falta ONLINE_ACCOUNTS_PASSWORD (12 caracteres o más).');
++  process.exit(1);
++}
++
++const { prisma } = await import('./db.js');
++
++await prisma.institutionSettings.upsert({
++  where: { id: 1 },
++  update: {},
++  create: {
++    id: 1,
++    name: 'Instituto Superior de Formación Docente y Técnica N.° 26',
++    shortName: 'ISFDyT N.° 26',
++    city: 'Dolores',
++    district: 'Dolores',
++  },
++});
++
++const passwordHash = await hashPassword(password);
++const accounts = [
++  ...TEST_USERS.map((u) => ({ email: u.email, firstName: u.firstName, lastName: u.lastName, role: u.role })),
++  // Compañero para probar los cambios de turno en Auxiliares.
++  { email: 'demo.auxiliar2@example.invalid', firstName: 'Auxiliar', lastName: 'Ejemplo', role: 'STAFF' as const },
++];
++for (const a of accounts) {
++  const data = {
++    firstName: a.firstName,
++    lastName: a.lastName,
++    roles: [a.role],
++    status: 'ACTIVE' as const,
++    passwordHash,
++    mustChangePassword: false,
++    failedLoginCount: 0,
++    lockedUntil: null,
++  };
++  await prisma.user.upsert({ where: { email: a.email }, update: data, create: { email: a.email, ...data } });
++}
++console.log(`Cuentas de prueba online listas: ${accounts.length}.`);
++await prisma.$disconnect();
+diff --git a/backend/src/qr.ts b/backend/src/qr.ts
+new file mode 100644
+index 0000000..0b9d477
+--- /dev/null
++++ b/backend/src/qr.ts
+@@ -0,0 +1,19 @@
++// Códigos QR de asistencia: se genera un código corto y legible (también se puede tipear),
++// y en la base se guarda solo su hash. El código en claro se devuelve una única vez.
++import { createHash, randomInt } from 'node:crypto';
++
++// Sin 0/O ni 1/I/L, para que no se confundan al tipearlo.
++const ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
++
++/** Normaliza lo que manda la app: mayúsculas, sin espacios ni guiones. */
++const normalize = (code: string) => code.toUpperCase().replace(/[^A-Z0-9]/g, '');
++
++export const hashQrCode = (code: string) => createHash('sha256').update(normalize(code)).digest('hex');
++
++/** Código de 10 caracteres en dos grupos ("K7QM2-X9PAR"): unos 49 bits de azar. */
++export function newQrCode(): { code: string; hash: string } {
++  let raw = '';
++  for (let i = 0; i < 10; i++) raw += ALPHABET[randomInt(ALPHABET.length)];
++  const code = `${raw.slice(0, 5)}-${raw.slice(5)}`;
++  return { code, hash: hashQrCode(code) };
++}
+diff --git a/backend/src/routes/attendance.ts b/backend/src/routes/attendance.ts
+index f987add..9a1d777 100644
+--- a/backend/src/routes/attendance.ts
++++ b/backend/src/routes/attendance.ts
+@@ -10,6 +10,9 @@
+ //   POST /attendance/commissions/:id/sessions   (Profesores: abre o reutiliza la clase del día)
+ //   GET  /attendance/sessions/:id
+ //   PUT  /attendance/sessions/:id               (Profesores: guarda la planilla de la clase)
++//   POST|DELETE /attendance/sessions/:id/qr     (genera o anula el código QR de la clase)
++//   GET  /attendance/summary/bulk?commissionId|subjectId   (resumen de todos los inscriptos)
++//   GET  /attendance/audit?commissionId|subjectId          (correcciones de registros ya cargados)
+ //   GET  /attendance/justifications?status&studentId
+ //   POST /attendance/justifications
+ //   PATCH /attendance/justifications/:id        (aprobar / rechazar)
+@@ -17,7 +20,10 @@ import { Hono } from 'hono';
+ import { z } from 'zod';
+ import {
+   ATTENDANCE_STATUSES,
++  JUSTIFICATION_DOCUMENT_TYPES,
+   JUSTIFICATION_STATUSES,
++  type AttendanceChange,
++  type AttendanceQrCodeIssued,
+   type AttendanceRecordView,
+   type AttendanceSummary,
+   type JustificationView,
+@@ -29,7 +35,8 @@ import { AppError, forbidden, notFound } from '../errors.js';
+ import type { Prisma } from '../generated/prisma/client.js';
+ import { commissionScope, hasRole, isManagement, parseDate, toISO, toISODate } from '../scope.js';
+ import { notify } from '../notify.js';
+-import { attendanceSummary } from '../summary.js';
++import { newQrCode } from '../qr.js';
++import { attendanceSummary, covers } from '../summary.js';
+ import { parseBody } from '../validation.js';
+ 
+ const READERS = ['SUPER_ADMIN', 'DIRECTOR', 'ADMINISTRATIVE', 'PRECEPTOR', 'TEACHER'] as const;
+@@ -59,6 +66,7 @@ async function upsertRecords(
+   user: CurrentUser,
+ ): Promise<number> {
+   const source = sourceFor(user);
++  const before = await prisma.attendanceRecord.findMany({ where: { sessionId, studentId: { in: records.map((r) => r.studentId) } } });
+   await prisma.$transaction(
+     records.map((r) =>
+       prisma.attendanceRecord.upsert({
+@@ -83,6 +91,25 @@ async function upsertRecords(
+       }),
+     ),
+   );
++  // Correcciones: registros que ya existían y cambiaron de estado. Quedan en audit_logs.
++  const changed = records.flatMap((r) => {
++    const prev = before.find((b) => b.studentId === r.studentId);
++    return prev && prev.status !== r.status ? [{ prev, r }] : [];
++  });
++  if (changed.length) {
++    await prisma.auditLog.createMany({
++      data: changed.map(({ prev, r }) => ({
++        userId: user.id,
++        userName: `${user.firstName} ${user.lastName}`,
++        action: 'UPDATE' as const,
++        entity: 'AttendanceRecord',
++        entityId: prev.id,
++        summary: `Asistencia corregida: ${prev.status} → ${r.status}`,
++        previousValue: { status: prev.status },
++        newValue: { status: r.status, ...(r.notes ? { notes: r.notes } : {}) },
++      })),
++    });
++  }
+   return records.length;
+ }
+ 
+@@ -140,7 +167,7 @@ export const attendanceRoutes = new Hono<AppEnv>()
+ 
+     const out: AttendanceRecordView[] = records.map((r) => {
+       const d = r.session.date;
+-      const covering = justs.find((j) => j.studentId === r.studentId && j.fromDate <= d && j.toDate >= d);
++      const covering = justs.find((j) => j.studentId === r.studentId && covers(j, d, r.session.commission.subjectId));
+       return {
+         id: r.id,
+         sessionId: r.sessionId,
+@@ -225,6 +252,59 @@ export const attendanceRoutes = new Hono<AppEnv>()
+     return c.json(await attendanceSummary(studentId, commissionId));
+   })
+ 
++  .get('/summary/bulk', requireRoles(...READERS), async (c) => {
++    const user = c.get('user');
++    const { commissionId, subjectId } = c.req.query();
++    if (!commissionId && !subjectId) throw new AppError('VALIDATION_ERROR', 'Indicá commissionId o subjectId.');
++    const commissions = await prisma.commission.findMany({
++      where: { AND: [await commissionScope(user), commissionId ? { id: commissionId } : {}, subjectId ? { subjectId } : {}] },
++      include: { enrollments: { where: { condition: { not: 'DROPPED' } }, select: { studentId: true } } },
++    });
++    const out: AttendanceSummary[] = [];
++    for (const cm of commissions) {
++      for (const e of cm.enrollments) out.push(await attendanceSummary(e.studentId, cm.id));
++    }
++    return c.json(out);
++  })
++
++  .get('/audit', requireRoles(...READERS), async (c) => {
++    const user = c.get('user');
++    const { commissionId, subjectId } = c.req.query();
++    const records = await prisma.attendanceRecord.findMany({
++      where: {
++        session: { commission: { AND: [await commissionScope(user), commissionId ? { id: commissionId } : {}, subjectId ? { subjectId } : {}] } },
++      },
++      include: { student: true, session: { include: { commission: { include: { subject: true } } } } },
++      take: 20_000,
++    });
++    const byId = new Map(records.map((r) => [r.id, r]));
++    const logs = byId.size
++      ? await prisma.auditLog.findMany({
++          where: { entity: 'AttendanceRecord', entityId: { in: [...byId.keys()] } },
++          orderBy: { at: 'desc' },
++          take: 300,
++        })
++      : [];
++    const out: AttendanceChange[] = logs.map((l) => {
++      const r = byId.get(l.entityId)!;
++      const prev = (l.previousValue ?? {}) as { status?: AttendanceChange['previousStatus'] };
++      const next = (l.newValue ?? {}) as { status?: AttendanceChange['newStatus']; notes?: string };
++      return {
++        id: l.id,
++        at: l.at.toISOString(),
++        userName: l.userName,
++        studentId: r.studentId,
++        studentName: `${r.student.lastName}, ${r.student.firstName}`,
++        date: toISODate(r.session.date),
++        subjectName: r.session.commission.subject.name,
++        previousStatus: prev.status ?? r.status,
++        newStatus: next.status ?? r.status,
++        notes: next.notes,
++      };
++    });
++    return c.json(out);
++  })
++
+   // ---------------------------------------------- Profesores: comisión + clase
+   .get('/commissions/:id/sessions', requireRoles(...READERS), async (c) => {
+     const commission = await prisma.commission.findFirst({ where: { AND: [await commissionScope(c.get('user')), { id: c.req.param('id') }] } });
+@@ -260,6 +340,33 @@ export const attendanceRoutes = new Hono<AppEnv>()
+     });
+   })
+ 
++  // Código QR de la clase: el alumno lo escanea (o lo tipea) en POST /me/attendance/qr.
++  // Generar uno nuevo anula el anterior de esa clase. El código en claro solo viaja en esta respuesta.
++  .post('/sessions/:id/qr', requireRoles(...WRITERS), async (c) => {
++    const user = c.get('user');
++    const body = await parseBody(c, z.object({ minutes: z.number().int().min(1).max(30).default(10) }));
++    const session = await prisma.classSession.findFirst({ where: { id: c.req.param('id'), commission: await commissionScope(user) } });
++    if (!session) throw notFound('No existe la clase o no la tenés a cargo.');
++    if (session.status === 'CLOSED') throw new AppError('CONFLICT', 'La planilla de esta clase ya está cerrada.');
++    const { code, hash } = newQrCode();
++    const expiresAt = new Date(Date.now() + body.minutes * 60_000);
++    const [, qr] = await prisma.$transaction([
++      prisma.attendanceQrCode.updateMany({ where: { sessionId: session.id, revokedAt: null }, data: { revokedAt: new Date() } }),
++      prisma.attendanceQrCode.create({ data: { sessionId: session.id, codeHash: hash, expiresAt, createdBy: user.id } }),
++    ]);
++    await audit(c, user, { action: 'CREATE', entity: 'AttendanceQrCode', entityId: qr.id, summary: `QR de asistencia por ${body.minutes} min` });
++    const out: AttendanceQrCodeIssued = { id: qr.id, sessionId: session.id, code, expiresAt: expiresAt.toISOString() };
++    return c.json(out, 201);
++  })
++
++  .delete('/sessions/:id/qr', requireRoles(...WRITERS), async (c) => {
++    const user = c.get('user');
++    const session = await prisma.classSession.findFirst({ where: { id: c.req.param('id'), commission: await commissionScope(user) } });
++    if (!session) throw notFound('No existe la clase o no la tenés a cargo.');
++    await prisma.attendanceQrCode.updateMany({ where: { sessionId: session.id, revokedAt: null }, data: { revokedAt: new Date() } });
++    return c.body(null, 204);
++  })
++
+   .put('/sessions/:id', requireRoles(...WRITERS), async (c) => {
+     const user = c.get('user');
+     const body = await parseBody(c, z.object({ records: z.array(recordSchema).max(500), close: z.boolean().optional() }));
+@@ -295,13 +402,17 @@ export const attendanceRoutes = new Hono<AppEnv>()
+         ? {}
+         : { studentId: q.studentId ? (visible.includes(q.studentId) ? q.studentId : { in: [] }) : { in: visible } }),
+     };
+-    const rows = await prisma.justification.findMany({ where, include: { student: true }, orderBy: { createdAt: 'desc' }, take: 1000 });
++    const rows = await prisma.justification.findMany({ where, include: { student: true, subject: true }, orderBy: { createdAt: 'desc' }, take: 1000 });
+     const out: JustificationView[] = rows.map((j) => ({
+       id: j.id,
+       studentId: j.studentId,
+       fromDate: toISODate(j.fromDate),
+       toDate: toISODate(j.toDate),
+       reason: j.reason,
++      subjectId: j.subjectId ?? undefined,
++      subjectName: j.subject?.name,
++      documentType: j.documentType ?? undefined,
++      documentName: j.documentName ?? undefined,
+       documentUrl: j.documentUrl ?? undefined,
+       status: j.status,
+       createdBy: j.createdBy,
+@@ -325,6 +436,9 @@ export const attendanceRoutes = new Hono<AppEnv>()
+         fromDate: z.string(),
+         toDate: z.string(),
+         reason: z.string().trim().min(3, 'Contá el motivo.').max(1000),
++        subjectId: z.string().uuid().optional(),
++        documentType: z.enum(JUSTIFICATION_DOCUMENT_TYPES).optional(),
++        documentName: z.string().trim().max(200).optional(),
+         documentUrl: z.string().url().optional(),
+       }),
+     );
+@@ -334,7 +448,17 @@ export const attendanceRoutes = new Hono<AppEnv>()
+     const visible = await visibleStudentIds(user);
+     if (visible !== 'all' && !visible.includes(body.studentId)) throw notFound('No existe el alumno o no lo tenés a cargo.');
+     const j = await prisma.justification.create({
+-      data: { studentId: body.studentId, fromDate: from, toDate: to, reason: body.reason, documentUrl: body.documentUrl, createdBy: user.id },
++      data: {
++        studentId: body.studentId,
++        fromDate: from,
++        toDate: to,
++        reason: body.reason,
++        subjectId: body.subjectId,
++        documentType: body.documentType,
++        documentName: body.documentName,
++        documentUrl: body.documentUrl,
++        createdBy: user.id,
++      },
+     });
+     await audit(c, user, { action: 'CREATE', entity: 'Justification', entityId: j.id, summary: `Justificación ${body.fromDate} a ${body.toDate}` });
+     return c.json({ id: j.id, status: j.status }, 201);
+@@ -347,6 +471,7 @@ export const attendanceRoutes = new Hono<AppEnv>()
+     if (!j) throw notFound('No existe la justificación.');
+     const visible = await visibleStudentIds(user);
+     if (visible !== 'all' && !visible.includes(j.studentId)) throw notFound('No existe la justificación.');
++    if (j.status !== 'PENDING') throw new AppError('CONFLICT', 'Esta justificación ya fue resuelta.');
+     const updated = await prisma.justification.update({
+       where: { id: j.id },
+       data: { status: body.status, reviewNotes: body.reviewNotes, reviewedBy: user.id, reviewedAt: new Date() },
+diff --git a/backend/src/routes/centro.ts b/backend/src/routes/centro.ts
+index 9d85350..d6eafe9 100644
+--- a/backend/src/routes/centro.ts
++++ b/backend/src/routes/centro.ts
+@@ -1,32 +1,40 @@
+ // Centro de Estudiantes: eventos, foro de la comunidad, comunicados y reclamos.
+ //
+ // Leer: cualquier persona con sesión. Gestionar (crear eventos y comunicados, moderar,
+-// responder reclamos): Centro de Estudiantes y Superadmin. Anotarse a eventos, publicar en
+-// el foro y presentar reclamos: alumnos y Centro.
++// responder y derivar reclamos): Centro de Estudiantes y Superadmin. Anotarse a eventos,
++// publicar o denunciar en el foro y presentar reclamos: alumnos y Centro.
+ //
+ //   GET /centro/events            POST /centro/events          PATCH|DELETE /centro/events/:id
+ //   POST|DELETE /centro/events/:id/join   GET /centro/events/:id/participants (Centro)
+-//   GET /centro/threads           POST /centro/threads         PATCH /centro/threads/:id (fijar)
++//   GET /centro/threads           POST /centro/threads         PATCH /centro/threads/:id (fijar, ocultar, descartar denuncia)
++//   POST /centro/threads/:id/report (denunciar)
+ //   GET /centro/threads/:id/replies                            POST /centro/threads/:id/replies
+ //   GET /centro/announcements     POST /centro/announcements   PATCH|DELETE /centro/announcements/:id
+-//   GET /centro/claims            POST /centro/claims          PATCH /centro/claims/:id
++//   GET /centro/claims            POST /centro/claims          PATCH /centro/claims/:id (estado, respuesta, derivar, archivar)
+ import { Hono } from 'hono';
+ import { z } from 'zod';
+ import {
+   REP_CLAIM_CATEGORIES,
++  REP_CLAIM_DESTINATION_LABELS,
++  REP_CLAIM_DESTINATIONS,
++  REP_CLAIM_STATUS_LABELS,
+   REP_CLAIM_STATUSES,
+   REP_EVENT_TYPES,
+   REP_FORUM_CATEGORIES,
+   type RepAnnouncement,
++  type RepAttachment,
+   type RepClaim,
++  type RepClaimHistoryItem,
+   type RepEvent,
++  type RepEventParticipantView,
+   type RepReply,
+   type RepThread,
+ } from '../../../shared/types.js';
+ import { audit } from '../audit.js';
+-import { requireAuth, requireRoles, type AppEnv } from '../auth/middleware.js';
++import { requireAuth, requireRoles, type AppEnv, type CurrentUser } from '../auth/middleware.js';
+ import { prisma } from '../db.js';
+-import { notFound } from '../errors.js';
++import { AppError, notFound } from '../errors.js';
++import type { Prisma } from '../generated/prisma/client.js';
+ import { hasRole, parseDate, toISODate } from '../scope.js';
+ import { notify } from '../notify.js';
+ import { parseBody } from '../validation.js';
+@@ -35,24 +43,85 @@ const MANAGE = ['STUDENT_REP', 'SUPER_ADMIN'] as const;
+ const PARTICIPATE = ['STUDENT', 'STUDENT_REP', 'SUPER_ADMIN'] as const;
+ const TIME = z.string().regex(/^\d{2}:\d{2}$/, 'Hora HH:mm');
+ const fullName = (u: { firstName: string; lastName: string }) => `${u.firstName} ${u.lastName}`;
++const today = () => parseDate(new Date().toLocaleDateString('en-CA', { timeZone: 'America/Argentina/Buenos_Aires' }));
++
++/** Miembros activos del Centro, para avisarles de algo nuevo. */
++const repIds = async () =>
++  (await prisma.user.findMany({ where: { roles: { has: 'STUDENT_REP' }, status: 'ACTIVE' }, select: { id: true } })).map((u) => u.id);
++
++/** Autor con su cargo en el Centro (si lo tiene). */
++const authorInclude = { include: { profile: { select: { position: true } } } } as const;
++type AuthorRow = Prisma.UserGetPayload<typeof authorInclude>;
++const authorInfo = (u: AuthorRow) => ({
++  authorName: fullName(u),
++  authorPosition: u.profile?.position ?? undefined,
++  authorIsRep: u.roles.includes('STUDENT_REP'),
++});
+ 
+ const eventBody = z.object({
+   title: z.string().trim().min(2).max(200),
+   date: z.string(),
+   time: TIME.optional(),
++  endTime: TIME.nullable().optional(),
+   location: z.string().max(200).optional(),
+   description: z.string().trim().min(2).max(3000),
+   type: z.enum(REP_EVENT_TYPES),
+   organizer: z.string().trim().min(2).max(120),
++  capacity: z.number().int().min(1).max(5000).nullable().optional(),
++  coverUrl: z.string().url().max(2000).nullable().optional(),
++});
++
++const attachment = z.object({
++  name: z.string().trim().min(1).max(200),
++  url: z.string().url().max(2000),
++  kind: z.enum(['image', 'pdf', 'document']),
++  sizeBytes: z.number().int().min(0).optional(),
+ });
+ 
+ const announcementBody = z.object({
+   title: z.string().trim().min(2).max(200),
+   content: z.string().trim().min(2).max(5000),
+   pinned: z.boolean().optional(),
+-  publishDate: z.string().optional(),
++  publishDate: z.string().nullable().optional(),
++  summary: z.string().trim().max(400).nullable().optional(),
++  coverUrl: z.string().url().max(2000).nullable().optional(),
++  draft: z.boolean().optional(),
++  attachments: z.array(attachment).max(10).optional(),
+ });
+ 
++type ClaimRow = Prisma.RepClaimGetPayload<{ include: { author: { include: { student: { include: { career: true } } } } } }>;
++
++/** Agrega un paso a la línea de tiempo del reclamo. */
++const withHistory = (r: { history: unknown }, item: Omit<RepClaimHistoryItem, 'at'>) =>
++  [...((r.history ?? []) as RepClaimHistoryItem[]), { ...item, at: new Date().toISOString() }] as unknown as Prisma.InputJsonValue;
++
++function claimDTO(r: ClaimRow, viewer: CurrentUser): RepClaim {
++  // Anónimo: nadie ve el autor, salvo el propio autor y Superadmin.
++  const showAuthor = !r.anonymous || r.authorId === viewer.id || hasRole(viewer, 'SUPER_ADMIN');
++  return {
++    id: r.id,
++    authorId: showAuthor ? r.authorId : '',
++    authorName: showAuthor ? fullName(r.author) : undefined,
++    authorEmail: showAuthor ? r.author.email : undefined,
++    authorCareer: showAuthor ? r.author.student?.career.name : undefined,
++    code: r.code ?? undefined,
++    category: r.category,
++    title: r.title ?? undefined,
++    description: r.description,
++    anonymous: r.anonymous,
++    status: r.status,
++    response: r.response ?? undefined,
++    responderId: r.responderId ?? undefined,
++    forwardedTo: r.forwardedTo ?? undefined,
++    forwardNote: r.forwardNote ?? undefined,
++    archiveReason: r.archiveReason ?? undefined,
++    history: (r.history ?? []) as unknown as RepClaimHistoryItem[],
++    createdAt: r.createdAt.toISOString(),
++    updatedAt: r.updatedAt.toISOString(),
++  };
++}
++const claimInclude = { author: { include: { student: { include: { career: true } } } } } as const;
++
+ export const centroRoutes = new Hono<AppEnv>()
+   .use(requireAuth)
+ 
+@@ -69,10 +138,13 @@ export const centroRoutes = new Hono<AppEnv>()
+       title: e.title,
+       date: toISODate(e.date),
+       time: e.time ?? undefined,
++      endTime: e.endTime ?? undefined,
+       location: e.location ?? undefined,
+       description: e.description,
+       type: e.type,
+       organizer: e.organizer,
++      capacity: e.capacity ?? undefined,
++      coverUrl: e.coverUrl ?? undefined,
+       createdBy: e.createdBy,
+       participantCount: e._count.participants,
+       joined: e.participants.length > 0,
+@@ -107,20 +179,29 @@ export const centroRoutes = new Hono<AppEnv>()
+   .get('/events/:id/participants', requireRoles(...MANAGE), async (c) => {
+     const rows = await prisma.repEventParticipant.findMany({
+       where: { eventId: c.req.param('id') },
+-      include: { user: { select: { id: true, firstName: true, lastName: true, roles: true } } },
++      include: { user: { select: { id: true, firstName: true, lastName: true, email: true, roles: true, student: { select: { career: { select: { name: true } } } } } } },
+       orderBy: { joinedAt: 'asc' },
+     });
+-    return c.json(rows.map((r) => ({ ...r.user, joinedAt: r.joinedAt.toISOString() })));
++    const out: RepEventParticipantView[] = rows.map(({ user: u, joinedAt }) => ({
++      id: u.id,
++      firstName: u.firstName,
++      lastName: u.lastName,
++      email: u.email,
++      roles: u.roles,
++      careerName: u.student?.career.name,
++      joinedAt: joinedAt.toISOString(),
++    }));
++    return c.json(out);
+   })
+   .post('/events/:id/join', requireRoles(...PARTICIPATE), async (c) => {
+     const me = c.get('user');
+-    const e = await prisma.repEvent.findUnique({ where: { id: c.req.param('id') } });
++    const e = await prisma.repEvent.findUnique({ where: { id: c.req.param('id') }, include: { _count: { select: { participants: true } } } });
+     if (!e) throw notFound('No existe el evento.');
+-    await prisma.repEventParticipant.upsert({
+-      where: { eventId_userId: { eventId: e.id, userId: me.id } },
+-      create: { eventId: e.id, userId: me.id },
+-      update: {},
+-    });
++    const already = await prisma.repEventParticipant.findUnique({ where: { eventId_userId: { eventId: e.id, userId: me.id } } });
++    if (already) return c.json({ joined: true });
++    if (e.capacity !== null && e._count.participants >= e.capacity) throw new AppError('CONFLICT', 'El evento ya no tiene cupo.');
++    await prisma.repEventParticipant.create({ data: { eventId: e.id, userId: me.id } });
++    await notify([e.createdBy], { type: 'EVENT', text: `${fullName(me)} se inscribió a "${e.title}"`, link: `/centro/events/${e.id}` });
+     return c.json({ joined: true });
+   })
+   .delete('/events/:id/join', requireRoles(...PARTICIPATE), async (c) => {
+@@ -131,20 +212,28 @@ export const centroRoutes = new Hono<AppEnv>()
+ 
+   // ------------------------------------------------------------------- foro
+   .get('/threads', async (c) => {
++    const me = c.get('user');
++    const manage = hasRole(me, ...MANAGE);
+     const rows = await prisma.repThread.findMany({
+-      include: { author: true, _count: { select: { replies: true } } },
++      where: manage ? {} : { hidden: false },
++      include: { author: authorInclude, _count: { select: { replies: true } } },
+       orderBy: [{ pinned: 'desc' }, { createdAt: 'desc' }],
+       take: 500,
+     });
+     const out: RepThread[] = rows.map((t) => ({
+       id: t.id,
+       authorId: t.authorId,
+-      authorName: fullName(t.author),
++      ...authorInfo(t.author),
+       title: t.title,
+       content: t.content,
+       category: t.category,
+       pinned: t.pinned,
+       replyCount: t._count.replies,
++      hidden: t.hidden,
++      hiddenReason: manage ? t.hiddenReason ?? undefined : undefined,
++      // Las denuncias son información de moderación: solo para el Centro.
++      reported: manage ? t.reported : false,
++      reportReason: manage ? t.reportReason ?? undefined : undefined,
+       createdAt: t.createdAt.toISOString(),
+       updatedAt: t.updatedAt.toISOString(),
+     }));
+@@ -160,23 +249,58 @@ export const centroRoutes = new Hono<AppEnv>()
+     return c.json({ id: t.id }, 201);
+   })
+   .patch('/threads/:id', requireRoles(...MANAGE), async (c) => {
+-    const b = await parseBody(c, z.object({ pinned: z.boolean() }));
++    const me = c.get('user');
++    const b = await parseBody(
++      c,
++      z
++        .object({
++          pinned: z.boolean(),
++          hidden: z.boolean(),
++          hiddenReason: z.string().trim().max(500),
++          /** false = descartar la denuncia. */
++          reported: z.literal(false),
++        })
++        .partial(),
++    );
+     const t = await prisma.repThread.findUnique({ where: { id: c.req.param('id') } });
+     if (!t) throw notFound('No existe el tema.');
+-    await prisma.repThread.update({ where: { id: t.id }, data: { pinned: b.pinned } });
+-    return c.json({ id: t.id, pinned: b.pinned });
++    const u = await prisma.repThread.update({
++      where: { id: t.id },
++      data: {
++        ...b,
++        ...(b.hidden === false ? { hiddenReason: null } : {}),
++        ...(b.reported === false ? { reportReason: null } : {}),
++      },
++    });
++    if (b.hidden !== undefined && b.hidden !== t.hidden) {
++      await audit(c, me, { action: 'STATUS_CHANGE', entity: 'RepThread', entityId: t.id, summary: b.hidden ? `Tema oculto: ${t.title}` : `Tema visible: ${t.title}` });
++    }
++    return c.json({ id: u.id, pinned: u.pinned, hidden: u.hidden, reported: u.reported });
++  })
++  .post('/threads/:id/report', requireRoles(...PARTICIPATE), async (c) => {
++    const me = c.get('user');
++    const b = await parseBody(c, z.object({ reason: z.string().trim().min(3, 'Contá el motivo.').max(500) }));
++    const t = await prisma.repThread.findUnique({ where: { id: c.req.param('id') } });
++    if (!t || t.hidden) throw notFound('No existe el tema.');
++    await prisma.repThread.update({ where: { id: t.id }, data: { reported: true, reportReason: b.reason } });
++    await notify(await repIds(), { type: 'FORUM', text: `Denunciaron un tema del foro: "${t.title}"`, details: b.reason, link: `/centro/threads/${t.id}` });
++    await audit(c, me, { action: 'CREATE', entity: 'RepThreadReport', entityId: t.id, summary: 'Denuncia en el foro del Centro' });
++    return c.json({ reported: true });
+   })
+   .get('/threads/:id/replies', async (c) => {
++    const me = c.get('user');
++    const t = await prisma.repThread.findUnique({ where: { id: c.req.param('id') } });
++    if (!t || (t.hidden && !hasRole(me, ...MANAGE))) throw notFound('No existe el tema.');
+     const rows = await prisma.repReply.findMany({
+-      where: { threadId: c.req.param('id') },
+-      include: { author: true },
++      where: { threadId: t.id },
++      include: { author: authorInclude },
+       orderBy: { createdAt: 'asc' },
+     });
+     const out: RepReply[] = rows.map((r) => ({
+       id: r.id,
+       threadId: r.threadId,
+       authorId: r.authorId,
+-      authorName: fullName(r.author),
++      ...authorInfo(r.author),
+       content: r.content,
+       createdAt: r.createdAt.toISOString(),
+     }));
+@@ -186,15 +310,18 @@ export const centroRoutes = new Hono<AppEnv>()
+     const me = c.get('user');
+     const b = await parseBody(c, z.object({ content: z.string().trim().min(1).max(3000) }));
+     const t = await prisma.repThread.findUnique({ where: { id: c.req.param('id') } });
+-    if (!t) throw notFound('No existe el tema.');
++    if (!t || (t.hidden && !hasRole(me, ...MANAGE))) throw notFound('No existe el tema.');
+     const r = await prisma.repReply.create({ data: { threadId: t.id, authorId: me.id, content: b.content } });
+     return c.json({ id: r.id }, 201);
+   })
+ 
+   // ------------------------------------------------------------ comunicados
+   .get('/announcements', async (c) => {
++    const me = c.get('user');
++    // Borradores y publicaciones programadas: solo el Centro.
+     const rows = await prisma.repAnnouncement.findMany({
+-      include: { author: true },
++      where: hasRole(me, ...MANAGE) ? {} : { draft: false, OR: [{ publishDate: null }, { publishDate: { lte: today() } }] },
++      include: { author: authorInclude },
+       orderBy: [{ pinned: 'desc' }, { createdAt: 'desc' }],
+       take: 200,
+     });
+@@ -204,8 +331,13 @@ export const centroRoutes = new Hono<AppEnv>()
+       content: a.content,
+       authorId: a.authorId,
+       authorName: fullName(a.author),
++      authorPosition: a.author.profile?.position ?? undefined,
+       pinned: a.pinned,
+       publishDate: a.publishDate ? toISODate(a.publishDate) : undefined,
++      summary: a.summary ?? undefined,
++      coverUrl: a.coverUrl ?? undefined,
++      draft: a.draft,
++      attachments: (a.attachments ?? []) as unknown as RepAttachment[],
+       createdAt: a.createdAt.toISOString(),
+       updatedAt: a.updatedAt.toISOString(),
+     }));
+@@ -224,9 +356,10 @@ export const centroRoutes = new Hono<AppEnv>()
+     const b = await parseBody(c, announcementBody.partial());
+     const a = await prisma.repAnnouncement.findUnique({ where: { id: c.req.param('id') } });
+     if (!a) throw notFound('No existe el comunicado.');
++    const { publishDate, ...rest } = b;
+     await prisma.repAnnouncement.update({
+       where: { id: a.id },
+-      data: { ...b, ...(b.publishDate ? { publishDate: parseDate(b.publishDate) } : {}) },
++      data: { ...rest, ...(publishDate !== undefined ? { publishDate: publishDate ? parseDate(publishDate) : null } : {}) },
+     });
+     return c.json({ id: a.id });
+   })
+@@ -245,44 +378,89 @@ export const centroRoutes = new Hono<AppEnv>()
+     // El Centro ve todos; un alumno, solo los suyos.
+     const rows = await prisma.repClaim.findMany({
+       where: hasRole(me, ...MANAGE) ? {} : { authorId: me.id },
+-      include: { author: true },
++      include: claimInclude,
+       orderBy: { createdAt: 'desc' },
+       take: 500,
+     });
+-    const out: RepClaim[] = rows.map((r) => ({
+-      id: r.id,
+-      authorId: r.authorId,
+-      authorName: fullName(r.author),
+-      category: r.category,
+-      description: r.description,
+-      status: r.status,
+-      response: r.response ?? undefined,
+-      responderId: r.responderId ?? undefined,
+-      createdAt: r.createdAt.toISOString(),
+-      updatedAt: r.updatedAt.toISOString(),
+-    }));
+-    return c.json(out);
++    return c.json(rows.map((r) => claimDTO(r, me)));
+   })
+   .post('/claims', requireRoles(...PARTICIPATE), async (c) => {
+     const me = c.get('user');
+-    const b = await parseBody(c, z.object({ category: z.enum(REP_CLAIM_CATEGORIES), description: z.string().trim().min(5).max(3000) }));
+-    const r = await prisma.repClaim.create({ data: { ...b, authorId: me.id } });
+-    return c.json({ id: r.id }, 201);
++    const b = await parseBody(
++      c,
++      z.object({
++        category: z.enum(REP_CLAIM_CATEGORIES),
++        title: z.string().trim().min(3).max(200).optional(),
++        description: z.string().trim().min(5).max(3000),
++        anonymous: z.boolean().optional(),
++      }),
++    );
++    const year = new Date().getFullYear();
++    const history = [{ at: new Date().toISOString(), type: 'CREATED', title: 'Reclamo recibido', actorName: b.anonymous ? 'Anónimo' : fullName(me) }];
++    // Número correlativo por año. Si dos llegan juntos, el segundo reintenta con el siguiente.
++    let r;
++    for (let attempt = 0; ; attempt++) {
++      const count = await prisma.repClaim.count({ where: { code: { startsWith: `REC-${year}-` } } });
++      const code = `REC-${year}-${String(count + 1 + attempt).padStart(3, '0')}`;
++      try {
++        r = await prisma.repClaim.create({ data: { ...b, code, history, authorId: me.id }, include: claimInclude });
++        break;
++      } catch (e) {
++        if ((e as { code?: string }).code !== 'P2002' || attempt >= 4) throw e;
++      }
++    }
++    await notify(await repIds(), { type: 'CLAIM', text: `Reclamo nuevo ${r.code}`, details: b.title ?? b.description.slice(0, 120), link: `/centro/claims/${r.id}` });
++    return c.json(claimDTO(r, me), 201);
+   })
+   .patch('/claims/:id', requireRoles(...MANAGE), async (c) => {
+     const me = c.get('user');
+-    const b = await parseBody(c, z.object({ status: z.enum(REP_CLAIM_STATUSES).optional(), response: z.string().max(3000).optional() }));
++    const b = await parseBody(
++      c,
++      z.object({
++        status: z.enum(REP_CLAIM_STATUSES).optional(),
++        response: z.string().trim().max(3000).optional(),
++        forwardedTo: z.enum(REP_CLAIM_DESTINATIONS).optional(),
++        forwardNote: z.string().trim().max(1000).optional(),
++        archiveReason: z.string().trim().max(1000).optional(),
++        /** Comentario interno para la línea de tiempo. */
++        note: z.string().trim().max(1000).optional(),
++      }),
++    );
+     const r = await prisma.repClaim.findUnique({ where: { id: c.req.param('id') } });
+     if (!r) throw notFound('No existe el reclamo.');
+-    await prisma.repClaim.update({
++    // Derivar y archivar fijan el estado.
++    const status = b.forwardedTo ? 'FORWARDED' : b.archiveReason ? 'ARCHIVED' : b.status;
++    let history = r.history as unknown;
++    const actorName = fullName(me);
++    if (b.forwardedTo) {
++      history = withHistory({ history }, { type: 'FORWARDED', title: `Derivado a ${REP_CLAIM_DESTINATION_LABELS[b.forwardedTo]}`, note: b.forwardNote, actorName });
++    } else if (status === 'ARCHIVED' && r.status !== 'ARCHIVED') {
++      history = withHistory({ history }, { type: 'ARCHIVED', title: 'Reclamo archivado', note: b.archiveReason, actorName });
++    } else if (status && status !== r.status) {
++      history = withHistory({ history }, { type: 'STATUS', title: `Estado: ${REP_CLAIM_STATUS_LABELS[status]}`, note: b.note, actorName });
++    }
++    if (b.response) history = withHistory({ history }, { type: 'RESPONSE', title: 'Respuesta al autor', note: b.response, actorName });
++    const u = await prisma.repClaim.update({
+       where: { id: r.id },
+-      data: { ...b, ...(b.response ? { responderId: me.id } : {}) },
++      data: {
++        ...(status ? { status } : {}),
++        ...(b.response ? { response: b.response, responderId: me.id } : {}),
++        ...(b.forwardedTo ? { forwardedTo: b.forwardedTo, forwardNote: b.forwardNote ?? null } : {}),
++        ...(b.archiveReason ? { archiveReason: b.archiveReason } : {}),
++        history: history as Prisma.InputJsonValue,
++      },
++      include: claimInclude,
+     });
+-    if (b.response || (b.status && b.status !== r.status)) {
+-      await notify([r.authorId], { type: 'CLAIM', text: 'El Centro de Estudiantes respondió tu reclamo', details: b.response, link: '/centro/claims' });
++    if (b.response || (status && status !== r.status)) {
++      await notify([r.authorId], {
++        type: 'CLAIM',
++        text: b.response ? 'El Centro de Estudiantes respondió tu reclamo' : `Tu reclamo ahora está: ${REP_CLAIM_STATUS_LABELS[u.status]}`,
++        details: b.response,
++        link: '/centro/claims',
++      });
+     }
+-    if (b.status && b.status !== r.status) {
+-      await audit(c, me, { action: 'STATUS_CHANGE', entity: 'RepClaim', entityId: r.id, summary: `Reclamo ${r.status} → ${b.status}` });
++    if (status && status !== r.status) {
++      await audit(c, me, { action: 'STATUS_CHANGE', entity: 'RepClaim', entityId: r.id, summary: `Reclamo ${r.status} → ${status}` });
+     }
+-    return c.json({ id: r.id });
++    return c.json(claimDTO(u, me));
+   });
+diff --git a/backend/src/routes/me.ts b/backend/src/routes/me.ts
+index b4fc7d8..fa1550c 100644
+--- a/backend/src/routes/me.ts
++++ b/backend/src/routes/me.ts
+@@ -7,17 +7,57 @@
+ //   GET /me/summary          resumen de asistencia (?commissionId)
+ //   GET /me/grades           notas publicadas
+ //   GET /me/justifications   sus justificaciones
++//   POST /me/justifications  pide una justificación (queda PENDING para Preceptoría)
++//   GET|POST /me/corrections pedidos de corrección de su ficha
++//   POST /me/attendance/qr   registra su presente con el código QR de la clase
+ import { Hono } from 'hono';
+-import type { AttendanceRecordView, JustificationView, MyGrade, MySubject } from '../../../shared/types.js';
++import { z } from 'zod';
++import {
++  CORRECTION_FIELDS,
++  JUSTIFICATION_DOCUMENT_TYPES,
++  type AttendanceRecordView,
++  type CorrectionField,
++  type JustificationView,
++  type MyGrade,
++  type MySubject,
++  type QrCheckInResult,
++} from '../../../shared/types.js';
++import { audit } from '../audit.js';
+ import { requireAuth, requireRoles, type AppEnv } from '../auth/middleware.js';
+ import { prisma } from '../db.js';
+-import { commissionInclude, commissionView, studentDTO } from '../dto.js';
+-import { AppError } from '../errors.js';
+-import { toISO, toISODate } from '../scope.js';
+-import { attendanceSummary } from '../summary.js';
++import { commissionInclude, commissionView, correctionDTO, studentDTO } from '../dto.js';
++import { AppError, notFound } from '../errors.js';
++import type { Prisma } from '../generated/prisma/client.js';
++import { notify } from '../notify.js';
++import { hashQrCode } from '../qr.js';
++import { parseDate, toISO, toISODate } from '../scope.js';
++import { attendanceSummary, covers } from '../summary.js';
++import { parseBody } from '../validation.js';
+ 
+ const noStudent = () => new AppError('NOT_FOUND', 'Tu cuenta no está vinculada a un alumno. Pedile a Secretaría que la vincule.');
+ 
++/** Valor actual del dato que se pide corregir, tomado de la ficha (no de lo que mande la app). */
++function currentValueOf(s: Prisma.StudentGetPayload<object>, field: CorrectionField): string | null {
++  switch (field) {
++    case 'FIRST_NAME': return s.firstName;
++    case 'LAST_NAME': return s.lastName;
++    case 'DNI': return s.dni;
++    case 'EMAIL': return s.email;
++    case 'PHONE': return s.phone;
++    case 'ADMISSION_DATE': return toISODate(s.admissionDate);
++    case 'OTHER': return null;
++  }
++}
++
++/** Preceptores de las comisiones que cursa el alumno (para avisarles de un trámite). */
++async function preceptorsOf(studentId: string): Promise<string[]> {
++  const rows = await prisma.enrollment.findMany({
++    where: { studentId, condition: { not: 'DROPPED' }, commission: { preceptorUserId: { not: null } } },
++    select: { commission: { select: { preceptorUserId: true } } },
++  });
++  return rows.map((r) => r.commission.preceptorUserId).filter((x): x is string => Boolean(x));
++}
++
+ export const meRoutes = new Hono<AppEnv>()
+   .use(requireAuth, requireRoles('STUDENT', 'STUDENT_REP'))
+ 
+@@ -60,7 +100,7 @@ export const meRoutes = new Hono<AppEnv>()
+     const justs = await prisma.justification.findMany({ where: { studentId: id } });
+     const out: AttendanceRecordView[] = records.map((r) => {
+       const d = r.session.date;
+-      const j = justs.find((x) => x.fromDate <= d && x.toDate >= d);
++      const j = justs.find((x) => covers(x, d, r.session.commission.subjectId));
+       return {
+         id: r.id,
+         sessionId: r.sessionId,
+@@ -116,13 +156,17 @@ export const meRoutes = new Hono<AppEnv>()
+   .get('/justifications', async (c) => {
+     const id = c.get('user').studentId;
+     if (!id) throw noStudent();
+-    const rows = await prisma.justification.findMany({ where: { studentId: id }, include: { student: true }, orderBy: { createdAt: 'desc' } });
++    const rows = await prisma.justification.findMany({ where: { studentId: id }, include: { student: true, subject: true }, orderBy: { createdAt: 'desc' } });
+     const out: JustificationView[] = rows.map((j) => ({
+       id: j.id,
+       studentId: j.studentId,
+       fromDate: toISODate(j.fromDate),
+       toDate: toISODate(j.toDate),
+       reason: j.reason,
++      subjectId: j.subjectId ?? undefined,
++      subjectName: j.subject?.name,
++      documentType: j.documentType ?? undefined,
++      documentName: j.documentName ?? undefined,
+       documentUrl: j.documentUrl ?? undefined,
+       status: j.status,
+       createdBy: j.createdBy,
+@@ -135,4 +179,141 @@ export const meRoutes = new Hono<AppEnv>()
+       studentFileNumber: j.student.fileNumber,
+     }));
+     return c.json(out);
++  })
++
++  .post('/justifications', async (c) => {
++    const user = c.get('user');
++    const id = user.studentId;
++    if (!id) throw noStudent();
++    const body = await parseBody(
++      c,
++      z.object({
++        fromDate: z.string(),
++        toDate: z.string(),
++        reason: z.string().trim().min(3, 'Contá el motivo.').max(1000),
++        /** Materia de la falta (sin valor: todas las materias de esas fechas). */
++        subjectId: z.string().uuid().optional(),
++        documentType: z.enum(JUSTIFICATION_DOCUMENT_TYPES).optional(),
++        documentName: z.string().trim().max(200).optional(),
++        documentUrl: z.string().url().optional(),
++      }),
++    );
++    const from = parseDate(body.fromDate, 'fromDate');
++    const to = parseDate(body.toDate, 'toDate');
++    if (to < from) throw new AppError('VALIDATION_ERROR', 'La fecha "hasta" es anterior a "desde".', [{ field: 'toDate', message: 'Anterior a "desde".' }]);
++    if (body.subjectId) {
++      const enrolled = await prisma.enrollment.findFirst({ where: { studentId: id, commission: { subjectId: body.subjectId } } });
++      if (!enrolled) throw new AppError('VALIDATION_ERROR', 'No cursás esa materia.', [{ field: 'subjectId', message: 'No cursás esa materia.' }]);
++    }
++    const overlapping = await prisma.justification.findFirst({
++      where: {
++        studentId: id,
++        status: 'PENDING',
++        fromDate: { lte: to },
++        toDate: { gte: from },
++        // Una pendiente "para todas" choca con cualquiera; una por materia, solo con la misma o con "todas".
++        ...(body.subjectId ? { OR: [{ subjectId: null }, { subjectId: body.subjectId }] } : {}),
++      },
++    });
++    if (overlapping) throw new AppError('CONFLICT', 'Ya tenés una justificación en revisión para esas fechas.');
++    const j = await prisma.justification.create({
++      data: {
++        studentId: id,
++        fromDate: from,
++        toDate: to,
++        reason: body.reason,
++        subjectId: body.subjectId,
++        documentType: body.documentType,
++        documentName: body.documentName,
++        documentUrl: body.documentUrl,
++        createdBy: user.id,
++      },
++    });
++    await notify(await preceptorsOf(id), {
++      type: 'JUSTIFICATION_REQUEST',
++      text: 'Un alumno pidió una justificación',
++      details: `${body.fromDate} a ${body.toDate}`,
++      link: '/attendance/justifications',
++    });
++    await audit(c, user, { action: 'CREATE', entity: 'Justification', entityId: j.id, summary: `Justificación pedida por el alumno ${body.fromDate} a ${body.toDate}` });
++    return c.json({ id: j.id, status: j.status }, 201);
++  })
++
++  // ------------------------------------------------- corrección de la ficha
++  .get('/corrections', async (c) => {
++    const id = c.get('user').studentId;
++    if (!id) throw noStudent();
++    const rows = await prisma.dataCorrectionRequest.findMany({ where: { studentId: id }, include: { student: true }, orderBy: { createdAt: 'desc' } });
++    return c.json(rows.map(correctionDTO));
++  })
++
++  .post('/corrections', async (c) => {
++    const user = c.get('user');
++    const id = user.studentId;
++    if (!id) throw noStudent();
++    const body = await parseBody(
++      c,
++      z.object({
++        field: z.enum(CORRECTION_FIELDS),
++        proposedValue: z.string().trim().min(1, 'Escribí el dato correcto.').max(200),
++        reason: z.string().trim().min(3, 'Contá el motivo.').max(1000),
++        documentUrl: z.string().url().optional(),
++      }),
++    );
++    const pending = await prisma.dataCorrectionRequest.findFirst({ where: { studentId: id, field: body.field, status: 'PENDING' } });
++    if (pending) throw new AppError('CONFLICT', 'Ya tenés un pedido en revisión para ese dato.');
++    const student = await prisma.student.findUniqueOrThrow({ where: { id } });
++    const r = await prisma.dataCorrectionRequest.create({
++      data: { ...body, studentId: id, currentValue: currentValueOf(student, body.field), createdBy: user.id },
++      include: { student: true },
++    });
++    await notify(await preceptorsOf(id), {
++      type: 'GENERAL',
++      text: 'Un alumno pidió corregir un dato de su ficha',
++      link: '/structure/corrections',
++    });
++    await audit(c, user, { action: 'CREATE', entity: 'DataCorrectionRequest', entityId: r.id, summary: `Pedido de corrección: ${body.field}` });
++    return c.json(correctionDTO(r), 201);
++  })
++
++  // ------------------------------------------------------ asistencia por QR
++  .post('/attendance/qr', async (c) => {
++    const user = c.get('user');
++    const id = user.studentId;
++    if (!id) throw noStudent();
++    const body = await parseBody(c, z.object({ code: z.string().trim().min(6).max(40) }));
++    const qr = await prisma.attendanceQrCode.findUnique({
++      where: { codeHash: hashQrCode(body.code) },
++      include: { session: { include: { commission: { include: { subject: true } } } } },
++    });
++    if (!qr || qr.revokedAt) throw notFound('El código no es válido.');
++    if (qr.expiresAt <= new Date()) throw new AppError('CONFLICT', 'El código venció. Pedí uno nuevo en el aula.');
++    const { session } = qr;
++    const enrolled = await prisma.enrollment.findFirst({
++      where: { studentId: id, commissionId: session.commissionId, condition: { not: 'DROPPED' } },
++    });
++    if (!enrolled) throw notFound('El código no es válido.');
++    const result = (status: QrCheckInResult['status'], alreadyRegistered: boolean): QrCheckInResult => ({
++      sessionId: session.id,
++      commissionId: session.commissionId,
++      subjectName: session.commission.subject.name,
++      date: toISODate(session.date),
++      status,
++      alreadyRegistered,
++    });
++    const existing = await prisma.attendanceRecord.findUnique({ where: { sessionId_studentId: { sessionId: session.id, studentId: id } } });
++    if (existing) return c.json(result(existing.status, true));
++    if (session.status === 'CLOSED') throw new AppError('CONFLICT', 'La planilla de esta clase ya está cerrada.');
++    let rec;
++    try {
++      rec = await prisma.attendanceRecord.create({
++        data: { sessionId: session.id, studentId: id, status: 'PRESENT', source: 'QR', recordedBy: user.id },
++      });
++    } catch (e) {
++      // Doble envío casi simultáneo: el otro pedido ya lo registró.
++      if ((e as { code?: string }).code === 'P2002') return c.json(result('PRESENT', true));
++      throw e;
++    }
++    await audit(c, user, { action: 'CREATE', entity: 'AttendanceRecord', entityId: rec.id, summary: 'Presente por QR' });
++    return c.json(result(rec.status, false), 201);
+   });
+diff --git a/backend/src/routes/records.ts b/backend/src/routes/records.ts
+index fc78c57..adb5136 100644
+--- a/backend/src/routes/records.ts
++++ b/backend/src/routes/records.ts
+@@ -2,7 +2,7 @@
+ //
+ //   GET /records/grades?commissionId=           PUT /records/grades (carga o corrige)   POST /records/grades/publish
+ //   GET /records/observations?commissionId|studentId   POST /records/observations
+-//   GET /records/notices      POST /records/notices      PATCH /records/notices/:id
++//   GET /records/notices?mine=1   POST /records/notices      PATCH /records/notices/:id   POST /records/notices/:id/read
+ //   GET /records/events?from&to   POST /records/events   PATCH|DELETE /records/events/:id
+ //   GET /records/audit?entity&userId&limit
+ //   GET /records/settings     PATCH /records/settings
+@@ -227,17 +227,39 @@ export const recordsRoutes = new Hono<AppEnv>()
+   .get('/notices', async (c) => {
+     const user = c.get('user');
+     const all = c.req.query('all') === '1' && hasRole(user, ...MANAGE);
++    // mine=1: los comunicados propios en cualquier estado (vencidos y archivados incluidos).
++    const mine = c.req.query('mine') === '1';
+     const rows = await prisma.notice.findMany({
+-      where: all ? {} : { status: 'PUBLISHED', OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }] },
++      where: all ? {} : mine ? { createdBy: user.id } : { status: 'PUBLISHED', OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }] },
+       orderBy: [{ pinned: 'desc' }, { publishedAt: 'desc' }, { createdAt: 'desc' }],
+       take: 300,
+     });
++    const reads = await prisma.noticeRead.findMany({ where: { userId: user.id, noticeId: { in: rows.map((n) => n.id) } } });
++    const readAt = new Map(reads.map((r) => [r.noticeId, r.readAt.toISOString()]));
+     const visible: Notice[] = [];
+     for (const n of rows) {
+-      if (all || n.createdBy === user.id || (await audienceMatches((n.audience ?? {}) as NoticeAudience, user))) visible.push(noticeDTO(n));
++      if (all || n.createdBy === user.id || (await audienceMatches((n.audience ?? {}) as NoticeAudience, user))) {
++        visible.push({ ...noticeDTO(n), readAt: readAt.get(n.id) });
++      }
+     }
+     return c.json(visible);
+   })
++  // Marca como leído un comunicado que el usuario puede ver. Repetirlo no cambia la fecha.
++  .post('/notices/:id/read', async (c) => {
++    const user = c.get('user');
++    const n = await prisma.notice.findUnique({ where: { id: c.req.param('id') } });
++    const canSee =
++      n &&
++      n.status === 'PUBLISHED' &&
++      (n.createdBy === user.id || (await audienceMatches((n.audience ?? {}) as NoticeAudience, user)));
++    if (!n || !canSee) throw notFound('No existe el comunicado.');
++    const r = await prisma.noticeRead.upsert({
++      where: { noticeId_userId: { noticeId: n.id, userId: user.id } },
++      create: { noticeId: n.id, userId: user.id },
++      update: {},
++    });
++    return c.json({ noticeId: n.id, readAt: r.readAt.toISOString() });
++  })
+   .post('/notices', requireRoles(...MANAGE, 'PRECEPTOR'), async (c) => {
+     const user = c.get('user');
+     const b = await parseBody(c, noticeBody);
+diff --git a/backend/src/routes/social.ts b/backend/src/routes/social.ts
+index c54cf1e..00448a9 100644
+--- a/backend/src/routes/social.ts
++++ b/backend/src/routes/social.ts
+@@ -6,13 +6,14 @@
+ //   GET /social/notes   POST /social/notes   PATCH|DELETE /social/notes/:id         (solo las propias)
+ //   GET /social/messages/conversations    GET /social/messages/with/:userId (las marca leídas)
+ //   POST /social/messages
+-//   GET /social/forum?status=             POST /social/forum
++//   GET /social/forum?status=&channel=    POST /social/forum
+ //   PATCH /social/forum/:id               (moderar: Preceptoría/Directivos · editar: el autor)
+ //   DELETE /social/forum/:id              GET|POST /social/forum/:id/replies
+ //   GET /social/notifications             POST /social/notifications/read  (todas o { ids })
+ import { Hono } from 'hono';
+ import { z } from 'zod';
+ import {
++  FORUM_CHANNELS,
+   FORUM_THREAD_STATUSES,
+   ROLES,
+   type AppNotification,
+@@ -73,6 +74,7 @@ const threadDTO = (t: ThreadRow): ForumThread => ({
+   authorName: fullName(t.author),
+   title: t.title,
+   content: t.content,
++  channel: t.channel,
+   careerId: t.careerId ?? undefined,
+   year: t.year ?? undefined,
+   commissionId: t.commissionId ?? undefined,
+@@ -229,12 +231,16 @@ export const socialRoutes = new Hono<AppEnv>()
+   .get('/forum', async (c) => {
+     const me = c.get('user');
+     const status = c.req.query('status');
++    const channel = c.req.query('channel');
+     // Moderadores ven todo; el resto ve lo aprobado más lo propio.
+-    const where: Prisma.ForumThreadWhereInput = isModerator(me)
+-      ? status && (FORUM_THREAD_STATUSES as readonly string[]).includes(status)
+-        ? { status: status as never }
+-        : {}
+-      : { OR: [{ status: 'APPROVED' }, { authorId: me.id }] };
++    const where: Prisma.ForumThreadWhereInput = {
++      ...(isModerator(me)
++        ? status && (FORUM_THREAD_STATUSES as readonly string[]).includes(status)
++          ? { status: status as never }
++          : {}
++        : { OR: [{ status: 'APPROVED' }, { authorId: me.id }] }),
++      ...(channel && (FORUM_CHANNELS as readonly string[]).includes(channel) ? { channel: channel as never } : {}),
++    };
+     const rows = await prisma.forumThread.findMany({
+       where,
+       include: { author: true, _count: { select: { replies: true } } },
+@@ -250,6 +256,7 @@ export const socialRoutes = new Hono<AppEnv>()
+       z.object({
+         title: z.string().trim().min(3).max(200),
+         content: z.string().trim().min(3).max(10_000),
++        channel: z.enum(FORUM_CHANNELS).optional(),
+         careerId: z.string().uuid().optional(),
+         year: z.number().int().min(1).max(8).optional(),
+         commissionId: z.string().uuid().optional(),
+diff --git a/backend/src/routes/staff.ts b/backend/src/routes/staff.ts
+index 9f7a2b2..9af023c 100644
+--- a/backend/src/routes/staff.ts
++++ b/backend/src/routes/staff.ts
+@@ -5,53 +5,180 @@
+ //   GET   /staff/installations             PATCH /staff/installations/:id
+ //   GET   /staff/incidents?status=         POST /staff/incidents  PATCH /staff/incidents/:id
+ //   GET   /staff/maintenance               POST /staff/maintenance
++//   GET   /staff/people                    (auxiliares activos)
++//   GET   /staff/shifts?from&to&userId     POST /staff/shifts     PATCH|DELETE /staff/shifts/:id   (alta: Directivos)
++//   GET   /staff/shift-changes?status=     POST /staff/shift-changes   PATCH /staff/shift-changes/:id
++//   GET   /staff/absences?status=          POST /staff/absences   PATCH /staff/absences/:id (Directivos)   DELETE (la propia, pendiente)
+ import { Hono } from 'hono';
+ import { z } from 'zod';
+ import {
+   INCIDENT_PRIORITIES,
+   INCIDENT_STATUSES,
+   INSTALLATION_STATUSES,
++  JUSTIFICATION_STATUSES,
++  SHIFT_CHANGE_STATUSES,
++  STAFF_ABSENCE_REASONS,
++  STAFF_SHIFT_TYPES,
+   STAFF_TASK_STATUSES,
+   STAFF_TASK_TYPES,
+   type Incident,
+   type Installation,
+   type MaintenanceLog,
++  type ShiftChangeRequest,
++  type StaffAbsence,
++  type StaffMember,
++  type StaffShift,
+   type StaffTask,
+ } from '../../../shared/types.js';
+ import { audit } from '../audit.js';
+ import { requireAuth, requireRoles, type AppEnv } from '../auth/middleware.js';
+ import { prisma } from '../db.js';
+-import { AppError, notFound } from '../errors.js';
++import { AppError, forbidden, notFound } from '../errors.js';
+ import type { Prisma } from '../generated/prisma/client.js';
+-import { parseDate, toISO, toISODate } from '../scope.js';
++import { notify } from '../notify.js';
++import { isManagement, parseDate, toISO, toISODate } from '../scope.js';
+ import { parseBody } from '../validation.js';
+ 
+ const TIME = z.string().regex(/^\d{2}:\d{2}$/, 'Hora HH:mm');
++const SHIFT_MANAGERS = ['DIRECTOR', 'ADMINISTRATIVE', 'SUPER_ADMIN'] as const;
++
++/** Foto de una incidencia: URL https o imagen embebida (data URL), hasta ~1,5 MB. */
++const IMAGE = z
++  .string()
++  .max(2_000_000, 'La foto es demasiado grande.')
++  .refine((v) => /^https?:\/\//.test(v) || /^data:image\/(jpeg|png|webp);base64,/.test(v), 'Foto inválida.');
++
++/** Nombre y apellido de cada usuario de la lista (para mostrar quién hizo qué). */
++async function namesOf(ids: (string | null | undefined)[]): Promise<Map<string, string>> {
++  const unique = [...new Set(ids.filter((x): x is string => Boolean(x)))];
++  if (!unique.length) return new Map();
++  const users = await prisma.user.findMany({ where: { id: { in: unique } }, select: { id: true, firstName: true, lastName: true } });
++  return new Map(users.map((u) => [u.id, `${u.firstName} ${u.lastName}`]));
++}
++
++type AbsenceRow = Prisma.StaffAbsenceGetPayload<{ include: { user: true } }>;
++const absenceDTO = (a: AbsenceRow): StaffAbsence => ({
++  id: a.id,
++  userId: a.userId,
++  userName: `${a.user.lastName}, ${a.user.firstName}`,
++  fromDate: toISODate(a.fromDate),
++  toDate: toISODate(a.toDate),
++  reason: a.reason,
++  notes: a.notes,
++  documentName: a.documentName ?? undefined,
++  documentUrl: a.documentUrl ?? undefined,
++  status: a.status,
++  reviewedBy: a.reviewedBy ?? undefined,
++  reviewedAt: toISO(a.reviewedAt),
++  reviewNotes: a.reviewNotes ?? undefined,
++  createdAt: a.createdAt.toISOString(),
++  updatedAt: a.updatedAt.toISOString(),
++});
++
++const shiftBody = z.object({
++  userId: z.string().uuid(),
++  date: z.string(),
++  startTime: TIME.optional(),
++  endTime: TIME.optional(),
++  type: z.enum(STAFF_SHIFT_TYPES).default('REGULAR'),
++  notes: z.string().max(500).optional(),
++});
++
++type Slot = { date: Date; startTime: string | null; endTime: string | null };
++/** Horario de un turno; sin horario cuenta como todo el día. */
++const span = (s: Slot): [string, string] => [s.startTime ?? '00:00', s.endTime ?? '24:00'];
++
++function checkTimes(s: Slot) {
++  const [start, end] = span(s);
++  if (start >= end) throw new AppError('VALIDATION_ERROR', 'La hora de fin tiene que ser posterior a la de inicio.');
++}
++
++/** Turno de esa persona, ese día, que se superpone con el horario dado (sin contar los excluidos). */
++async function overlapping(userId: string, slot: Slot, exclude: string[] = []) {
++  const [start, end] = span(slot);
++  const sameDay = await prisma.staffShift.findMany({ where: { userId, date: slot.date, id: { notIn: exclude } } });
++  return sameDay.find((x) => {
++    const [s, e] = span(x);
++    return start < e && s < end;
++  });
++}
++
++/** Un intercambio es posible si a ninguno de los dos le queda un turno superpuesto. */
++async function checkSwap(mine: Prisma.StaffShiftGetPayload<object>, theirs: Prisma.StaffShiftGetPayload<object>) {
++  const exclude = [mine.id, theirs.id];
++  if ((await overlapping(mine.userId, theirs, exclude)) || (await overlapping(theirs.userId, mine, exclude))) {
++    throw new AppError('CONFLICT', 'Con el cambio, a alguno de los dos se le superponen turnos ese día.');
++  }
++}
++
++type ShiftRow = Prisma.StaffShiftGetPayload<{ include: { user: true } }>;
++const shiftDTO = (s: ShiftRow): StaffShift => ({
++  id: s.id,
++  userId: s.userId,
++  userName: `${s.user.lastName}, ${s.user.firstName}`,
++  date: toISODate(s.date),
++  startTime: s.startTime ?? undefined,
++  endTime: s.endTime ?? undefined,
++  type: s.type,
++  notes: s.notes ?? undefined,
++  createdAt: s.createdAt.toISOString(),
++  updatedAt: s.updatedAt.toISOString(),
++});
++
++const changeInclude = {
++  requester: true,
++  colleague: true,
++  requesterShift: { include: { user: true } },
++  colleagueShift: { include: { user: true } },
++} as const satisfies Prisma.ShiftChangeRequestInclude;
++
++const changeDTO = (r: Prisma.ShiftChangeRequestGetPayload<{ include: typeof changeInclude }>): ShiftChangeRequest => ({
++  id: r.id,
++  requesterId: r.requesterId,
++  requesterName: `${r.requester.lastName}, ${r.requester.firstName}`,
++  colleagueId: r.colleagueId,
++  colleagueName: `${r.colleague.lastName}, ${r.colleague.firstName}`,
++  requesterShift: shiftDTO(r.requesterShift),
++  colleagueShift: shiftDTO(r.colleagueShift),
++  reason: r.reason ?? undefined,
++  status: r.status,
++  respondedAt: toISO(r.respondedAt),
++  respondedBy: r.respondedBy ?? undefined,
++  createdAt: r.createdAt.toISOString(),
++  updatedAt: r.updatedAt.toISOString(),
++});
+ 
+ type TaskRow = Prisma.StaffTaskGetPayload<object>;
+-const taskDTO = (t: TaskRow): StaffTask => ({
++const taskDTO = (t: TaskRow, names = new Map<string, string>()): StaffTask => ({
+   id: t.id,
+   date: toISODate(t.date),
+   startTime: t.startTime,
+   title: t.title,
+   type: t.type,
+   status: t.status,
++  priority: t.priority ?? undefined,
+   location: t.location,
++  installationId: t.installationId ?? undefined,
+   details: t.details ?? undefined,
+   assignedToUserId: t.assignedToUserId ?? undefined,
+   completedAt: toISO(t.completedAt),
+   completedBy: t.completedBy ?? undefined,
++  completedByName: t.completedBy ? names.get(t.completedBy) : undefined,
+   createdAt: t.createdAt.toISOString(),
+   updatedAt: t.updatedAt.toISOString(),
+ });
+ 
+ type InstRow = Prisma.InstallationGetPayload<object>;
+-const installationDTO = (i: InstRow): Installation => ({
++const installationDTO = (i: InstRow, names = new Map<string, string>()): Installation => ({
+   id: i.id,
+   name: i.name,
++  code: i.code ?? undefined,
++  floor: i.floor ?? undefined,
+   status: i.status,
+   layout: i.layout as Installation['layout'],
+   lastCleanedAt: toISO(i.lastCleanedAt),
++  lastCleanedBy: i.lastCleanedBy ?? undefined,
++  lastCleanedByName: i.lastCleanedBy ? names.get(i.lastCleanedBy) : undefined,
+   nextTask: i.nextTask ?? undefined,
+   notes: i.notes ?? undefined,
+   createdAt: i.createdAt.toISOString(),
+@@ -59,17 +186,20 @@ const installationDTO = (i: InstRow): Installation => ({
+ });
+ 
+ type IncRow = Prisma.IncidentGetPayload<object>;
+-const incidentDTO = (i: IncRow): Incident => ({
++const incidentDTO = (i: IncRow, names = new Map<string, string>()): Incident => ({
+   id: i.id,
+   description: i.description,
+   priority: i.priority,
+   sector: i.sector,
+   installationId: i.installationId ?? undefined,
+   imageUrl: i.imageUrl ?? undefined,
++  notes: i.notes ?? undefined,
+   status: i.status,
+   reportedBy: i.reportedBy,
++  reportedByName: names.get(i.reportedBy),
+   resolvedAt: toISO(i.resolvedAt),
+   resolvedBy: i.resolvedBy ?? undefined,
++  resolvedByName: i.resolvedBy ? names.get(i.resolvedBy) : undefined,
+   createdAt: i.createdAt.toISOString(),
+   updatedAt: i.updatedAt.toISOString(),
+ });
+@@ -85,7 +215,8 @@ export const staffRoutes = new Hono<AppEnv>()
+       orderBy: [{ date: 'desc' }, { startTime: 'asc' }],
+       take: 500,
+     });
+-    return c.json(rows.map(taskDTO));
++    const names = await namesOf(rows.map((t) => t.completedBy));
++    return c.json(rows.map((t) => taskDTO(t, names)));
+   })
+   .post('/tasks', async (c) => {
+     const user = c.get('user');
+@@ -96,12 +227,19 @@ export const staffRoutes = new Hono<AppEnv>()
+         startTime: TIME,
+         title: z.string().trim().min(2).max(200),
+         type: z.enum(STAFF_TASK_TYPES),
+-        location: z.string().trim().min(1).max(120),
++        priority: z.enum(INCIDENT_PRIORITIES).optional(),
++        /** Sector del plano. Si viene, location puede omitirse (se usa el nombre del sector). */
++        installationId: z.string().uuid().optional(),
++        location: z.string().trim().min(1).max(120).optional(),
+         details: z.string().max(1000).optional(),
+         assignedToUserId: z.string().uuid().optional(),
+       }),
+     );
+-    const t = await prisma.staffTask.create({ data: { ...b, date: parseDate(b.date), createdBy: user.id } });
++    const inst = b.installationId ? await prisma.installation.findUnique({ where: { id: b.installationId } }) : null;
++    if (b.installationId && !inst) throw notFound('No existe el sector.');
++    const location = b.location ?? inst?.name;
++    if (!location) throw new AppError('VALIDATION_ERROR', 'Indicá el lugar o el sector.', [{ field: 'location', message: 'Requerido.' }]);
++    const t = await prisma.staffTask.create({ data: { ...b, location, date: parseDate(b.date), createdBy: user.id } });
+     await audit(c, user, { action: 'CREATE', entity: 'StaffTask', entityId: t.id, summary: `Tarea: ${t.title}` });
+     return c.json(taskDTO(t), 201);
+   })
+@@ -115,7 +253,7 @@ export const staffRoutes = new Hono<AppEnv>()
+       where: { id: t.id },
+       data: { status: b.status, completedAt: done ? new Date() : null, completedBy: done ? user.id : null },
+     });
+-    return c.json(taskDTO(u));
++    return c.json(taskDTO(u, await namesOf([u.completedBy])));
+   })
+ 
+   .delete('/tasks/:id', async (c) => {
+@@ -127,7 +265,8 @@ export const staffRoutes = new Hono<AppEnv>()
+   // ---------------------------------------------------------- instalaciones
+   .get('/installations', async (c) => {
+     const rows = await prisma.installation.findMany({ orderBy: { name: 'asc' } });
+-    return c.json(rows.map(installationDTO));
++    const names = await namesOf(rows.map((i) => i.lastCleanedBy));
++    return c.json(rows.map((i) => installationDTO(i, names)));
+   })
+   .post('/installations', async (c) => {
+     const user = c.get('user');
+@@ -135,6 +274,8 @@ export const staffRoutes = new Hono<AppEnv>()
+       c,
+       z.object({
+         name: z.string().trim().min(1).max(120),
++        code: z.string().trim().max(20).optional(),
++        floor: z.string().trim().max(20).optional(),
+         status: z.enum(INSTALLATION_STATUSES).default('OK'),
+         layout: z.object({ col: z.number().int().min(1), row: z.number().int().min(1), colSpan: z.number().int().min(1), rowSpan: z.number().int().min(1) }),
+         nextTask: z.string().max(200).optional(),
+@@ -163,6 +304,8 @@ export const staffRoutes = new Hono<AppEnv>()
+       z
+         .object({
+           name: z.string().trim().min(1).max(120),
++          code: z.string().trim().max(20).nullable(),
++          floor: z.string().trim().max(20).nullable(),
+           layout: z.object({ col: z.number().int().min(1), row: z.number().int().min(1), colSpan: z.number().int().min(1), rowSpan: z.number().int().min(1) }),
+           status: z.enum(INSTALLATION_STATUSES),
+           nextTask: z.string().max(200).nullable(),
+@@ -176,12 +319,12 @@ export const staffRoutes = new Hono<AppEnv>()
+     const { cleanedNow, ...rest } = b;
+     const u = await prisma.installation.update({
+       where: { id: i.id },
+-      data: { ...rest, ...(cleanedNow ? { lastCleanedAt: new Date() } : {}) },
++      data: { ...rest, ...(cleanedNow ? { lastCleanedAt: new Date(), lastCleanedBy: user.id } : {}) },
+     });
+     if (b.status && b.status !== i.status) {
+       await audit(c, user, { action: 'STATUS_CHANGE', entity: 'Installation', entityId: i.id, summary: `${i.name}: ${i.status} → ${b.status}` });
+     }
+-    return c.json(installationDTO(u));
++    return c.json(installationDTO(u, await namesOf([u.lastCleanedBy])));
+   })
+ 
+   // ------------------------------------------------------------ incidencias
+@@ -192,7 +335,8 @@ export const staffRoutes = new Hono<AppEnv>()
+       orderBy: { createdAt: 'desc' },
+       take: 500,
+     });
+-    return c.json(rows.map(incidentDTO));
++    const names = await namesOf(rows.flatMap((i) => [i.reportedBy, i.resolvedBy]));
++    return c.json(rows.map((i) => incidentDTO(i, names)));
+   })
+   .post('/incidents', async (c) => {
+     const user = c.get('user');
+@@ -203,25 +347,46 @@ export const staffRoutes = new Hono<AppEnv>()
+         priority: z.enum(INCIDENT_PRIORITIES),
+         sector: z.string().trim().min(1).max(120),
+         installationId: z.string().uuid().optional(),
+-        imageUrl: z.string().url().optional(),
++        imageUrl: IMAGE.optional(),
++        notes: z.string().max(1000).optional(),
++        /** Estado en que queda el sector al reportar (actualiza la instalación). */
++        installationStatus: z.enum(INSTALLATION_STATUSES).optional(),
+       }),
+     );
+-    const i = await prisma.incident.create({ data: { ...b, reportedBy: user.id } });
++    const { installationStatus, ...data } = b;
++    if (installationStatus && !b.installationId) throw new AppError('VALIDATION_ERROR', 'Para cambiar el estado del sector, elegí el sector.');
++    const i = await prisma.$transaction(async (tx) => {
++      const created = await tx.incident.create({ data: { ...data, reportedBy: user.id } });
++      if (installationStatus && b.installationId) await tx.installation.update({ where: { id: b.installationId }, data: { status: installationStatus } });
++      return created;
++    });
+     await audit(c, user, { action: 'CREATE', entity: 'Incident', entityId: i.id, summary: `Incidencia (${b.priority}) en ${b.sector}` });
+-    return c.json(incidentDTO(i), 201);
++    return c.json(incidentDTO(i, await namesOf([i.reportedBy])), 201);
+   })
+   .patch('/incidents/:id', async (c) => {
+     const user = c.get('user');
+-    const b = await parseBody(c, z.object({ status: z.enum(INCIDENT_STATUSES) }));
++    const b = await parseBody(
++      c,
++      z.object({
++        status: z.enum(INCIDENT_STATUSES),
++        notes: z.string().max(1000).optional(),
++        /** Al resolver: deja el sector como operativo. */
++        restoreInstallation: z.boolean().optional(),
++      }),
++    );
+     const i = await prisma.incident.findUnique({ where: { id: c.req.param('id') } });
+     if (!i) throw notFound('No existe la incidencia.');
+     const resolved = b.status === 'RESOLVED';
+-    const u = await prisma.incident.update({
+-      where: { id: i.id },
+-      data: { status: b.status, resolvedAt: resolved ? new Date() : null, resolvedBy: resolved ? user.id : null },
++    const u = await prisma.$transaction(async (tx) => {
++      const updated = await tx.incident.update({
++        where: { id: i.id },
++        data: { status: b.status, ...(b.notes !== undefined ? { notes: b.notes } : {}), resolvedAt: resolved ? new Date() : null, resolvedBy: resolved ? user.id : null },
++      });
++      if (resolved && b.restoreInstallation && i.installationId) await tx.installation.update({ where: { id: i.installationId }, data: { status: 'OK' } });
++      return updated;
+     });
+     await audit(c, user, { action: 'STATUS_CHANGE', entity: 'Incident', entityId: i.id, summary: `Incidencia ${i.status} → ${b.status}` });
+-    return c.json(incidentDTO(u));
++    return c.json(incidentDTO(u, await namesOf([u.reportedBy, u.resolvedBy])));
+   })
+ 
+   // ---------------------------------------------------------- mantenimiento
+@@ -251,4 +416,238 @@ export const staffRoutes = new Hono<AppEnv>()
+     );
+     const m = await prisma.maintenanceLog.create({ data: { ...b, date: parseDate(b.date), recordedBy: user.id } });
+     return c.json({ id: m.id }, 201);
++  })
++
++  // ----------------------------------------------------------------- turnos
++  // El cronograma lo cargan Directivos/Administración; los auxiliares lo consultan
++  // y piden cambios entre ellos. Al aceptar un cambio se intercambian los titulares.
++  .get('/people', async (c) => {
++    const rows = await prisma.user.findMany({
++      where: { roles: { has: 'STAFF' }, status: 'ACTIVE' },
++      select: { id: true, firstName: true, lastName: true },
++      orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }],
++    });
++    const out: StaffMember[] = rows;
++    return c.json(out);
++  })
++  .get('/shifts', async (c) => {
++    const q = c.req.query();
++    const rows = await prisma.staffShift.findMany({
++      where: {
++        ...(q.userId ? { userId: q.userId } : {}),
++        ...(q.from || q.to ? { date: { ...(q.from ? { gte: parseDate(q.from, 'from') } : {}), ...(q.to ? { lte: parseDate(q.to, 'to') } : {}) } } : {}),
++      },
++      include: { user: true },
++      orderBy: [{ date: 'asc' }, { startTime: 'asc' }],
++      take: 1000,
++    });
++    return c.json(rows.map(shiftDTO));
++  })
++  .post('/shifts', requireRoles(...SHIFT_MANAGERS), async (c) => {
++    const user = c.get('user');
++    const b = await parseBody(c, shiftBody);
++    const staff = await prisma.user.findFirst({ where: { id: b.userId, roles: { has: 'STAFF' } } });
++    if (!staff) throw notFound('No existe esa persona en Auxiliares.');
++    const slot = { date: parseDate(b.date), startTime: b.startTime ?? null, endTime: b.endTime ?? null };
++    checkTimes(slot);
++    if (await overlapping(b.userId, slot)) throw new AppError('CONFLICT', 'Esa persona ya tiene un turno que se superpone ese día.');
++    const s = await prisma.staffShift.create({ data: { ...b, date: slot.date, createdBy: user.id }, include: { user: true } });
++    await audit(c, user, { action: 'CREATE', entity: 'StaffShift', entityId: s.id, summary: `Turno ${b.date} de ${staff.lastName}` });
++    return c.json(shiftDTO(s), 201);
++  })
++  .patch('/shifts/:id', requireRoles(...SHIFT_MANAGERS), async (c) => {
++    const user = c.get('user');
++    const b = await parseBody(c, shiftBody.omit({ userId: true, date: true }).partial());
++    const s = await prisma.staffShift.findUnique({ where: { id: c.req.param('id') } });
++    if (!s) throw notFound('No existe el turno.');
++    const slot = { date: s.date, startTime: b.startTime ?? s.startTime, endTime: b.endTime ?? s.endTime };
++    checkTimes(slot);
++    if (await overlapping(s.userId, slot, [s.id])) throw new AppError('CONFLICT', 'Esa persona ya tiene un turno que se superpone ese día.');
++    const u = await prisma.staffShift.update({ where: { id: s.id }, data: b, include: { user: true } });
++    await audit(c, user, { action: 'UPDATE', entity: 'StaffShift', entityId: s.id, summary: 'Turno modificado' });
++    return c.json(shiftDTO(u));
++  })
++  .delete('/shifts/:id', requireRoles(...SHIFT_MANAGERS), async (c) => {
++    const user = c.get('user');
++    const r = await prisma.staffShift.deleteMany({ where: { id: c.req.param('id') } });
++    if (!r.count) throw notFound('No existe el turno.');
++    await audit(c, user, { action: 'DELETE', entity: 'StaffShift', entityId: c.req.param('id'), summary: 'Turno eliminado' });
++    return c.body(null, 204);
++  })
++
++  // ------------------------------------------------------- cambios de turno
++  .get('/shift-changes', async (c) => {
++    const user = c.get('user');
++    const status = c.req.query('status');
++    const rows = await prisma.shiftChangeRequest.findMany({
++      where: {
++        // Auxiliar: solo los que pidió o los que le pidieron. Directivos ven todos.
++        ...(isManagement(user) ? {} : { OR: [{ requesterId: user.id }, { colleagueId: user.id }] }),
++        ...(status && (SHIFT_CHANGE_STATUSES as readonly string[]).includes(status) ? { status: status as never } : {}),
++      },
++      include: changeInclude,
++      orderBy: { createdAt: 'desc' },
++      take: 500,
++    });
++    return c.json(rows.map(changeDTO));
++  })
++  .post('/shift-changes', requireRoles('STAFF'), async (c) => {
++    const user = c.get('user');
++    const b = await parseBody(
++      c,
++      z.object({
++        requesterShiftId: z.string().uuid(),
++        colleagueShiftId: z.string().uuid(),
++        reason: z.string().trim().max(500).optional(),
++      }),
++    );
++    const [mine, theirs] = await Promise.all([
++      prisma.staffShift.findUnique({ where: { id: b.requesterShiftId } }),
++      prisma.staffShift.findUnique({ where: { id: b.colleagueShiftId } }),
++    ]);
++    if (!mine || mine.userId !== user.id) throw notFound('No existe ese turno tuyo.');
++    if (!theirs) throw notFound('No existe el turno de tu compañero/a.');
++    if (theirs.userId === user.id) throw new AppError('VALIDATION_ERROR', 'Elegí un turno de otra persona.');
++    await checkSwap(mine, theirs);
++    const open = await prisma.shiftChangeRequest.findFirst({
++      where: { status: 'PENDING', OR: [{ requesterShiftId: { in: [mine.id, theirs.id] } }, { colleagueShiftId: { in: [mine.id, theirs.id] } }] },
++    });
++    if (open) throw new AppError('CONFLICT', 'Ya hay un pedido pendiente para alguno de esos turnos.');
++    const r = await prisma.shiftChangeRequest.create({
++      data: { requesterId: user.id, colleagueId: theirs.userId, requesterShiftId: mine.id, colleagueShiftId: theirs.id, reason: b.reason },
++      include: changeInclude,
++    });
++    await notify([theirs.userId], {
++      type: 'GENERAL',
++      text: `${user.firstName} ${user.lastName} te pidió un cambio de turno`,
++      details: b.reason,
++      link: '/staff/shift-changes',
++    });
++    return c.json(changeDTO(r), 201);
++  })
++  .patch('/shift-changes/:id', async (c) => {
++    const user = c.get('user');
++    const b = await parseBody(c, z.object({ status: z.enum(['ACCEPTED', 'REJECTED', 'CANCELLED']) }));
++    const r = await prisma.shiftChangeRequest.findUnique({ where: { id: c.req.param('id') }, include: changeInclude });
++    if (!r) throw notFound('No existe el pedido.');
++    const mgmt = isManagement(user);
++    if (!mgmt && r.requesterId !== user.id && r.colleagueId !== user.id) throw notFound('No existe el pedido.');
++    if (r.status !== 'PENDING') throw new AppError('CONFLICT', 'Este pedido ya fue resuelto.');
++    // Cancela quien lo pidió; acepta o rechaza el compañero (o Directivos).
++    if (b.status === 'CANCELLED' && r.requesterId !== user.id && !mgmt) throw forbidden('Solo quien lo pidió puede cancelarlo.');
++    if (b.status !== 'CANCELLED' && r.colleagueId !== user.id && !mgmt) throw forbidden('Lo tiene que responder tu compañero/a.');
++    const { requesterShift: a, colleagueShift: o } = r;
++    if (b.status === 'ACCEPTED' && (a.userId !== r.requesterId || o.userId !== r.colleagueId)) {
++      throw new AppError('CONFLICT', 'Los turnos cambiaron desde que se pidió. Pedilo de nuevo.');
++    }
++    if (b.status === 'ACCEPTED') await checkSwap(a, o);
++    const resolved = { status: b.status, respondedAt: new Date(), respondedBy: user.id };
++    await prisma.$transaction(async (tx) => {
++      if (b.status === 'ACCEPTED') {
++        await tx.staffShift.update({ where: { id: a.id }, data: { userId: r.colleagueId, type: 'SWAP' } });
++        await tx.staffShift.update({ where: { id: o.id }, data: { userId: r.requesterId, type: 'SWAP' } });
++      }
++      await tx.shiftChangeRequest.update({ where: { id: r.id }, data: resolved });
++    });
++    if (b.status !== 'CANCELLED') {
++      await notify([r.requesterId], {
++        type: 'GENERAL',
++        text: b.status === 'ACCEPTED' ? 'Aceptaron tu cambio de turno' : 'Rechazaron tu cambio de turno',
++        link: '/staff/shift-changes',
++      });
++    }
++    await audit(c, user, {
++      action: 'STATUS_CHANGE',
++      entity: 'ShiftChangeRequest',
++      entityId: r.id,
++      summary: `Cambio de turno: ${b.status}`,
++      previousValue: { status: r.status },
++      newValue: { status: b.status },
++    });
++    const updated = await prisma.shiftChangeRequest.findUniqueOrThrow({ where: { id: r.id }, include: changeInclude });
++    return c.json(changeDTO(updated));
++  })
++
++  // ------------------------------------------- ausencias del personal
++  // El auxiliar pide; Directivos/Administración aprueban o rechazan.
++  .get('/absences', async (c) => {
++    const user = c.get('user');
++    const status = c.req.query('status');
++    const rows = await prisma.staffAbsence.findMany({
++      where: {
++        ...(isManagement(user) ? {} : { userId: user.id }),
++        ...(status && (JUSTIFICATION_STATUSES as readonly string[]).includes(status) ? { status: status as never } : {}),
++      },
++      include: { user: true },
++      orderBy: { createdAt: 'desc' },
++      take: 500,
++    });
++    return c.json(rows.map(absenceDTO));
++  })
++  .post('/absences', requireRoles('STAFF'), async (c) => {
++    const user = c.get('user');
++    const b = await parseBody(
++      c,
++      z.object({
++        fromDate: z.string(),
++        toDate: z.string().optional(),
++        reason: z.enum(STAFF_ABSENCE_REASONS),
++        notes: z.string().trim().min(3, 'Contá el detalle.').max(1000),
++        documentName: z.string().trim().max(200).optional(),
++        documentUrl: z.string().url().max(2000).optional(),
++      }),
++    );
++    const from = parseDate(b.fromDate, 'fromDate');
++    const to = b.toDate ? parseDate(b.toDate, 'toDate') : from;
++    if (to < from) throw new AppError('VALIDATION_ERROR', 'La fecha "hasta" es anterior a "desde".', [{ field: 'toDate', message: 'Anterior a "desde".' }]);
++    const overlapping = await prisma.staffAbsence.findFirst({ where: { userId: user.id, status: 'PENDING', fromDate: { lte: to }, toDate: { gte: from } } });
++    if (overlapping) throw new AppError('CONFLICT', 'Ya tenés un pedido en revisión para esas fechas.');
++    const a = await prisma.staffAbsence.create({
++      data: { userId: user.id, fromDate: from, toDate: to, reason: b.reason, notes: b.notes, documentName: b.documentName, documentUrl: b.documentUrl },
++      include: { user: true },
++    });
++    const managers = await prisma.user.findMany({ where: { roles: { hasSome: ['DIRECTOR', 'ADMINISTRATIVE'] }, status: 'ACTIVE' }, select: { id: true } });
++    await notify(managers.map((m) => m.id), {
++      type: 'JUSTIFICATION_REQUEST',
++      text: `${user.firstName} ${user.lastName} (Auxiliares) pidió justificar una ausencia`,
++      details: `${toISODate(from)}${to > from ? ` a ${toISODate(to)}` : ''}`,
++      link: '/staff/absences',
++    });
++    await audit(c, user, { action: 'CREATE', entity: 'StaffAbsence', entityId: a.id, summary: `Ausencia ${toISODate(from)} a ${toISODate(to)}` });
++    return c.json(absenceDTO(a), 201);
++  })
++  .patch('/absences/:id', requireRoles(...SHIFT_MANAGERS), async (c) => {
++    const user = c.get('user');
++    const b = await parseBody(c, z.object({ status: z.enum(['APPROVED', 'REJECTED']), reviewNotes: z.string().max(1000).optional() }));
++    const a = await prisma.staffAbsence.findUnique({ where: { id: c.req.param('id') } });
++    if (!a) throw notFound('No existe el pedido.');
++    if (a.status !== 'PENDING') throw new AppError('CONFLICT', 'Este pedido ya fue resuelto.');
++    const u = await prisma.staffAbsence.update({
++      where: { id: a.id },
++      data: { status: b.status, reviewNotes: b.reviewNotes, reviewedBy: user.id, reviewedAt: new Date() },
++      include: { user: true },
++    });
++    await notify([a.userId], {
++      type: b.status === 'APPROVED' ? 'JUSTIFICATION_APPROVED' : 'JUSTIFICATION_REJECTED',
++      text: b.status === 'APPROVED' ? 'Aprobaron tu justificación de ausencia' : 'Rechazaron tu justificación de ausencia',
++      details: b.reviewNotes,
++      link: '/staff/absences',
++    });
++    await audit(c, user, {
++      action: 'STATUS_CHANGE',
++      entity: 'StaffAbsence',
++      entityId: a.id,
++      summary: `Ausencia ${b.status === 'APPROVED' ? 'aprobada' : 'rechazada'}`,
++      previousValue: { status: a.status },
++      newValue: { status: u.status },
++    });
++    return c.json(absenceDTO(u));
++  })
++  .delete('/absences/:id', requireRoles('STAFF'), async (c) => {
++    const user = c.get('user');
++    const a = await prisma.staffAbsence.findUnique({ where: { id: c.req.param('id') } });
++    if (!a || a.userId !== user.id) throw notFound('No existe el pedido.');
++    if (a.status !== 'PENDING') throw new AppError('CONFLICT', 'Solo se puede retirar un pedido que sigue en revisión.');
++    await prisma.staffAbsence.delete({ where: { id: a.id } });
++    return c.body(null, 204);
+   });
+diff --git a/backend/src/routes/structure.ts b/backend/src/routes/structure.ts
+index eb48dc5..acc565b 100644
+--- a/backend/src/routes/structure.ts
++++ b/backend/src/routes/structure.ts
+@@ -9,10 +9,12 @@
+ //   GET/POST/PATCH /structure/students[/:id]   GET/PUT /structure/students/:id/sensitive
+ //   GET/POST/PATCH /structure/teachers[/:id]
+ //   GET /structure/enrollments?commissionId|studentId   POST /structure/enrollments   PATCH|DELETE /structure/enrollments/:id
++//   GET /structure/corrections?status&studentId   PATCH /structure/corrections/:id   (pedidos de corrección del alumno)
+ import { Hono } from 'hono';
+ import { z } from 'zod';
+ import {
+   ACADEMIC_PERIODS,
++  CORRECTION_STATUSES,
+   CYCLE_STATUSES,
+   ENROLLMENT_CONDITIONS,
+   SHIFTS,
+@@ -24,9 +26,10 @@ import {
+ import { audit } from '../audit.js';
+ import { requireAuth, requireRoles, type AppEnv } from '../auth/middleware.js';
+ import { prisma } from '../db.js';
+-import { commissionInclude, commissionView, studentDTO, teacherDTO } from '../dto.js';
++import { commissionInclude, commissionView, correctionDTO, studentDTO, teacherDTO } from '../dto.js';
+ import { AppError, forbidden, notFound } from '../errors.js';
+ import type { Prisma } from '../generated/prisma/client.js';
++import { notify } from '../notify.js';
+ import { activeCycle, commissionScope, hasRole, isManagement, parseDate, toISO, toISODate } from '../scope.js';
+ import { parseBody } from '../validation.js';
+ 
+@@ -361,6 +364,12 @@ export const structureRoutes = new Hono<AppEnv>()
+       if (!ok) throw notFound();
+     }
+     const s = await prisma.studentSensitiveData.findUnique({ where: { studentId: id } });
++    await audit(c, user, {
++      action: 'SENSITIVE_DATA_READ',
++      entity: 'StudentSensitiveData',
++      entityId: id,
++      summary: 'Datos sensibles consultados',
++    });
+     const out: StudentSensitiveData = {
+       studentId: id,
+       birthDate: s?.birthDate ? toISODate(s.birthDate) : undefined,
+@@ -502,4 +511,47 @@ export const structureRoutes = new Hono<AppEnv>()
+     await prisma.enrollment.delete({ where: { id: e.id } });
+     await audit(c, c.get('user'), { action: 'DELETE', entity: 'Enrollment', entityId: e.id, summary: 'Inscripción eliminada' });
+     return c.body(null, 204);
++  })
++
++  // ------------------------------------------- pedidos de corrección de ficha
++  // Los pide el alumno (POST /me/corrections). Aprobar no cambia la ficha: se edita aparte.
++  .get('/corrections', requireRoles(...STUDENT_MANAGERS), async (c) => {
++    const q = c.req.query();
++    const rows = await prisma.dataCorrectionRequest.findMany({
++      where: {
++        ...(q.status && (CORRECTION_STATUSES as readonly string[]).includes(q.status) ? { status: q.status as never } : {}),
++        ...(q.studentId ? { studentId: q.studentId } : {}),
++      },
++      include: { student: true },
++      orderBy: { createdAt: 'desc' },
++      take: 500,
++    });
++    return c.json(rows.map(correctionDTO));
++  })
++  .patch('/corrections/:id', requireRoles(...STUDENT_MANAGERS), async (c) => {
++    const user = c.get('user');
++    const b = await parseBody(c, z.object({ status: z.enum(['APPROVED', 'REJECTED']), reviewNotes: z.string().max(1000).optional() }));
++    const r = await prisma.dataCorrectionRequest.findUnique({ where: { id: c.req.param('id') }, include: { student: true } });
++    if (!r) throw notFound('No existe el pedido.');
++    if (r.status !== 'PENDING') throw new AppError('CONFLICT', 'Este pedido ya fue resuelto.');
++    const u = await prisma.dataCorrectionRequest.update({
++      where: { id: r.id },
++      data: { status: b.status, reviewNotes: b.reviewNotes, reviewedBy: user.id, reviewedAt: new Date() },
++      include: { student: true },
++    });
++    await notify([r.student.userId], {
++      type: 'GENERAL',
++      text: b.status === 'APPROVED' ? 'Aprobaron tu pedido de corrección de datos' : 'Rechazaron tu pedido de corrección de datos',
++      details: b.reviewNotes,
++      link: '/me/corrections',
++    });
++    await audit(c, user, {
++      action: 'STATUS_CHANGE',
++      entity: 'DataCorrectionRequest',
++      entityId: r.id,
++      summary: `Pedido de corrección ${b.status === 'APPROVED' ? 'aprobado' : 'rechazado'}`,
++      previousValue: { status: r.status },
++      newValue: { status: u.status },
++    });
++    return c.json(correctionDTO(u));
+   });
+diff --git a/backend/src/summary.ts b/backend/src/summary.ts
+index b954a19..3112040 100644
+--- a/backend/src/summary.ts
++++ b/backend/src/summary.ts
+@@ -4,6 +4,10 @@
+ import type { AttendanceSummary } from '../../shared/types.js';
+ import { prisma } from './db.js';
+ 
++/** ¿La justificación cubre esa clase? Sin materia, cubre todas las materias de esas fechas. */
++export const covers = (j: { fromDate: Date; toDate: Date; subjectId: string | null }, date: Date, subjectId: string) =>
++  j.fromDate <= date && j.toDate >= date && (!j.subjectId || j.subjectId === subjectId);
++
+ export async function attendanceSummary(studentId: string, commissionId?: string): Promise<AttendanceSummary> {
+   const settings = await prisma.institutionSettings.findUnique({ where: { id: 1 } });
+   const min = settings?.minAttendancePercent ?? 75;
+@@ -12,18 +16,18 @@ export async function attendanceSummary(studentId: string, commissionId?: string
+ 
+   const records = await prisma.attendanceRecord.findMany({
+     where: { studentId, ...(commissionId ? { session: { commissionId } } : {}) },
+-    include: { session: true },
++    include: { session: { include: { commission: { select: { subjectId: true } } } } },
+   });
+   const justs = records.length
+     ? await prisma.justification.findMany({ where: { studentId, status: 'APPROVED' } })
+     : [];
+-  const isJustified = (d: Date) => justs.some((j) => j.fromDate <= d && j.toDate >= d);
++  const isJustified = (d: Date, subjectId: string) => justs.some((j) => covers(j, d, subjectId));
+ 
+   let present = 0, absent = 0, late = 0, justified = 0;
+   for (const r of records) {
+     if (r.status === 'PRESENT') present++;
+     else if (r.status === 'LATE') late++;
+-    else if (isJustified(r.session.date)) justified++;
++    else if (isJustified(r.session.date, r.session.commission.subjectId)) justified++;
+     else absent++;
+   }
+   const counted = records.length - justified;
+diff --git a/backend/test/README.md b/backend/test/README.md
+index ff0df93..a1fff38 100644
+--- a/backend/test/README.md
++++ b/backend/test/README.md
+@@ -19,8 +19,8 @@ npm --prefix backend run test:integration
+ npm run typecheck
+ ```
+ 
+-PG17: cluster backend/.local-test/pg, puerto 5452, solo 127.0.0.1, base qa_i26.
+-Arranque: pg_ctl -D backend/.local-test/pg -l backend/.local-test/postgres.log -o "-p 5452 -h 127.0.0.1" start.
++PG17: cluster descartable backend/.local-test/pgdata, puerto 5452, solo 127.0.0.1, base qa_i26.
++Arranque: pg_ctl -D backend/.local-test/pgdata -l backend/.local-test/postgres.log -o "-p 5452 -h 127.0.0.1" start.
+ Claves aleatorias y manifest ignorados por Git. No utilizar este cluster con datos reales (autenticación local trust).
+ Las fixtures hacen upsert o buscan el prefijo; no borran datos. El test crea justificaciones en cada ejecución (persisten para inspección), y elimina únicamente tareas/eventos creados en esa ejecución.
+ 
+@@ -34,6 +34,10 @@ Incidente: primer migrate deploy tomó DIRECT_DATABASE_URL del .env y mostró Ne
+ Ahora se comprueba en los cinco escenarios: /me/summary y /me/subjects muestran 100 → 0 con ausencia, permanecen iguales con justificación pendiente, vuelven a 100 con aprobación. Se elige una fecha posterior a las justificaciones existentes para poder repetir sin borrar historia.
+ Alta adicional íntegra por HTTP: Director crea alumno QA en carrera/plan QA existente, crea cuenta vinculada, alumno cambia clave inicial, Director inscribe, profesor registra presente y alumno lo relee. Se conserva como accounts.httpStudent y httpScenario en el manifest. Cada ejecución deja un alumno HTTP nuevo para inspección.
+ 
++## QA de padrón y auditoría sensible — 2026-10-30
++
++`npm run test:integration` también confirma el padrón institucional para PRECEPTOR, consulta de datos sensibles con evento `SENSITIVE_DATA_READ`, y respuestas 403 para Docente al leer datos sensibles y para Preceptoría al escribirlos o vincular cuentas. El registro no contiene los valores de domicilio/salud. Las migraciones se aplicaron a `127.0.0.1:5452/qa_i26`, nunca a Neon.
++
+ API manual: npx tsx backend/test/local-api.ts (desde raíz). No carga dotenv; elimina variables heredadas salvo las necesarias de Windows y configura únicamente PostgreSQL 127.0.0.1:5452/qa_i26, API 127.0.0.1:4052, NODE_ENV=test. Sin migraciones en este comando.
+ Roles para revisión del padre: accounts.director, teacher1, student1, preceptor, staff, centro (seis perfiles disponibles); accounts.httpStudent corresponde al alta HTTP más reciente. Correos y contraseñas exclusivamente en backend/.local-test/manifest.json. Para UI usar proxy /api hacia http://127.0.0.1:4052, sin modificar apps en esta tarea.
+ Evidencia repetida: backend/.local-test/integration-result.txt; 5 porcentajes OK, 5 recorridos OK, 5 CRUD OK y alta HTTP OK. Typecheck OK. Salud local OK. No se capturaron pantallas.
+@@ -94,3 +98,23 @@ No se admite URL pública ni redirecciones. También se admite 127.0.0.1:4053. L
+ Verificación local posterior al cambio: fixtures OK, cinco porcentajes 100 → 0 → 100, cinco recorridos y cinco CRUD OK, alta HTTP completa OK, typecheck OK. Porcentaje y alta HTTP están terminados, no pendientes. Sigue pendiente exclusivamente ejecutar esta batería en modo configurado y revisar interfaces (padre).
+ 
+ Corrección dashboard alumno: fixtures incluyen institutionSettings id1 igual que seed, con update {}. No sobrescribe configuración existente. Verificación inicial GET /records/settings como alumno incluida y aprobada en local. Volver a cargar fixtures locales corrige el error de configuración institucional sin reiniciar la API. Este cambio no se ejecutó contra la base configurada/remota.
++
++## Paneles Alumno/Preceptoría/Auxiliares — 2026-11-01
++
++`backend/test/paneles-flow.mjs` prueba lo agregado por la migración `20261101182015_paneles_alumno_preceptoria_auxiliares`: comunicados leídos por usuario, justificación pedida por el alumno, pedidos de corrección de ficha, asistencia por QR y turnos/cambios de turno de Auxiliares, con sus permisos y errores (400, 403, 404, 409). Usa la misma API QA local y el mismo manifest:
++
++```powershell
++$env:API_TEST_URL='http://127.0.0.1:4052/api/v1'
++$env:TEST_FIXTURE_MANIFEST=(Resolve-Path backend/.local-test/manifest.json).Path
++node backend/test/paneles-flow.mjs
++```
++
++Se puede repetir: elige fechas posteriores a las justificaciones del alumno 1. Deja en la base, para inspección, un comunicado, una justificación, un pedido de corrección y una clase con registro QR por corrida. Crea una cuenta auxiliar QA (`qa-i26-staff2-…@example.invalid`) que queda INACTIVE; los turnos de prueba se borran.
++
++Evidencia 2026-11-01: migración aplicada solo en `127.0.0.1:5452/qa_i26` y `127.0.0.1:5440/i26_dev`; `paneles-flow.mjs` OK en dos corridas seguidas; `integration-flow.mjs` OK completa después del cambio; typecheck OK. Neon sin consultar.
++
++Actualización 2026-11-01 (tarde): la migración `20261101184446_turnos_sin_superposicion` reemplaza el único `(userId, date)` de `staff_shifts` por un control de superposición en la API. `paneles-flow.mjs` ahora prueba también el cambio mañana↔tarde del mismo día, las altas superpuestas (409) y un horario inválido (400). OK contra `qa_i26`; `integration-flow.mjs` también OK.
++
++## Ecosistema (Centro, Auxiliares y Preceptoría) — 2026-11-01
++
++`backend/test/ecosistema-flow.mjs` prueba la migración `20261101200000_ecosistema_centro_auxiliares_preceptoria`. Se corre igual que `paneles-flow.mjs` (misma API QA y mismo manifest). Deja datos `QA-I26` para inspección: un sector, un reclamo, un tema oculto, una ausencia aprobada, una clase con una corrección y una justificación por materia. Evidencia 2026-11-01: OK, y las otras dos baterías también OK.
+diff --git a/backend/test/ecosistema-flow.mjs b/backend/test/ecosistema-flow.mjs
+new file mode 100644
+index 0000000..40838bf
+--- /dev/null
++++ b/backend/test/ecosistema-flow.mjs
+@@ -0,0 +1,159 @@
++// Prueba HTTP de lo agregado para los paneles nuevos del ecosistema (Centro, Auxiliares y Preceptoría),
++// migración 20261101200000_ecosistema_centro_auxiliares_preceptoria.
++// Solo contra la API QA local (127.0.0.1:4052 → PostgreSQL 127.0.0.1:5452/qa_i26). Ver test/README.md.
++import assert from 'node:assert/strict';
++import { readFile } from 'node:fs/promises';
++import { randomBytes } from 'node:crypto';
++
++const base = new URL(process.env.API_TEST_URL);
++const m = JSON.parse(await readFile(process.env.TEST_FIXTURE_MANIFEST, 'utf8'));
++assert.equal(base.hostname, '127.0.0.1');
++assert.equal(base.port, '4052');
++assert.equal(m.database, '127.0.0.1:5452/qa_i26');
++
++async function login(email, password, label) {
++  let cookie = '';
++  async function req(path, method = 'GET', body, status = 200) {
++    const r = await fetch(`${base.href.replace(/\/$/, '')}${path}`, {
++      method,
++      redirect: 'error',
++      headers: { 'content-type': 'application/json', cookie },
++      body: body === undefined ? undefined : JSON.stringify(body),
++    });
++    const text = await r.text();
++    assert.equal(r.status, status, `${label} ${method} ${path}: HTTP ${r.status} ${text.slice(0, 200)}`);
++    if (r.headers.get('set-cookie')) cookie = r.headers.get('set-cookie').split(';')[0];
++    return text ? JSON.parse(text) : null;
++  }
++  await req('/auth/login', 'POST', { email, password });
++  return req;
++}
++const client = (key) => login(m.accounts[key].email, m.accounts[key].password, key);
++const [d, t, a, a2, staff, centro] = await Promise.all(['director', 'teacher1', 'student1', 'student2', 'staff', 'centro'].map(client));
++const s1 = m.scenarios.find((s) => s.index === 1);
++const run = randomBytes(3).toString('hex');
++const today = new Date().toISOString().slice(0, 10);
++
++// ------------------------------------------------------------------- Centro
++const ev = await centro('/centro/events', 'POST', {
++  title: `QA-I26 cupo ${run}`, date: today, time: '18:00', endTime: '20:00', description: 'Evento de prueba', type: 'MEETING', organizer: 'QA', capacity: 1,
++}, 201);
++await a(`/centro/events/${ev.id}/join`, 'POST', {});
++await a(`/centro/events/${ev.id}/join`, 'POST', {}); // repetir no ocupa otro lugar
++await a2(`/centro/events/${ev.id}/join`, 'POST', {}, 409);
++const evRow = (await a('/centro/events')).find((e) => e.id === ev.id);
++assert.deepEqual([evRow.capacity, evRow.endTime, evRow.participantCount, evRow.joined], [1, '20:00', 1, true]);
++const participants = await centro(`/centro/events/${ev.id}/participants`);
++assert.equal(participants.length, 1);
++assert.match(participants[0].email, /@/);
++await centro(`/centro/events/${ev.id}`, 'DELETE', undefined, 204);
++
++const draft = await centro('/centro/announcements', 'POST', {
++  title: `QA-I26 borrador ${run}`, content: 'Borrador', draft: true, attachments: [{ name: 'Reglamento', url: 'https://example.invalid/r.pdf', kind: 'pdf' }],
++}, 201);
++const future = await centro('/centro/announcements', 'POST', { title: `QA-I26 programado ${run}`, content: 'Programado', publishDate: '2099-01-01' }, 201);
++const visibleToStudent = (await a('/centro/announcements')).map((x) => x.id);
++assert.ok(!visibleToStudent.includes(draft.id) && !visibleToStudent.includes(future.id), 'el alumno no ve borradores ni programados');
++const forRep = (await centro('/centro/announcements')).find((x) => x.id === draft.id);
++assert.equal(forRep.attachments[0].kind, 'pdf');
++await centro(`/centro/announcements/${draft.id}`, 'PATCH', { draft: false });
++assert.ok((await a('/centro/announcements')).some((x) => x.id === draft.id), 'publicado, el alumno lo ve');
++for (const id of [draft.id, future.id]) await centro(`/centro/announcements/${id}`, 'DELETE', undefined, 204);
++
++const thread = await a('/centro/threads', 'POST', { title: `QA-I26 tema ${run}`, content: 'Contenido', category: 'GENERAL' }, 201);
++await a2(`/centro/threads/${thread.id}/report`, 'POST', { reason: 'QA-I26 denuncia' });
++assert.equal((await a('/centro/threads')).find((x) => x.id === thread.id).reported, false, 'la denuncia no se muestra a alumnos');
++assert.equal((await centro('/centro/threads')).find((x) => x.id === thread.id).reported, true);
++await centro(`/centro/threads/${thread.id}`, 'PATCH', { hidden: true, hiddenReason: 'QA-I26', reported: false });
++assert.ok(!(await a('/centro/threads')).some((x) => x.id === thread.id), 'oculto para alumnos');
++await a(`/centro/threads/${thread.id}/replies`, 'GET', undefined, 404);
++await a(`/centro/threads/${thread.id}/report`, 'POST', { reason: 'otra vez' }, 404);
++
++const claim = await a('/centro/claims', 'POST', { category: 'INFRASTRUCTURE', title: `QA-I26 ${run}`, description: 'Reclamo anónimo de prueba', anonymous: true }, 201);
++assert.match(claim.code, /^REC-\d{4}-\d{3,}$/);
++const seenByRep = (await centro('/centro/claims')).find((x) => x.id === claim.id);
++assert.equal(seenByRep.authorName, undefined, 'anónimo: el Centro no ve el autor');
++assert.equal((await a('/centro/claims')).find((x) => x.id === claim.id).authorName !== undefined, true, 'el autor se ve a sí mismo');
++const fwd = await centro(`/centro/claims/${claim.id}`, 'PATCH', { forwardedTo: 'STAFF', forwardNote: 'QA-I26 derivado' });
++assert.deepEqual([fwd.status, fwd.forwardedTo], ['FORWARDED', 'STAFF']);
++const done = await centro(`/centro/claims/${claim.id}`, 'PATCH', { response: 'Resuelto en QA', status: 'RESOLVED' });
++assert.deepEqual(done.history.map((h) => h.type), ['CREATED', 'FORWARDED', 'STATUS', 'RESPONSE']);
++console.log('OK Centro: cupo, inscriptos con email, borradores/programados, denuncia y ocultar, reclamo anónimo con código, derivación e historial');
++
++// --------------------------------------------------------------- Auxiliares
++const inst = await staff('/staff/installations', 'POST', {
++  name: `QA-I26 sector ${run}`, code: `Q${run.slice(0, 4)}`, floor: 'PB', layout: { col: 1, row: 1, colSpan: 1, rowSpan: 1 },
++}, 201);
++const task = await staff('/staff/tasks', 'POST', { date: today, startTime: '08:00', title: `QA-I26 tarea ${run}`, type: 'CLEANING', priority: 'HIGH', installationId: inst.id }, 201);
++assert.deepEqual([task.location, task.priority, task.installationId], [inst.name, 'HIGH', inst.id]);
++const doneTask = await staff(`/staff/tasks/${task.id}`, 'PATCH', { status: 'DONE' });
++assert.ok(doneTask.completedByName, 'muestra quién la completó');
++const cleaned = await staff(`/staff/installations/${inst.id}`, 'PATCH', { cleanedNow: true });
++assert.ok(cleaned.lastCleanedByName && cleaned.code && cleaned.floor === 'PB');
++const inc = await staff('/staff/incidents', 'POST', {
++  description: 'QA-I26 pérdida de agua', priority: 'HIGH', sector: inst.name, installationId: inst.id, installationStatus: 'OUT_OF_SERVICE',
++  imageUrl: 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2w==', notes: 'QA',
++}, 201);
++assert.ok(inc.reportedByName);
++assert.equal((await staff('/staff/installations')).find((x) => x.id === inst.id).status, 'OUT_OF_SERVICE');
++await staff('/staff/incidents', 'POST', { description: 'QA-I26 foto inválida', priority: 'LOW', sector: 'x', imageUrl: 'javascript:alert(1)' }, 400);
++await staff(`/staff/incidents/${inc.id}`, 'PATCH', { status: 'RESOLVED', restoreInstallation: true });
++assert.equal((await staff('/staff/installations')).find((x) => x.id === inst.id).status, 'OK');
++
++const abs = await staff('/staff/absences', 'POST', { fromDate: '2031-03-02', toDate: '2031-03-03', reason: 'SICK_LEAVE', notes: 'QA-I26 licencia', documentName: 'certificado.pdf' }, 201);
++assert.equal(abs.status, 'PENDING');
++await staff('/staff/absences', 'POST', { fromDate: '2031-03-03', reason: 'FAMILY_CARE', notes: 'QA-I26 superpuesta' }, 409);
++await staff(`/staff/absences/${abs.id}`, 'PATCH', { status: 'APPROVED' }, 403);
++await a('/staff/absences', 'GET', undefined, 403);
++assert.ok((await d('/staff/absences?status=PENDING')).some((x) => x.id === abs.id), 'Dirección ve las pendientes');
++await d(`/staff/absences/${abs.id}`, 'PATCH', { status: 'APPROVED', reviewNotes: 'QA' });
++await d(`/staff/absences/${abs.id}`, 'PATCH', { status: 'REJECTED' }, 409);
++await staff(`/staff/absences/${abs.id}`, 'DELETE', undefined, 409); // ya resuelta
++assert.equal((await staff('/staff/absences')).find((x) => x.id === abs.id).status, 'APPROVED');
++await staff(`/staff/tasks/${task.id}`, 'DELETE', undefined, 204);
++console.log('OK Auxiliares: tarea con sector y prioridad, nombres, limpieza, incidencia que cambia y restaura el sector, foto validada, ausencias del personal');
++
++// --------------------------------------------------------------- Preceptoría
++const subject = (await a('/me/subjects')).find((x) => x.commission.id === s1.commissionId);
++const subjectId = subject.commission.subjectId;
++assert.ok(subjectId);
++const bulk = await t(`/attendance/summary/bulk?commissionId=${s1.commissionId}`);
++assert.ok(bulk.some((x) => x.studentId === s1.studentId && typeof x.percentage === 'number'), 'resumen masivo de la comisión');
++await t('/attendance/summary/bulk', 'GET', undefined, 400);
++
++// Fecha libre posterior a las justificaciones existentes.
++let day = new Date('2032-01-01T00:00:00Z');
++for (const j of await a('/me/justifications')) { const end = new Date(j.toDate); if (end >= day) day = new Date(end.getTime() + 86400000); }
++const date = day.toISOString().slice(0, 10);
++
++const session = await d(`/attendance/commissions/${s1.commissionId}/sessions`, 'POST', { date, topic: `QA-I26 corrección ${run}` });
++await t(`/attendance/sessions/${session.id}`, 'PUT', { records: [{ studentId: s1.studentId, status: 'PRESENT' }] });
++await t(`/attendance/sessions/${session.id}`, 'PUT', { records: [{ studentId: s1.studentId, status: 'ABSENT', notes: 'QA-I26 corregido' }] });
++const changes = await t(`/attendance/audit?commissionId=${s1.commissionId}`);
++const change = changes.find((x) => x.studentId === s1.studentId && x.date === date);
++assert.deepEqual([change?.previousStatus, change?.newStatus, change?.notes], ['PRESENT', 'ABSENT', 'QA-I26 corregido']);
++
++const before = await a(`/me/summary?commissionId=${s1.commissionId}`);
++await a('/me/justifications', 'POST', { fromDate: date, toDate: date, reason: 'QA-I26 otra materia', subjectId: '00000000-0000-4000-8000-000000000000' }, 400);
++const j = await a('/me/justifications', 'POST', { fromDate: date, toDate: date, reason: `QA-I26 por materia ${run}`, subjectId, documentType: 'MEDICAL', documentName: 'certificado.pdf' }, 201);
++const listed = (await t(`/attendance/justifications?studentId=${s1.studentId}`)).find((x) => x.id === j.id);
++assert.deepEqual([listed.subjectId, listed.documentType, listed.documentName], [subjectId, 'MEDICAL', 'certificado.pdf']);
++assert.ok(listed.subjectName);
++await d(`/attendance/justifications/${j.id}`, 'PATCH', { status: 'APPROVED' });
++await d(`/attendance/justifications/${j.id}`, 'PATCH', { status: 'REJECTED' }, 409);
++const after = await a(`/me/summary?commissionId=${s1.commissionId}`);
++assert.equal(after.justifiedAbsenceCount, before.justifiedAbsenceCount + 1, 'la justificación por materia cubre la falta de esa materia');
++assert.ok((await a(`/me/attendance?commissionId=${s1.commissionId}`)).some((r) => r.date === date && r.justified));
++
++const notice = await d('/records/notices', 'POST', { title: `QA-I26 propio ${run}`, content: 'Comunicado de prueba', category: 'ACADEMIC', audience: { roles: ['TEACHER'] }, publish: true }, 201);
++await d(`/records/notices/${notice.id}`, 'PATCH', { status: 'ARCHIVED' });
++assert.ok(!(await d('/records/notices')).some((x) => x.id === notice.id), 'archivado no aparece en el listado común');
++assert.ok((await d('/records/notices?mine=1')).some((x) => x.id === notice.id), 'mine=1 trae los propios archivados');
++
++const thread2 = await a('/social/forum', 'POST', { title: `QA-I26 consulta ${run}`, content: 'Contenido de prueba', channel: 'QUESTIONS' }, 201);
++assert.equal(thread2.channel, 'QUESTIONS');
++assert.ok((await a('/social/forum?channel=QUESTIONS')).some((x) => x.id === thread2.id));
++assert.ok(!(await a('/social/forum?channel=PROPOSALS')).some((x) => x.id === thread2.id));
++console.log('OK Preceptoría: resumen masivo, historial de correcciones, justificación por materia con comprobante, comunicados propios, canales del foro');
++
++console.log(`Ecosistema 2026-11-01: todas las comprobaciones OK (corrida ${run})`);
+diff --git a/backend/test/integration-flow.mjs b/backend/test/integration-flow.mjs
+index da3c0c4..7d86959 100644
+--- a/backend/test/integration-flow.mjs
++++ b/backend/test/integration-flow.mjs
+@@ -119,3 +119,24 @@ for(let i=1;i<=5;i++){
+  await writeFile(process.env.TEST_FIXTURE_MANIFEST,JSON.stringify(m,null,2));
+  console.log('OK alta HTTP director: alumno + cuenta vinculada + cambio contraseña + inscripción + profesor asistencia + alumno /me');
+ }
++// Alcance institucional de Preceptoría y auditoría de consultas sensibles.
++{
++ const p=await client('preceptor'),d=await client('director'),t=await client('teacher1');
++ const students=await p('/structure/students');
++ for(const scenario of m.scenarios) assert.ok(students.some(s=>s.id===scenario.studentId),`Preceptor no ve ${scenario.studentId}`);
++ const target=m.scenarios[0].studentId;
++ const sensitive={address:'QA-I26 domicilio descartable',healthNotes:'QA-I26 dato ficticio de prueba'};
++ await d(`/structure/students/${target}/sensitive`,'PUT',sensitive);
++ const read=await p(`/structure/students/${target}/sensitive`);
++ assert.equal(read.address,sensitive.address);assert.equal(read.healthNotes,sensitive.healthNotes);
++ await t(`/structure/students/${target}/sensitive`,'GET',undefined,403);
++ await p(`/structure/students/${target}/sensitive`,'PUT',sensitive,403);
++ await p(`/structure/students/${target}`,'PATCH',{userId:null},403);
++ const audit=await d(`/records/audit?entity=StudentSensitiveData&userId=${m.accounts.preceptor.id}`);
++ const readLog=audit.find(a=>a.entityId===target&&a.action==='SENSITIVE_DATA_READ');
++ assert.ok(readLog,'No se registró la lectura sensible de Preceptoría');
++ assert.equal(readLog.summary,'Datos sensibles consultados');
++ assert.ok(!JSON.stringify(readLog).includes(sensitive.address));
++ assert.ok(!JSON.stringify(readLog).includes(sensitive.healthNotes));
++ console.log('OK padrón global PRECEPTOR; lectura sensible con auditoría; TEACHER denegado; escritura/vínculo sensible restringidos');
++}
+diff --git a/backend/test/paneles-flow.mjs b/backend/test/paneles-flow.mjs
+new file mode 100644
+index 0000000..c49c34c
+--- /dev/null
++++ b/backend/test/paneles-flow.mjs
+@@ -0,0 +1,165 @@
++// Prueba HTTP de lo agregado el 2026-11-01 para los paneles de Alumno, Preceptoría y Auxiliares:
++// comunicados leídos, justificación pedida por el alumno, pedidos de corrección,
++// asistencia por QR y turnos/cambios de turno.
++// Solo contra la API QA local (127.0.0.1:4052 → PostgreSQL 127.0.0.1:5452/qa_i26). Ver test/README.md.
++import assert from 'node:assert/strict';
++import { readFile } from 'node:fs/promises';
++import { randomBytes } from 'node:crypto';
++
++const base = new URL(process.env.API_TEST_URL);
++const m = JSON.parse(await readFile(process.env.TEST_FIXTURE_MANIFEST, 'utf8'));
++assert.equal(base.hostname, '127.0.0.1');
++assert.equal(base.port, '4052');
++assert.equal(m.database, '127.0.0.1:5452/qa_i26');
++assert.equal(m.prefix, 'QA-I26');
++
++async function login(email, password, label) {
++  let cookie = '';
++  async function req(path, method = 'GET', body, status = 200) {
++    const r = await fetch(`${base.href.replace(/\/$/, '')}${path}`, {
++      method,
++      redirect: 'error',
++      headers: { 'content-type': 'application/json', cookie },
++      body: body === undefined ? undefined : JSON.stringify(body),
++    });
++    const text = await r.text();
++    assert.equal(r.status, status, `${label} ${method} ${path}: HTTP ${r.status} ${text.slice(0, 200)}`);
++    if (r.headers.get('set-cookie')) cookie = r.headers.get('set-cookie').split(';')[0];
++    return text ? JSON.parse(text) : null;
++  }
++  await req('/auth/login', 'POST', { email, password });
++  return req;
++}
++const client = (key) => login(m.accounts[key].email, m.accounts[key].password, key);
++
++const [d, p, t, a, a2, staff] = await Promise.all(['director', 'preceptor', 'teacher1', 'student1', 'student2', 'staff'].map(client));
++const s1 = m.scenarios.find((s) => s.index === 1);
++const run = randomBytes(3).toString('hex');
++
++// Fecha libre: posterior a cualquier justificación previa del alumno, para poder repetir la prueba.
++let day = new Date('2031-01-01T00:00:00Z');
++for (const j of await a('/me/justifications')) {
++  const end = new Date(j.toDate);
++  if (end >= day) day = new Date(end.getTime() + 86400000);
++}
++const date = day.toISOString().slice(0, 10);
++
++// ---------------------------------------------------------------- comunicados leídos
++const notice = await d('/records/notices', 'POST', {
++  title: `QA-I26 lectura ${run}`, content: 'Comunicado de prueba', category: 'INSTITUTIONAL', audience: { roles: ['STUDENT'] }, publish: true,
++}, 201);
++let seen = (await a('/records/notices')).find((n) => n.id === notice.id);
++assert.ok(seen && seen.readAt === undefined, 'el comunicado aparece sin leer');
++const read1 = await a(`/records/notices/${notice.id}/read`, 'POST', {});
++const read2 = await a(`/records/notices/${notice.id}/read`, 'POST', {});
++assert.equal(read1.readAt, read2.readAt, 'marcar dos veces conserva la primera fecha');
++seen = (await a('/records/notices')).find((n) => n.id === notice.id);
++assert.equal(seen.readAt, read1.readAt);
++assert.equal((await a2('/records/notices')).find((n) => n.id === notice.id).readAt, undefined, 'la lectura es por usuario');
++await staff(`/records/notices/${notice.id}/read`, 'POST', {}, 404);
++console.log('OK comunicados: leído por usuario, idempotente y oculto para quien no es destinatario');
++
++// ------------------------------------------------- justificación pedida por el alumno
++await a('/me/justifications', 'POST', { fromDate: date, toDate: '2030-01-01', reason: 'QA-I26 fechas invertidas' }, 400);
++const j = await a('/me/justifications', 'POST', { fromDate: date, toDate: date, reason: `QA-I26 pedido del alumno ${run}` }, 201);
++assert.equal(j.status, 'PENDING');
++await a('/me/justifications', 'POST', { fromDate: date, toDate: date, reason: 'QA-I26 superpuesta' }, 409);
++assert.ok((await p(`/attendance/justifications?studentId=${s1.studentId}`)).some((x) => x.id === j.id && x.createdBy !== undefined));
++await p(`/attendance/justifications/${j.id}`, 'PATCH', { status: 'APPROVED' });
++assert.equal((await a('/me/justifications')).find((x) => x.id === j.id).status, 'APPROVED');
++await staff('/me/justifications', 'POST', { fromDate: date, toDate: date, reason: 'QA-I26 sin permiso' }, 403);
++console.log('OK justificación: el alumno la pide, superposición 409, Preceptoría la aprueba');
++
++// --------------------------------------------------------- pedidos de corrección
++const before = await a('/me/student');
++const corr = await a('/me/corrections', 'POST', { field: 'PHONE', proposedValue: `+54 9 0000 ${run}`, reason: 'QA-I26 corrección' }, 201);
++assert.equal(corr.status, 'PENDING');
++assert.equal(corr.currentValue, before.phone ?? undefined, 'el valor actual sale de la ficha');
++await a('/me/corrections', 'POST', { field: 'PHONE', proposedValue: 'otro', reason: 'QA-I26 duplicado' }, 409);
++await t('/structure/corrections', 'GET', undefined, 403);
++assert.ok((await p('/structure/corrections?status=PENDING')).some((x) => x.id === corr.id));
++const done = await p(`/structure/corrections/${corr.id}`, 'PATCH', { status: 'REJECTED', reviewNotes: 'QA-I26' });
++assert.equal(done.status, 'REJECTED');
++await p(`/structure/corrections/${corr.id}`, 'PATCH', { status: 'APPROVED' }, 409);
++assert.equal((await a('/me/corrections')).find((x) => x.id === corr.id).status, 'REJECTED');
++assert.equal((await a('/me/student')).phone, before.phone, 'resolver el pedido no cambia la ficha');
++await staff('/me/corrections', 'GET', undefined, 403);
++console.log('OK corrección: valor actual desde la ficha, duplicado 409, Docente 403, resuelta una sola vez');
++
++// --------------------------------------------------------------- asistencia por QR
++const session = await d(`/attendance/commissions/${s1.commissionId}/sessions`, 'POST', { date, topic: `QA-I26 QR ${run}` });
++const qr1 = await t(`/attendance/sessions/${session.id}/qr`, 'POST', { minutes: 5 }, 201);
++assert.match(qr1.code, /^[A-Z2-9]{5}-[A-Z2-9]{5}$/);
++await a('/me/attendance/qr', 'POST', { code: 'ZZZZZ-ZZZZZ' }, 404);
++await a2('/me/attendance/qr', 'POST', { code: qr1.code }, 404); // no está inscripto en esa comisión
++const tipeado = qr1.code.toLowerCase().replace('-', ' ');
++const ok = await a('/me/attendance/qr', 'POST', { code: tipeado }, 201);
++assert.deepEqual([ok.status, ok.alreadyRegistered, ok.sessionId], ['PRESENT', false, session.id]);
++const again = await a('/me/attendance/qr', 'POST', { code: qr1.code });
++assert.equal(again.alreadyRegistered, true, 'el segundo escaneo no duplica');
++const sheet = await t(`/attendance/sessions/${session.id}`);
++assert.equal(sheet.records.filter((r) => r.studentId === s1.studentId).length, 1);
++assert.ok((await a(`/me/attendance?commissionId=${s1.commissionId}`)).some((r) => r.sessionId === session.id && r.source === 'QR'));
++const qr2 = await t(`/attendance/sessions/${session.id}/qr`, 'POST', {}, 201);
++await a('/me/attendance/qr', 'POST', { code: qr1.code }, 404); // el código anterior quedó anulado
++await t(`/attendance/sessions/${session.id}/qr`, 'DELETE', undefined, 204);
++await a('/me/attendance/qr', 'POST', { code: qr2.code }, 404);
++await a(`/attendance/sessions/${session.id}/qr`, 'POST', {}, 403);
++console.log('OK QR: registra PRESENT con origen QR, sin duplicar; códigos anulados e inscripción validados');
++
++// ------------------------------------------------------------ turnos de Auxiliares
++const email = `qa-i26-staff2-${run}@example.invalid`;
++const created = await d('/users', 'POST', { email, firstName: 'QA-I26', lastName: `Auxiliar ${run}`, roles: ['STAFF'] }, 201);
++const staff2pass = `QA-${randomBytes(9).toString('base64url')}`;
++const staff2first = await login(email, created.temporaryPassword, 'staff2');
++await staff2first('/auth/change-password', 'POST', { currentPassword: created.temporaryPassword, newPassword: staff2pass });
++const staff2 = await login(email, staff2pass, 'staff2');
++const staffMe = await staff('/auth/me');
++const staffId = (staffMe.user ?? staffMe).id;
++const staff2Id = created.user.id;
++assert.ok((await staff('/staff/people')).some((x) => x.id === staff2Id));
++
++const dayA = date;
++const dayB = new Date(day.getTime() + 86400000).toISOString().slice(0, 10);
++const mine = await d('/staff/shifts', 'POST', { userId: staffId, date: dayA, startTime: '07:00', endTime: '13:00' }, 201);
++const theirs = await d('/staff/shifts', 'POST', { userId: staff2Id, date: dayB, startTime: '13:00', endTime: '19:00' }, 201);
++await d('/staff/shifts', 'POST', { userId: staffId, date: dayA }, 409); // sin horario = todo el día: se superpone
++await d('/staff/shifts', 'POST', { userId: staffId, date: dayA, startTime: '12:00', endTime: '14:00' }, 409);
++await d('/staff/shifts', 'POST', { userId: staffId, date: dayA, startTime: '15:00', endTime: '14:00' }, 400);
++await staff('/staff/shifts', 'POST', { userId: staffId, date: dayB }, 403);
++await d('/staff/shifts', 'POST', { userId: s1.studentId, date: dayA }, 404);
++
++const change = await staff('/staff/shift-changes', 'POST', { requesterShiftId: mine.id, colleagueShiftId: theirs.id, reason: 'QA-I26' }, 201);
++assert.equal(change.status, 'PENDING');
++await staff('/staff/shift-changes', 'POST', { requesterShiftId: mine.id, colleagueShiftId: theirs.id }, 409);
++await staff2('/staff/shift-changes', 'POST', { requesterShiftId: mine.id, colleagueShiftId: theirs.id }, 404); // no es su turno
++await staff(`/staff/shift-changes/${change.id}`, 'PATCH', { status: 'ACCEPTED' }, 403); // responde el compañero
++assert.ok((await staff2('/staff/shift-changes?status=PENDING')).some((x) => x.id === change.id));
++const accepted = await staff2(`/staff/shift-changes/${change.id}`, 'PATCH', { status: 'ACCEPTED' });
++assert.equal(accepted.status, 'ACCEPTED');
++const shifts = await staff(`/staff/shifts?from=${dayA}&to=${dayB}`);
++assert.equal(shifts.find((x) => x.id === mine.id).userId, staff2Id, 'el turno A pasó al compañero');
++assert.equal(shifts.find((x) => x.id === theirs.id).userId, staffId, 'el turno B pasó a quien lo pidió');
++assert.ok(shifts.filter((x) => [mine.id, theirs.id].includes(x.id)).every((x) => x.type === 'SWAP'));
++await staff2(`/staff/shift-changes/${change.id}`, 'PATCH', { status: 'REJECTED' }, 409);
++await a('/staff/shifts', 'GET', undefined, 403);
++
++// Mismo día, mañana ↔ tarde (el caso más común): se permite y se intercambia.
++const morning = await d('/staff/shifts', 'POST', { userId: staffId, date: dayA, startTime: '13:00', endTime: '15:00' }, 201); // staff ya no tiene dayA
++const afternoon = await d('/staff/shifts', 'POST', { userId: staff2Id, date: dayA, startTime: '15:00', endTime: '19:00' }, 201); // staff2 tiene dayA 07–13
++const sameDay = await staff('/staff/shift-changes', 'POST', { requesterShiftId: morning.id, colleagueShiftId: afternoon.id }, 201);
++await staff2(`/staff/shift-changes/${sameDay.id}`, 'PATCH', { status: 'ACCEPTED' });
++const dayAShifts = await staff(`/staff/shifts?from=${dayA}&to=${dayA}`);
++assert.equal(dayAShifts.find((x) => x.id === morning.id).userId, staff2Id);
++assert.equal(dayAShifts.find((x) => x.id === afternoon.id).userId, staffId);
++// Un cambio que dejaría turnos superpuestos se rechaza al pedirlo: staff2 ya trabaja dayA 07–13.
++const early = await d('/staff/shifts', 'POST', { userId: staffId, date: dayA, startTime: '08:00', endTime: '10:00' }, 201);
++const clash = await d('/staff/shifts', 'POST', { userId: staff2Id, date: dayB, startTime: '08:00', endTime: '10:00' }, 201);
++await staff2('/staff/shift-changes', 'POST', { requesterShiftId: clash.id, colleagueShiftId: early.id }, 409);
++
++// Limpieza: los turnos de prueba se borran (los pedidos se van en cascada). La cuenta QA queda inactiva.
++for (const id of [mine.id, theirs.id, morning.id, afternoon.id, early.id, clash.id]) await d(`/staff/shifts/${id}`, 'DELETE', undefined, 204);
++await d(`/users/${staff2Id}`, 'PATCH', { status: 'INACTIVE' });
++console.log('OK turnos: alta por Directivos, superposición 409, cambio entre días y mañana↔tarde intercambian titulares, permisos por rol');
++
++console.log(`Paneles 2026-11-01: todas las comprobaciones OK (fecha de prueba ${date}, corrida ${run})`);
+diff --git a/scripts/deploy-api.mjs b/scripts/deploy-api.mjs
+new file mode 100644
+index 0000000..54e565f
+--- /dev/null
++++ b/scripts/deploy-api.mjs
+@@ -0,0 +1,63 @@
++// Arma la carpeta que se publica en Vercel como proyecto de SOLO API (el ecosistema de Julián).
++// No compila las apps: copia api/, backend/ (código, esquema y migraciones) y shared/.
++//
++// Uso (desde la raíz):
++//   node scripts/deploy-api.mjs
++//   cd .deploy/i26-ecosistema-api && vercel deploy --prod
++//
++// Cada publicación aplica las migraciones pendientes en la base del proyecto (Neon conectada
++// desde Vercel, variables DATABASE_URL y DATABASE_URL_UNPOOLED). Para cargar cuentas y datos
++// de ejemplo una vez: vercel deploy --prod --build-env ONLINE_SEED=1 --build-env ONLINE_ACCOUNTS_PASSWORD=...
++//
++// La conexión a la base (DATABASE_URL) se configura en el proyecto de Vercel, nunca acá.
++import { cpSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
++import { join, resolve, sep } from 'node:path';
++
++const root = resolve(import.meta.dirname, '..');
++const out = join(root, '.deploy', 'i26-ecosistema-api');
++
++// Conserva el vínculo con el proyecto de Vercel (.vercel/) entre una publicación y la siguiente.
++for (const entry of ['api', 'backend', 'shared', 'public', 'consolidacion']) rmSync(join(out, entry), { recursive: true, force: true });
++mkdirSync(out, { recursive: true });
++
++const skip = (src) => {
++  const parts = src.split(sep);
++  return !parts.some((p) => ['node_modules', 'generated', '.local-dev', '.local-test', 'test'].includes(p));
++};
++cpSync(join(root, 'api'), join(out, 'api'), { recursive: true });
++cpSync(join(root, 'backend'), join(out, 'backend'), { recursive: true, filter: skip });
++mkdirSync(join(out, 'shared'), { recursive: true });
++for (const f of ['types.ts', 'testUsers.ts']) cpSync(join(root, 'shared', f), join(out, 'shared', f));
++for (const f of ['package.json', 'package-lock.json', 'prisma.config.ts']) cpSync(join(root, f), join(out, f));
++// Datos de ejemplo (backend/src/demo-data.ts los toma de las pantallas rescatadas).
++const legacy = join('consolidacion', 'app', 'src', 'legacy');
++mkdirSync(join(out, legacy), { recursive: true });
++for (const f of ['constants.ts', 'types.ts']) cpSync(join(root, legacy, f), join(out, legacy, f));
++
++mkdirSync(join(out, 'public'), { recursive: true });
++writeFileSync(
++  join(out, 'public', 'index.html'),
++  '<!doctype html><meta charset="utf-8"><title>API Ecosistema ISFDyT 26</title><p>API del Sistema de Gestión ISFDyT N.° 26. Estado: <a href="/api/v1/health">/api/v1/health</a></p>\n',
++);
++writeFileSync(
++  join(out, 'vercel.json'),
++  JSON.stringify(
++    {
++      $schema: 'https://openapi.vercel.sh/vercel.json',
++      framework: null,
++      installCommand: 'npm install',
++      // Crea o actualiza las tablas en cada publicación (migraciones, sin borrar datos).
++      // Con ONLINE_SEED=1 (solo cuando se pide, con --build-env) carga cuentas y datos de ejemplo.
++      buildCommand:
++        'npx prisma generate && DIRECT_DATABASE_URL="$DATABASE_URL_UNPOOLED" npx prisma migrate deploy' +
++        ' && if [ "$ONLINE_SEED" = "1" ]; then npx tsx backend/src/online-seed.ts && npx tsx backend/src/demo-data.ts && npx tsx backend/src/online-seed.ts; fi',
++      outputDirectory: 'public',
++      rewrites: [{ source: '/api/(.*)', destination: '/api' }],
++      functions: { 'api/index.ts': { maxDuration: 15 } },
++    },
++    null,
++    2,
++  ) + '\n',
++);
++writeFileSync(join(out, '.gitignore'), '.vercel\nnode_modules\n.env*\n');
++console.log(`Listo: ${out}`);
+diff --git a/shared/types.ts b/shared/types.ts
+index a0be227..93a45d6 100644
+--- a/shared/types.ts
++++ b/shared/types.ts
+@@ -260,6 +260,7 @@ export const AUDIT_ACTIONS = [
+   'EXPORT',
+   'LOGIN',
+   'SESSION_REOPEN',
++  'SENSITIVE_DATA_READ',
+ ] as const;
+ export type AuditAction = (typeof AUDIT_ACTIONS)[number];
+ export const AUDIT_ACTION_LABELS: Record<AuditAction, string> = {
+@@ -271,6 +272,7 @@ export const AUDIT_ACTION_LABELS: Record<AuditAction, string> = {
+   EXPORT: 'Exportación',
+   LOGIN: 'Ingreso',
+   SESSION_REOPEN: 'Reapertura de planilla',
++  SENSITIVE_DATA_READ: 'Consulta de datos sensibles',
+ };
+ 
+ // ============================================================================
+@@ -553,6 +555,12 @@ export interface Justification extends Timestamps {
+   fromDate: ISODate;
+   toDate: ISODate;
+   reason: string;
++  /** Materia a la que se limita. Sin valor: cubre todas las materias de esas fechas. */
++  subjectId?: ID;
++  subjectName?: string;
++  documentType?: JustificationDocumentType;
++  /** Nombre del comprobante (todavía no hay subida de archivos). */
++  documentName?: string;
+   /** URL del comprobante, si hay. */
+   documentUrl?: string;
+   status: JustificationStatus;
+@@ -640,6 +648,8 @@ export interface Notice extends Timestamps {
+   publishedAt?: ISODateTime;
+   expiresAt?: ISODateTime;
+   createdBy: ID;
++  /** Cuándo lo leyó el usuario de la sesión (GET /records/notices). Sin valor: no lo leyó. */
++  readAt?: ISODateTime;
+ }
+ 
+ export interface SchoolEvent extends Timestamps {
+@@ -909,11 +919,14 @@ export interface StaffTask extends Timestamps {
+   title: string;
+   type: StaffTaskType;
+   status: StaffTaskStatus;
++  priority?: IncidentPriority;
+   location: string;
++  installationId?: ID;
+   details?: string;
+   assignedToUserId?: ID;
+   completedAt?: ISODateTime;
+   completedBy?: ID;
++  completedByName?: string;
+ }
+ 
+ export const INSTALLATION_STATUSES = ['OK', 'MAINTENANCE', 'OUT_OF_SERVICE'] as const;
+@@ -927,10 +940,14 @@ export const INSTALLATION_STATUS_LABELS: Record<InstallationStatus, string> = {
+ export interface Installation extends Timestamps {
+   id: ID;
+   name: string;
++  code?: string;
++  floor?: string;
+   status: InstallationStatus;
+   /** Ubicación en el plano del edificio (grilla). */
+   layout: { col: number; row: number; colSpan: number; rowSpan: number };
+   lastCleanedAt?: ISODateTime;
++  lastCleanedBy?: ID;
++  lastCleanedByName?: string;
+   nextTask?: string;
+   notes?: string;
+ }
+@@ -955,10 +972,13 @@ export interface Incident extends Timestamps {
+   sector: string;
+   installationId?: ID;
+   imageUrl?: string;
++  notes?: string;
+   status: IncidentStatus;
+   reportedBy: ID;
++  reportedByName?: string;
+   resolvedAt?: ISODateTime;
+   resolvedBy?: ID;
++  resolvedByName?: string;
+ }
+ 
+ export interface MaintenanceLog {
+@@ -989,10 +1009,14 @@ export interface RepEvent extends Timestamps {
+   title: string;
+   date: ISODate;
+   time?: TimeOfDay;
++  endTime?: TimeOfDay;
+   location?: string;
+   description: string;
+   type: RepEventType;
+   organizer: string;
++  /** Cupo máximo (sin valor = sin cupo). */
++  capacity?: number;
++  coverUrl?: string;
+   createdBy: ID;
+   /** Cantidad de inscriptos (lo calcula el backend). */
+   participantCount: number;
+@@ -1017,6 +1041,14 @@ export interface RepThread extends Timestamps {
+   category: RepForumCategory;
+   pinned: boolean;
+   replyCount: number;
++  /** Cargo del autor en el Centro (UserProfile.position), si es miembro. */
++  authorPosition?: string;
++  authorIsRep: boolean;
++  /** Moderación del Centro: los ocultos solo los ve quien gestiona. */
++  hidden: boolean;
++  hiddenReason?: string;
++  reported: boolean;
++  reportReason?: string;
+ }
+ 
+ export interface RepReply {
+@@ -1024,6 +1056,8 @@ export interface RepReply {
+   threadId: ID;
+   authorId: ID;
+   authorName: string;
++  authorPosition?: string;
++  authorIsRep: boolean;
+   content: string;
+   createdAt: ISODateTime;
+ }
+@@ -1034,8 +1068,23 @@ export interface RepAnnouncement extends Timestamps {
+   content: string;
+   authorId: ID;
+   authorName: string;
++  authorPosition?: string;
+   pinned: boolean;
++  /** Fecha de publicación programada: antes de esa fecha solo la ve el Centro. */
+   publishDate?: ISODate;
++  summary?: string;
++  coverUrl?: string;
++  /** Borrador: solo lo ve el Centro. */
++  draft: boolean;
++  attachments: RepAttachment[];
++}
++
++/** Adjunto por enlace (todavía no hay subida de archivos). */
++export interface RepAttachment {
++  name: string;
++  url: string;
++  kind: 'image' | 'pdf' | 'document';
++  sizeBytes?: number;
+ }
+ 
+ export const REP_CLAIM_CATEGORIES = ['ACADEMIC', 'INFRASTRUCTURE', 'ADMINISTRATIVE', 'SUGGESTION'] as const;
+@@ -1047,11 +1096,12 @@ export const REP_CLAIM_CATEGORY_LABELS: Record<RepClaimCategory, string> = {
+   SUGGESTION: 'Sugerencia',
+ };
+ 
+-export const REP_CLAIM_STATUSES = ['PENDING', 'IN_REVIEW', 'RESOLVED', 'ARCHIVED'] as const;
++export const REP_CLAIM_STATUSES = ['PENDING', 'IN_REVIEW', 'FORWARDED', 'RESOLVED', 'ARCHIVED'] as const;
+ export type RepClaimStatus = (typeof REP_CLAIM_STATUSES)[number];
+ export const REP_CLAIM_STATUS_LABELS: Record<RepClaimStatus, string> = {
+   PENDING: 'Pendiente',
+   IN_REVIEW: 'En revisión',
++  FORWARDED: 'Derivado',
+   RESOLVED: 'Resuelto',
+   ARCHIVED: 'Archivado',
+ };
+@@ -1059,13 +1109,40 @@ export const REP_CLAIM_STATUS_LABELS: Record<RepClaimStatus, string> = {
+ export interface RepClaim extends Timestamps {
+   id: ID;
+   authorId: ID;
+-  /** El Centro ve el nombre; cada alumno ve solo sus propios reclamos. */
+-  authorName: string;
++  /** El Centro ve el nombre; cada alumno ve solo sus propios reclamos. Vacío si es anónimo. */
++  authorName?: string;
++  authorEmail?: string;
++  authorCareer?: string;
++  /** "REC-AAAA-NNN" */
++  code?: string;
+   category: RepClaimCategory;
++  title?: string;
+   description: string;
++  anonymous: boolean;
+   status: RepClaimStatus;
+   response?: string;
+   responderId?: ID;
++  forwardedTo?: RepClaimDestination;
++  forwardNote?: string;
++  archiveReason?: string;
++  history: RepClaimHistoryItem[];
++}
++
++export const REP_CLAIM_DESTINATIONS = ['BEDELIA', 'DIRECTION', 'PRECEPTORSHIP', 'STAFF'] as const;
++export type RepClaimDestination = (typeof REP_CLAIM_DESTINATIONS)[number];
++export const REP_CLAIM_DESTINATION_LABELS: Record<RepClaimDestination, string> = {
++  BEDELIA: 'Bedelía',
++  DIRECTION: 'Dirección',
++  PRECEPTORSHIP: 'Preceptoría',
++  STAFF: 'Auxiliares',
++};
++
++export interface RepClaimHistoryItem {
++  at: ISODateTime;
++  type: 'CREATED' | 'STATUS' | 'FORWARDED' | 'RESPONSE' | 'ARCHIVED';
++  title: string;
++  note?: string;
++  actorName: string;
+ }
+ 
+ // ============================================================================
+@@ -1140,6 +1217,7 @@ export interface ForumThread extends Timestamps {
+   authorName: string;
+   title: string;
+   content: string;
++  channel: ForumChannel;
+   careerId?: ID;
+   year?: number;
+   commissionId?: ID;
+@@ -1254,3 +1332,207 @@ export type UpdateSettingsRequest = Partial<
+     'name' | 'shortName' | 'cue' | 'city' | 'district' | 'minAttendancePercent' | 'lateArrivalAbsenceWeight' | 'attendanceRiskThresholdPercent'
+   >
+ >;
++
++// ============================================================================
++// Paneles de Alumno, Preceptoría y Auxiliares (2026-11-01)
++// ============================================================================
++
++/** Dato de la ficha que el alumno pide corregir. */
++export const CORRECTION_FIELDS = ['FIRST_NAME', 'LAST_NAME', 'DNI', 'EMAIL', 'PHONE', 'ADMISSION_DATE', 'OTHER'] as const;
++export type CorrectionField = (typeof CORRECTION_FIELDS)[number];
++export const CORRECTION_FIELD_LABELS: Record<CorrectionField, string> = {
++  FIRST_NAME: 'Nombre',
++  LAST_NAME: 'Apellido',
++  DNI: 'DNI',
++  EMAIL: 'Email',
++  PHONE: 'Teléfono',
++  ADMISSION_DATE: 'Fecha de ingreso',
++  OTHER: 'Otro dato',
++};
++
++export const CORRECTION_STATUSES = ['PENDING', 'APPROVED', 'REJECTED'] as const;
++export type CorrectionStatus = (typeof CORRECTION_STATUSES)[number];
++export const CORRECTION_STATUS_LABELS: Record<CorrectionStatus, string> = {
++  PENDING: 'En revisión',
++  APPROVED: 'Aprobada',
++  REJECTED: 'Rechazada',
++};
++
++/**
++ * Pedido de corrección de la ficha. Aprobarlo NO modifica la ficha:
++ * Preceptoría o Administración la edita aparte.
++ */
++export interface DataCorrectionRequest extends Timestamps {
++  id: ID;
++  studentId: ID;
++  field: CorrectionField;
++  currentValue?: string;
++  proposedValue: string;
++  reason: string;
++  documentUrl?: string;
++  status: CorrectionStatus;
++  createdBy: ID;
++  reviewedBy?: ID;
++  reviewedAt?: ISODateTime;
++  reviewNotes?: string;
++  /** Solo en las vistas de Preceptoría/Administración. */
++  studentName?: string;
++  studentFileNumber?: string;
++}
++
++export interface CreateCorrectionRequest {
++  field: CorrectionField;
++  proposedValue: string;
++  reason: string;
++  documentUrl?: string;
++}
++
++/** Pedido de justificación hecho por el propio alumno (POST /me/justifications). */
++export interface CreateMyJustificationRequest {
++  fromDate: ISODate;
++  toDate: ISODate;
++  reason: string;
++  documentUrl?: string;
++}
++
++/** Código QR de una clase (POST /attendance/sessions/:id/qr). El código solo se devuelve al crearlo. */
++export interface AttendanceQrCodeIssued {
++  id: ID;
++  sessionId: ID;
++  code: string;
++  expiresAt: ISODateTime;
++}
++
++/** Resultado de POST /me/attendance/qr. */
++export interface QrCheckInResult {
++  sessionId: ID;
++  commissionId: ID;
++  subjectName: string;
++  date: ISODate;
++  status: AttendanceStatus;
++  /** true si el alumno ya tenía registro en esa clase (no se modifica). */
++  alreadyRegistered: boolean;
++}
++
++/** Turnos de Auxiliares. */
++export const STAFF_SHIFT_TYPES = ['REGULAR', 'SWAP', 'OFF', 'HOLIDAY'] as const;
++export type StaffShiftType = (typeof STAFF_SHIFT_TYPES)[number];
++export const STAFF_SHIFT_TYPE_LABELS: Record<StaffShiftType, string> = {
++  REGULAR: 'Normal',
++  SWAP: 'Cambio',
++  OFF: 'Libre',
++  HOLIDAY: 'Feriado',
++};
++
++export interface StaffShift extends Timestamps {
++  id: ID;
++  userId: ID;
++  userName: string;
++  date: ISODate;
++  startTime?: TimeOfDay;
++  endTime?: TimeOfDay;
++  type: StaffShiftType;
++  notes?: string;
++}
++
++export const SHIFT_CHANGE_STATUSES = ['PENDING', 'ACCEPTED', 'REJECTED', 'CANCELLED'] as const;
++export type ShiftChangeStatus = (typeof SHIFT_CHANGE_STATUSES)[number];
++export const SHIFT_CHANGE_STATUS_LABELS: Record<ShiftChangeStatus, string> = {
++  PENDING: 'Pendiente',
++  ACCEPTED: 'Aceptado',
++  REJECTED: 'Rechazado',
++  CANCELLED: 'Cancelado',
++};
++
++export interface ShiftChangeRequest extends Timestamps {
++  id: ID;
++  requesterId: ID;
++  requesterName: string;
++  colleagueId: ID;
++  colleagueName: string;
++  requesterShift: StaffShift;
++  colleagueShift: StaffShift;
++  reason?: string;
++  status: ShiftChangeStatus;
++  respondedAt?: ISODateTime;
++  respondedBy?: ID;
++}
++
++/** Persona del equipo de Auxiliares (para elegir con quién cambiar un turno). */
++export interface StaffMember {
++  id: ID;
++  firstName: string;
++  lastName: string;
++}
++
++// ============================================================================
++// Ecosistema de Julián: Centro, Auxiliares y Preceptoría (2026-11-01)
++// ============================================================================
++
++export const JUSTIFICATION_DOCUMENT_TYPES = ['MEDICAL', 'WORK', 'FORCE_MAJEURE'] as const;
++export type JustificationDocumentType = (typeof JUSTIFICATION_DOCUMENT_TYPES)[number];
++export const JUSTIFICATION_DOCUMENT_TYPE_LABELS: Record<JustificationDocumentType, string> = {
++  MEDICAL: 'Certificado médico',
++  WORK: 'Certificado laboral',
++  FORCE_MAJEURE: 'Fuerza mayor',
++};
++
++export const FORUM_CHANNELS = ['GENERAL', 'QUESTIONS', 'PROPOSALS'] as const;
++export type ForumChannel = (typeof FORUM_CHANNELS)[number];
++export const FORUM_CHANNEL_LABELS: Record<ForumChannel, string> = {
++  GENERAL: 'General',
++  QUESTIONS: 'Consultas',
++  PROPOSALS: 'Propuestas',
++};
++
++export const STAFF_ABSENCE_REASONS = ['SICK_LEAVE', 'FAMILY_CARE', 'OFFICIAL_PROCEDURE', 'FORCE_MAJEURE', 'EXAM_TRAINING'] as const;
++export type StaffAbsenceReason = (typeof STAFF_ABSENCE_REASONS)[number];
++export const STAFF_ABSENCE_REASON_LABELS: Record<StaffAbsenceReason, string> = {
++  SICK_LEAVE: 'Licencia por enfermedad',
++  FAMILY_CARE: 'Atención de familiar a cargo',
++  OFFICIAL_PROCEDURE: 'Trámite judicial o bancario impostergable',
++  FORCE_MAJEURE: 'Razones de fuerza mayor',
++  EXAM_TRAINING: 'Examen o capacitación',
++};
++
++/** Ausencia o licencia de un auxiliar (/staff/absences). */
++export interface StaffAbsence extends Timestamps {
++  id: ID;
++  userId: ID;
++  userName: string;
++  fromDate: ISODate;
++  toDate: ISODate;
++  reason: StaffAbsenceReason;
++  notes: string;
++  documentName?: string;
++  documentUrl?: string;
++  status: JustificationStatus;
++  reviewedBy?: ID;
++  reviewedAt?: ISODateTime;
++  reviewNotes?: string;
++}
++
++/** Inscripto a un evento del Centro (GET /centro/events/:id/participants). */
++export interface RepEventParticipantView {
++  id: ID;
++  firstName: string;
++  lastName: string;
++  email: string;
++  roles: Role[];
++  careerName?: string;
++  joinedAt: ISODateTime;
++}
++
++/** Corrección de asistencia (GET /attendance/audit). */
++export interface AttendanceChange {
++  id: ID;
++  at: ISODateTime;
++  userName: string;
++  studentId: ID;
++  studentName: string;
++  date: ISODate;
++  subjectName: string;
++  previousStatus: AttendanceStatus;
++  newStatus: AttendanceStatus;
++  notes?: string;
++}

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" role="img" aria-label="ISFDyT N° 26 Isotipo Negativo">
+  <rect x="2" y="2" width="60" height="60" rx="14" fill="#0C1535"/>
+  <rect x="3.5" y="3.5" width="57" height="57" rx="12.5" stroke="#AF9B63" stroke-width="1.8"/>
+  
+  <path d="M15 44C21 40.5 27 41.5 32 45C37 41.5 43 40.5 49 44V22C43 18.5 37 19.5 32 23C27 19.5 21 18.5 15 22V44Z" fill="#FFFFFF" fill-opacity="0.12"/>
+  <path d="M17 41C22 38 27 39.2 32 42.5V23C27 20 22 18.8 17 21.8V41Z" stroke="#AF9B63" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M47 41C42 38 37 39.2 32 42.5V23C37 20 42 18.8 47 21.8V41Z" stroke="#60A5FA" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <circle cx="32" cy="15" r="4" fill="#AF9B63"/>
+  <path d="M32 42.5V51" stroke="#AF9B63" stroke-width="2.2" stroke-linecap="round"/>
+  <path d="M24 51H40" stroke="#AF9B63" stroke-width="2.2" stroke-linecap="round"/>
+</svg>

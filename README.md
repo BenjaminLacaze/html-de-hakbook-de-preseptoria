@@ -6,7 +6,7 @@ Repositorio del equipo con los módulos de gestión y asistencia. Sitio publicad
 
 | Carpeta | Responsable | App de desarrollo | Documentación |
 |---|---|---|---|
-| alumnos-julian/ | Julián | V2 de AI Studio: [publicada en Vercel](https://alumnos-julian-v2.vercel.app); ruta prevista en el sitio unificado: /alumnos-julian/app-v2/. | alumnos-julian/README.md y alumnos-julian/docs/ |
+| ecosistema-julian/ | Julián | Cuatro paneles conectados a la API: Alumnos (`alumnos/app v2`), Preceptoría (`preceptoria/`), Centro de Estudiantes (`centro/`) y Auxiliares (`auxiliares/`). Online aparte, en Vercel + Neon (ver abajo). | ecosistema-julian/README.md y ecosistema-julian/backend/README.md (base de datos y API) |
 | alumnos-lucia/ | Lucía | alumnos-lucia/app/ | documentacion/ |
 | directivos-jesica-agustin/ | Jesica y Agustín | directivos-jesica-agustin/app/ | index.html y Handbook/ |
 | preceptoria-benjamin/ | Benjamín | Sin app React independiente | handbook.html |
@@ -22,15 +22,18 @@ La landing en index.html enlaza a los módulos. Tener una carpeta en GitHub no p
 
 Vercel ejecuta node scripts/build.mjs, configurado en vercel.json. El proceso compila solo las aplicaciones declaradas en scripts/build.mjs y las deja dentro de dist/.
 
-**Estado de Alumnos V2 (Google AI Studio):** publicada en producción como proyecto Vercel independiente en [alumnos-julian-v2.vercel.app](https://alumnos-julian-v2.vercel.app), con respuesta HTTP 200. Esto no modifica la landing ni el dominio unificado [sistema-gestion-i26.vercel.app](https://sistema-gestion-i26.vercel.app). Para que aparezca allí en `/alumnos-julian/app-v2/`, la persona que administra el repositorio productivo `mjsis20052/sistema-gestion-i26` debe integrar los cambios del build general y desplegar ese repo.
+## Ecosistema de Julián (Alumnos, Preceptoría, Centro y Auxiliares)
 
-## Desarrollo de la nueva app de alumno
+Cuatro paneles, hechos con Google AI Studio, conectados a la API común (`/api/v1`) con login real. En el build del sitio unificado se publican bajo `/ecosistema-julian/...`. Además hay una versión online **independiente**, en la cuenta Vercel de Julián, con su propia base Neon. No modifica la landing ni el dominio unificado [sistema-gestion-i26.vercel.app](https://sistema-gestion-i26.vercel.app):
 
-Proyecto de Google AI Studio: https://ai.studio/apps/bf731764-b335-4afd-af62-3b5d690f9070
+| Panel | Online |
+|---|---|
+| Alumnos | [alumnos-julian-v2.vercel.app](https://alumnos-julian-v2.vercel.app) |
+| Preceptoría | [i26-preceptoria.vercel.app](https://i26-preceptoria.vercel.app) |
+| Centro de Estudiantes | [i26-centro-estudiantes.vercel.app](https://i26-centro-estudiantes.vercel.app) |
+| Auxiliares | [i26-auxiliares.vercel.app](https://i26-auxiliares.vercel.app) |
 
-Desde la raíz del repositorio, ingresá a alumnos-julian/app v2/, ejecutá npm install y npm run dev. Vite usa el puerto 3000. El proyecto independiente de Vercel se despliega desde esa carpeta. El build del sitio unificado también está configurado para publicarla bajo `/alumnos-julian/app-v2/` cuando se integre en el repositorio productivo.
-
-La app nueva usa datos de demostración guardados en localStorage. No tiene login ni integración HTTP con el backend institucional. Sus formularios y acciones no cambian registros oficiales. Consultá docs/Contrato_backend_alumno_julian.md para el estado y la propuesta de integración.
+Cómo levantarlos en local, puertos y cuentas: `ecosistema-julian/README.md`. Cómo está construida la base, a qué se conecta y sus endpoints: `ecosistema-julian/backend/README.md`.
 
 ## Backend y login del resto del sistema
 
@@ -44,4 +47,4 @@ Antes de publicar el sitio completo, ejecutá node scripts/build.mjs y verificá
 
 ### Alumno y Consolidación
 
-El portal Alumno debe consumir las rutas personales `/me/*` para consultar datos que Preceptoría y Profesores registran en la planilla de asistencia compartida. Los eventos, comunicados y foros del Centro son un dominio distinto; los datos operativos de Auxiliares, disponibles en `/staff/*`, no están autorizados para el rol Alumno. La app v2 todavía usa datos de demostración. Ver `consolidacion/README.md` y `alumnos-julian/docs/ARQUITECTURA_E_INTEGRACIONES.md`.
+El portal Alumno debe consumir las rutas personales `/me/*` para consultar datos que Preceptoría y Profesores registran en la planilla de asistencia compartida. Los eventos, comunicados y foros del Centro son un dominio distinto; los datos operativos de Auxiliares, disponibles en `/staff/*`, no están autorizados para el rol Alumno. El portal del alumno (`ecosistema-julian/alumnos/app v2`) ya consume esas rutas. Ver `ecosistema-julian/backend/README.md` y `ecosistema-julian/alumnos/docs/ARQUITECTURA_E_INTEGRACIONES.md`.
