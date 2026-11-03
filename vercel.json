@@ -17,12 +17,17 @@
     },
     {
       "source": "/Julian(.*)Alumnos/(.*)",
-      "destination": "/ecosistema-julian/alumnos/$2",
+      "destination": "/ecosistema-julian-lucia/alumnos/$2",
       "permanent": true
     },
     {
       "source": "/alumnos-julian/:path*",
-      "destination": "/ecosistema-julian/alumnos/:path*",
+      "destination": "/ecosistema-julian-lucia/alumnos/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/ecosistema-julian/:path*",
+      "destination": "/ecosistema-julian-lucia/:path*",
       "permanent": true
     },
     {
@@ -55,24 +60,24 @@
       "destination": "/directivos-jesica-agustin/app/index.html"
     },
     {
-      "source": "/ecosistema-julian/alumnos/app/:path*",
-      "destination": "/ecosistema-julian/alumnos/app/index.html"
+      "source": "/ecosistema-julian-lucia/alumnos/app/:path*",
+      "destination": "/ecosistema-julian-lucia/alumnos/app/index.html"
     },
     {
-      "source": "/ecosistema-julian/alumnos/app-v2/:path*",
-      "destination": "/ecosistema-julian/alumnos/app-v2/index.html"
+      "source": "/ecosistema-julian-lucia/alumnos/app-v2/:path*",
+      "destination": "/ecosistema-julian-lucia/alumnos/app-v2/index.html"
     },
     {
-      "source": "/ecosistema-julian/centro/:path*",
-      "destination": "/ecosistema-julian/centro/index.html"
+      "source": "/ecosistema-julian-lucia/centro/:path*",
+      "destination": "/ecosistema-julian-lucia/centro/index.html"
     },
     {
-      "source": "/ecosistema-julian/auxiliares/:path*",
-      "destination": "/ecosistema-julian/auxiliares/index.html"
+      "source": "/ecosistema-julian-lucia/auxiliares/:path*",
+      "destination": "/ecosistema-julian-lucia/auxiliares/index.html"
     },
     {
-      "source": "/ecosistema-julian/preceptoria/:path*",
-      "destination": "/ecosistema-julian/preceptoria/index.html"
+      "source": "/ecosistema-julian-lucia/preceptoria/:path*",
+      "destination": "/ecosistema-julian-lucia/preceptoria/index.html"
     },
     {
       "source": "/alumnos-lucia/app/:path*",

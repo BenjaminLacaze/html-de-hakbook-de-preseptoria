@@ -85,7 +85,7 @@ Confirmar siempre el método, el DTO y el rol requerido en backend/src/routes/ a
 
 ### 4.1 Con endpoint desde el 01/11/2026 (conectados en `api.ts` y probados en local; falta publicar)
 
-Detalle, reglas y pruebas en [`ecosistema-julian/backend/DETALLE_TECNICO.md`](../../backend/DETALLE_TECNICO.md).
+Detalle, reglas y pruebas en [`ecosistema-julian-lucia/backend/DETALLE_TECNICO.md`](../../backend/DETALLE_TECNICO.md).
 
 | Acción de la app (`StudentApi`) | Endpoint | Quién la resuelve |
 |---|---|---|

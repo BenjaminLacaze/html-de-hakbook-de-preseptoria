@@ -33,7 +33,7 @@ Estos datos compartidos existen en la API del sistema, pero la app v2 todavía u
 | index.html, index_detalle.html, index_conexiones.html | Documentación visual anterior | Consultar junto con los documentos Markdown actualizados |
 | Logo/ | Recursos gráficos | Logos del módulo |
 
-**Publicación en Vercel:** Alumnos V2 está publicada como sitio independiente en [alumnos-julian-v2.vercel.app](https://alumnos-julian-v2.vercel.app) (producción verificada con HTTP 200). Esto no cambia la landing principal [sistema-gestion-i26.vercel.app](https://sistema-gestion-i26.vercel.app). El build del repositorio también puede generarla en `/ecosistema-julian/alumnos/app-v2/`, pero para incorporarla al dominio unificado la persona administradora debe integrar los cambios en `mjsis20052/sistema-gestion-i26` y desplegar ese proyecto.
+**Publicación en Vercel:** Alumnos V2 está publicada como sitio independiente en [alumnos-julian-v2.vercel.app](https://alumnos-julian-v2.vercel.app) (producción verificada con HTTP 200). Esto no cambia la landing principal [sistema-gestion-i26.vercel.app](https://sistema-gestion-i26.vercel.app). El build del repositorio también puede generarla en `/ecosistema-julian-lucia/alumnos/app-v2/`, pero para incorporarla al dominio unificado la persona administradora debe integrar los cambios en `mjsis20052/sistema-gestion-i26` y desplegar ese proyecto.
 
 ## Documentación vigente
 

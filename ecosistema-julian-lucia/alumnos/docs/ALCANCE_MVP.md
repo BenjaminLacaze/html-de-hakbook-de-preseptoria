@@ -1,6 +1,6 @@
 # Alcance funcional — Portal del Alumno app v2
 
-**Versión documentada:** ecosistema-julian/alumnos/app v2/
+**Versión documentada:** ecosistema-julian-lucia/alumnos/app v2/
 **Estado:** prototipo funcional de interfaz en modo demostración; sin autenticación ni conexión desde esta app al backend.
 
 ## Funciones disponibles

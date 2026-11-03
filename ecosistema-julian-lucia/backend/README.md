@@ -1,11 +1,11 @@
 # Backend y base de datos del Ecosistema — ISFDyT N° 26
 
-> **Responsable:** Julián · **Actualizado:** 01/11/2026
+> **Responsables:** Julián y Lucía · **Actualizado:** 01/11/2026
 > Cómo está construida la base de datos que comparten los cuatro paneles (Alumnos, Preceptoría, Centro de Estudiantes y Auxiliares), a qué se conecta, qué endpoints expone y qué hace cada uno.
 
 > ⚠️ **Estado en el repositorio del equipo:** las tablas y endpoints nuevos que necesitan estos paneles **todavía no están en el backend común** (`/backend` de `main`). Ese backend es de todo el equipo y no se modificó. Los cambios están **propuestos** en esta carpeta, como pide el Contrato de Unificación (sección 12):
 > - [`PROPUESTAS.md`](PROPUESTAS.md): qué se agrega, tabla por tabla y endpoint por endpoint.
-> - [`propuesta/backend.patch`](propuesta/backend.patch): el código listo para aplicar si el equipo lo aprueba (`git apply ecosistema-julian/backend/propuesta/backend.patch` desde la raíz).
+> - [`propuesta/backend.patch`](propuesta/backend.patch): el código listo para aplicar si el equipo lo aprueba (`git apply ecosistema-julian-lucia/backend/propuesta/backend.patch` desde la raíz).
 >
 > La versión **online** (Vercel + Neon) ya corre con esos cambios aplicados.
 

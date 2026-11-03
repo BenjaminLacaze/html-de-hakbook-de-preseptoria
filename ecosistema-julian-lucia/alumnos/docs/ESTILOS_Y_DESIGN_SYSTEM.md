@@ -1,6 +1,6 @@
 # Sistema visual — Portal del Alumno app v2
 
-Describe la app React nueva en ecosistema-julian/alumnos/app v2/. No describe el diseño editorial de los HTML de documentación, que quedaron como referencia histórica.
+Describe la app React nueva en ecosistema-julian-lucia/alumnos/app v2/. No describe el diseño editorial de los HTML de documentación, que quedaron como referencia histórica.
 
 ## Dirección visual
 

@@ -1,7 +1,7 @@
-# Ecosistema de Julián — Alumnos, Preceptoría, Centro de Estudiantes y Auxiliares
+# Ecosistema de Julián y Lucía — Alumnos, Preceptoría, Centro de Estudiantes y Auxiliares
 
-> **Responsable:** Julián · Asistencia Terciario — ISFDyT N° 26
-> Antes esta carpeta se llamaba `alumnos-julian/` y tenía solo el módulo de Alumnos. Desde el 01/11/2026 reúne los cuatro paneles. Las URL viejas `/alumnos-julian/...` redirigen a `/ecosistema-julian/alumnos/...` (ver `vercel.json`).
+> **Responsables:** Julián y Lucía · Asistencia Terciario — ISFDyT N° 26
+> Antes esta carpeta se llamaba `alumnos-julian/` y tenía solo el módulo de Alumnos. Desde el 01/11/2026 reúne los cuatro paneles. Las URL viejas `/alumnos-julian/...` redirigen a `/ecosistema-julian-lucia/alumnos/...` (ver `vercel.json`).
 
 Los cuatro paneles comparten la misma base de datos y la misma API (`/api/v1`, en `backend/`). Cada uno ve y escribe solo lo que le permite su rol. Cómo se relacionan: [`backend/README.md`](backend/README.md) y [`backend/DETALLE_TECNICO.md`](backend/DETALLE_TECNICO.md).
 
@@ -20,10 +20,10 @@ Desde la raíz del repositorio, cada comando en su propia terminal:
 ```powershell
 & "C:\Program Files\PostgreSQL\17\bin\pg_ctl" -D backend/.local-dev/pgdata -l backend/.local-dev/postgres.log -o "-p 5440 -h 127.0.0.1" start
 npm run dev:api
-npm --prefix "ecosistema-julian/alumnos/app v2" run dev
-npm --prefix ecosistema-julian/centro run dev
-npm --prefix ecosistema-julian/auxiliares run dev
-npm --prefix ecosistema-julian/preceptoria run dev
+npm --prefix "ecosistema-julian-lucia/alumnos/app v2" run dev
+npm --prefix ecosistema-julian-lucia/centro run dev
+npm --prefix ecosistema-julian-lucia/auxiliares run dev
+npm --prefix ecosistema-julian-lucia/preceptoria run dev
 ```
 
 Las apps mandan `/api` a la API local (`localhost:4000`), que usa la base `i26_dev`. Las cuentas de prueba están en `shared/testUsers.ts`.

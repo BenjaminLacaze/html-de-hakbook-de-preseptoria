@@ -1,8 +1,8 @@
-# Propuestas para el backend común — Ecosistema de Julián
+# Propuestas para el backend común — Ecosistema de Julián y Lucía
 
 Formato de la sección 12 del Contrato de Unificación (`docs/CONTRATO_UNIFICACION.html`). Todo es **aditivo**: tablas, columnas, valores y endpoints nuevos. No se renombra ni se borra nada del esquema central.
 
-- **Código:** [`propuesta/backend.patch`](propuesta/backend.patch). Se aplica desde la raíz del repo con `git apply ecosistema-julian/backend/propuesta/backend.patch` (verificado: aplica limpio sobre `main` del 01/11/2026). Incluye esquema, 4 migraciones, rutas, tipos en `shared/types.ts`, pruebas y `scripts/deploy-api.mjs`.
+- **Código:** [`propuesta/backend.patch`](propuesta/backend.patch). Se aplica desde la raíz del repo con `git apply ecosistema-julian-lucia/backend/propuesta/backend.patch` (verificado: aplica limpio sobre `main` del 01/11/2026). Incluye esquema, 4 migraciones, rutas, tipos en `shared/types.ts`, pruebas y `scripts/deploy-api.mjs`.
 - **Incluye también trabajo previo de otro agente:** el padrón institucional de Preceptoría y la auditoría de lecturas de datos sensibles (migración `20261030120000_auditar_lecturas_datos_sensibles`). Las propuestas de abajo se apoyan en ese trabajo.
 - **Estado:** todas probadas en PostgreSQL local (`backend/test/paneles-flow.mjs`, `ecosistema-flow.mjs` e `integration-flow.mjs`, OK) y en la versión online propia (Vercel + Neon). **No** aplicadas en el backend ni en el Neon del equipo.
 

@@ -53,4 +53,4 @@ La sección activa se refleja en el parámetro `tab` de la URL. `skip_intro=true
 - JULIAN/shared/lib/ y JULIAN/shared/ui/: utilidades, temas y componentes.
 - JULIAN/styles/theme.css: tokens visuales y temas.
 
-La guía general está en [ecosistema-julian/alumnos/README.md](../README.md).
+La guía general está en [ecosistema-julian-lucia/alumnos/README.md](../README.md).

@@ -62,4 +62,4 @@ Las funciones actuales de rectificación de perfil y registro QR no tienen un en
 
 ## Publicación
 
-La V2 de AI Studio está publicada en un proyecto Vercel propio. La ruta `/ecosistema-julian/alumnos/app-v2/` del sitio institucional requiere que el repositorio productivo integre la configuración de build general. La app independiente ya declara un rewrite same-origin hacia la API institucional; el deploy publicado aún no contiene estos cambios locales.
+La V2 de AI Studio está publicada en un proyecto Vercel propio. La ruta `/ecosistema-julian-lucia/alumnos/app-v2/` del sitio institucional requiere que el repositorio productivo integre la configuración de build general. La app independiente ya declara un rewrite same-origin hacia la API institucional; el deploy publicado aún no contiene estos cambios locales.

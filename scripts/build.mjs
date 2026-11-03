@@ -21,12 +21,12 @@ const dist = join(root, 'dist');
 const appsToBuild = [
   { module: 'profesores-nicolas', source: 'app', output: 'profesores-nicolas/app' },
   { module: 'directivos-jesica-agustin', source: 'app', output: 'directivos-jesica-agustin/app' },
-  // Ecosistema de Julián: Alumnos (dos versiones), Centro de Estudiantes, Auxiliares y Preceptoría.
-  { module: 'ecosistema-julian/alumnos', source: 'app', output: 'ecosistema-julian/alumnos/app' },
-  { module: 'ecosistema-julian/alumnos', source: 'app v2', output: 'ecosistema-julian/alumnos/app-v2' },
-  { module: 'ecosistema-julian', source: 'centro', output: 'ecosistema-julian/centro' },
-  { module: 'ecosistema-julian', source: 'auxiliares', output: 'ecosistema-julian/auxiliares' },
-  { module: 'ecosistema-julian', source: 'preceptoria', output: 'ecosistema-julian/preceptoria' },
+  // Ecosistema de Julián y Lucía: Alumnos (dos versiones), Centro de Estudiantes, Auxiliares y Preceptoría.
+  { module: 'ecosistema-julian-lucia/alumnos', source: 'app', output: 'ecosistema-julian-lucia/alumnos/app' },
+  { module: 'ecosistema-julian-lucia/alumnos', source: 'app v2', output: 'ecosistema-julian-lucia/alumnos/app-v2' },
+  { module: 'ecosistema-julian-lucia', source: 'centro', output: 'ecosistema-julian-lucia/centro' },
+  { module: 'ecosistema-julian-lucia', source: 'auxiliares', output: 'ecosistema-julian-lucia/auxiliares' },
+  { module: 'ecosistema-julian-lucia', source: 'preceptoria', output: 'ecosistema-julian-lucia/preceptoria' },
   { module: 'alumnos-lucia', source: 'app', output: 'alumnos-lucia/app' },
   { module: 'consolidacion', source: 'app', output: 'consolidacion/app' }, // Preceptoría, Auxiliares y Centro de Estudiantes
 ];

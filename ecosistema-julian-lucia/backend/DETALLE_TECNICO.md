@@ -1,4 +1,4 @@
-# Backend de los paneles de Julián — Alumnos, Preceptoría, Centro y Auxiliares
+# Backend de los paneles de Julián y Lucía — Alumnos, Preceptoría, Centro y Auxiliares
 
 > **Fecha:** 01/11/2026
 > **Base:** el mismo esquema central (`backend/prisma/schema.prisma`) y la misma API `/api/v1`. No se creó una base paralela.
@@ -112,7 +112,7 @@ No se probó el vencimiento real del QR (el mínimo es 1 minuto); la lógica com
 
 ## 5. Pendiente
 
-1. **Prototipos nuevos de AI Studio** (Centro, Auxiliares, Preceptores y Alumnos): no se pudieron leer porque AI Studio pide iniciar sesión. Este backend se diseñó a partir del código local (`ecosistema-julian/alumnos/app v2` y las pantallas de `consolidacion/`). Cuando estén descargados, comparar sus datos con este documento y anotar lo que falte como propuesta.
+1. **Prototipos nuevos de AI Studio** (Centro, Auxiliares, Preceptores y Alumnos): no se pudieron leer porque AI Studio pide iniciar sesión. Este backend se diseñó a partir del código local (`ecosistema-julian-lucia/alumnos/app v2` y las pantallas de `consolidacion/`). Cuando estén descargados, comparar sus datos con este documento y anotar lo que falte como propuesta.
 2. **Directivos:** la carga de turnos está en la pantalla de Turnos, pero solo la ve un superadministrador (la app consolidada no admite DIRECTOR). Falta sumarla al panel de Directivos.
 3. **Neon:** aplicar la migración solo después de revisar el diff, con respaldo previo y `DIRECT_DATABASE_URL` explícita. Después publicar el backend desde el repo de deploy (`mjsis20052/sistema-gestion-i26`).
 4. **Adjuntos:** `documentUrl` es una URL. No hay almacenamiento de archivos; definirlo antes de pedir certificados.
@@ -122,13 +122,13 @@ No se probó el vencimiento real del QR (el mínimo es 1 minuto); la lógica com
 
 ## 6. Cómo verlo en local
 
-Requisitos: el PostgreSQL de desarrollo prendido (`127.0.0.1:5440`, base `i26_dev`) y las dependencias instaladas en la raíz, en `consolidacion/app` y en `ecosistema-julian/alumnos/app v2`.
+Requisitos: el PostgreSQL de desarrollo prendido (`127.0.0.1:5440`, base `i26_dev`) y las dependencias instaladas en la raíz, en `consolidacion/app` y en `ecosistema-julian-lucia/alumnos/app v2`.
 
 ```powershell
 & "C:\Program Files\PostgreSQLin\pg_ctl" -D backend/.local-dev/pgdata -l backend/.local-dev/postgres.log -o "-p 5440 -h 127.0.0.1" start
 npm run dev:api                                  # API → http://localhost:4000/api/v1
 npm --prefix consolidacion/app run dev           # Preceptoría / Auxiliares / Centro → http://localhost:5177
-npm --prefix "ecosistema-julian/alumnos/app v2" run dev     # Portal del alumno → http://127.0.0.1:3000
+npm --prefix "ecosistema-julian-lucia/alumnos/app v2" run dev     # Portal del alumno → http://127.0.0.1:3000
 ```
 
 Cada comando del servidor va en su propia terminal. Las cuentas son las de `shared/testUsers.ts` (`prueba.preceptor`, `prueba.alumno`, `prueba.auxiliar`…), con la clave de ese archivo. Para el compañero de los cambios de turno: `demo.auxiliar2@example.invalid`, con la misma clave (solo en una base local).
@@ -138,7 +138,7 @@ Cada comando del servidor va en su propia terminal. Las cuentas son las de `shar
 
 ## 7. Paneles nuevos del ecosistema (Centro, Auxiliares y Preceptoría de AI Studio) — 01/11/2026
 
-Los tres prototipos nuevos están en `ecosistema-julian/centro`, `ecosistema-julian/auxiliares` y `ecosistema-julian/preceptoria`, junto al de Alumnos (`ecosistema-julian/alumnos/app v2`). Ninguno usa ya datos inventados: cada uno tiene login real, una capa `api/` propia y lee y escribe en la base compartida. Lo que queda en el navegador es solo preferencia de pantalla (tema, tamaño de texto, intro vista).
+Los tres prototipos nuevos están en `ecosistema-julian-lucia/centro`, `ecosistema-julian-lucia/auxiliares` y `ecosistema-julian-lucia/preceptoria`, junto al de Alumnos (`ecosistema-julian-lucia/alumnos/app v2`). Ninguno usa ya datos inventados: cada uno tiene login real, una capa `api/` propia y lee y escribe en la base compartida. Lo que queda en el navegador es solo preferencia de pantalla (tema, tamaño de texto, intro vista).
 
 ### Migración `20261101200000_ecosistema_centro_auxiliares_preceptoria`
 
@@ -154,7 +154,7 @@ Solo agrega: 1 tabla nueva (`staff_absences`), 4 enums y columnas opcionales.
 
 | Qué | Resultado |
 |---|---|
-| `npm run typecheck` (backend), `tsc --noEmit` y `vite build --base=/ecosistema-julian/<panel>/` de los tres paneles | OK |
+| `npm run typecheck` (backend), `tsc --noEmit` y `vite build --base=/ecosistema-julian-lucia/<panel>/` de los tres paneles | OK |
 | `backend/test/ecosistema-flow.mjs` (nueva) contra `qa_i26` | OK: Centro, Auxiliares y Preceptoría, con permisos y errores |
 | `paneles-flow.mjs` e `integration-flow.mjs` | OK, sin regresiones |
 | En el navegador, contra `i26_dev` | Los 4 paneles inician sesión y cargan datos reales. Cruce probado: el alumno pide una justificación en su portal → aparece en Preceptoría → Preceptoría la aprueba → queda `APPROVED`. |
@@ -175,10 +175,10 @@ No se probaron desde la pantalla los demás cruces (reclamo alumno → Centro, c
 Además de la API (sección 6):
 
 ```powershell
-npm --prefix "ecosistema-julian/alumnos/app v2" run dev   # 3000
-npm --prefix ecosistema-julian/centro run dev             # 3001
-npm --prefix ecosistema-julian/auxiliares run dev         # 3002
-npm --prefix ecosistema-julian/preceptoria run dev        # 3003
+npm --prefix "ecosistema-julian-lucia/alumnos/app v2" run dev   # 3000
+npm --prefix ecosistema-julian-lucia/centro run dev             # 3001
+npm --prefix ecosistema-julian-lucia/auxiliares run dev         # 3002
+npm --prefix ecosistema-julian-lucia/preceptoria run dev        # 3003
 ```
 
 **Abrí cada panel con su propio nombre `.localhost`** para que las sesiones no se pisen (la cookie depende del nombre del host):

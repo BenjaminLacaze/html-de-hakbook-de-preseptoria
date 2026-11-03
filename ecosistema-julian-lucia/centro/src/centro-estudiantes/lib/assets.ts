@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  * ISFDyT N° 26 - Rutas de imágenes y video de marca
  *
- * La app se publica bajo una subcarpeta (--base=/ecosistema-julian/centro/), así que los
+ * La app se publica bajo una subcarpeta (--base=/ecosistema-julian-lucia/centro/), así que los
  * archivos de public/ se piden con import.meta.env.BASE_URL y los SVG se importan para que
  * Vite les ponga la ruta final.
  */

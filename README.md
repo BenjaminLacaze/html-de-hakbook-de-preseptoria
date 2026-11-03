@@ -6,7 +6,7 @@ Repositorio del equipo con los módulos de gestión y asistencia. Sitio publicad
 
 | Carpeta | Responsable | App de desarrollo | Documentación |
 |---|---|---|---|
-| ecosistema-julian/ | Julián | Cuatro paneles conectados a la API: Alumnos (`alumnos/app v2`), Preceptoría (`preceptoria/`), Centro de Estudiantes (`centro/`) y Auxiliares (`auxiliares/`). Online aparte, en Vercel + Neon (ver abajo). | ecosistema-julian/README.md y ecosistema-julian/backend/README.md (base de datos y API) |
+| ecosistema-julian-lucia/ | Julián y Lucía | Cuatro paneles conectados a la API: Alumnos (`alumnos/app v2`), Preceptoría (`preceptoria/`), Centro de Estudiantes (`centro/`) y Auxiliares (`auxiliares/`). Online aparte, en Vercel + Neon (ver abajo). | ecosistema-julian-lucia/README.md y ecosistema-julian-lucia/backend/README.md (base de datos y API) |
 | alumnos-lucia/ | Lucía | alumnos-lucia/app/ | documentacion/ |
 | directivos-jesica-agustin/ | Jesica y Agustín | directivos-jesica-agustin/app/ | index.html y Handbook/ |
 | preceptoria-benjamin/ | Benjamín | Sin app React independiente | handbook.html |
@@ -22,9 +22,9 @@ La landing en index.html enlaza a los módulos. Tener una carpeta en GitHub no p
 
 Vercel ejecuta node scripts/build.mjs, configurado en vercel.json. El proceso compila solo las aplicaciones declaradas en scripts/build.mjs y las deja dentro de dist/.
 
-## Ecosistema de Julián (Alumnos, Preceptoría, Centro y Auxiliares)
+## Ecosistema de Julián y Lucía (Alumnos, Preceptoría, Centro y Auxiliares)
 
-Cuatro paneles, hechos con Google AI Studio, conectados a la API común (`/api/v1`) con login real. En el build del sitio unificado se publican bajo `/ecosistema-julian/...`. Además hay una versión online **independiente**, en la cuenta Vercel de Julián, con su propia base Neon. No modifica la landing ni el dominio unificado [sistema-gestion-i26.vercel.app](https://sistema-gestion-i26.vercel.app):
+Cuatro paneles, hechos con Google AI Studio, conectados a la API común (`/api/v1`) con login real. En el build del sitio unificado se publican bajo `/ecosistema-julian-lucia/...`. Además hay una versión online **independiente**, en la cuenta Vercel de Julián, con su propia base Neon. No modifica la landing ni el dominio unificado [sistema-gestion-i26.vercel.app](https://sistema-gestion-i26.vercel.app):
 
 | Panel | Online |
 |---|---|
@@ -33,7 +33,7 @@ Cuatro paneles, hechos con Google AI Studio, conectados a la API común (`/api/v
 | Centro de Estudiantes | [i26-centro-estudiantes.vercel.app](https://i26-centro-estudiantes.vercel.app) |
 | Auxiliares | [i26-auxiliares.vercel.app](https://i26-auxiliares.vercel.app) |
 
-Cómo levantarlos en local, puertos y cuentas: `ecosistema-julian/README.md`. Cómo está construida la base, a qué se conecta y sus endpoints: `ecosistema-julian/backend/README.md`.
+Cómo levantarlos en local, puertos y cuentas: `ecosistema-julian-lucia/README.md`. Cómo está construida la base, a qué se conecta y sus endpoints: `ecosistema-julian-lucia/backend/README.md`.
 
 ## Backend y login del resto del sistema
 
@@ -47,4 +47,4 @@ Antes de publicar el sitio completo, ejecutá node scripts/build.mjs y verificá
 
 ### Alumno y Consolidación
 
-El portal Alumno debe consumir las rutas personales `/me/*` para consultar datos que Preceptoría y Profesores registran en la planilla de asistencia compartida. Los eventos, comunicados y foros del Centro son un dominio distinto; los datos operativos de Auxiliares, disponibles en `/staff/*`, no están autorizados para el rol Alumno. El portal del alumno (`ecosistema-julian/alumnos/app v2`) ya consume esas rutas. Ver `ecosistema-julian/backend/README.md` y `ecosistema-julian/alumnos/docs/ARQUITECTURA_E_INTEGRACIONES.md`.
+El portal Alumno debe consumir las rutas personales `/me/*` para consultar datos que Preceptoría y Profesores registran en la planilla de asistencia compartida. Los eventos, comunicados y foros del Centro son un dominio distinto; los datos operativos de Auxiliares, disponibles en `/staff/*`, no están autorizados para el rol Alumno. El portal del alumno (`ecosistema-julian-lucia/alumnos/app v2`) ya consume esas rutas. Ver `ecosistema-julian-lucia/backend/README.md` y `ecosistema-julian-lucia/alumnos/docs/ARQUITECTURA_E_INTEGRACIONES.md`.
