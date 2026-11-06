@@ -115,7 +115,7 @@ npm run build   # Compila el paquete de producción con Vite
 - [x] **Flujo de Organización y Horarios:** Asignación de cátedras con validación y bloqueo ante docentes solapados en el mismo módulo.
 - [x] **Flujo de Circulares:** Creación, edición, filtrado y vista previa imprimible con firma y sello.
 - [x] **Exportación de Informes:** Generación y descarga probada de archivos `.csv` para asistencia, calificaciones y matrícula.
-- [x] **Conmutación de Roles:** Simulación funcional de perfiles (Directora, Vicedirector, Secretaria, Preceptor, Docente) desde la barra superior.
+- [x] **Inicio de sesión:** Acceso directivo con cuenta propia de la aplicación y API de estado protegida por sesión.
 
 ---
 
