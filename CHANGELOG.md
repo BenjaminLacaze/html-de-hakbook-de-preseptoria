@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 2026-11-06 — Registro de integración de ecosistema
+
+- Nueva guía `docs/INTEGRACION_ECOSISTEMA_2026-11-06.md`: define la API y Neon institucionales como única fuente de datos, separa los módulos locales de producción y enumera las rutas, migraciones, pruebas y condiciones necesarias para publicar los paneles nuevos.
+- Se incorporaron al árbol de integración cuatro migraciones aditivas para QR, lectura de comunicados, correcciones de ficha, turnos/ausencias y extensiones de Centro/Auxiliares. No se aplicaron a Neon ni se publicó una versión nueva mientras falten las rutas centrales y la validación local.
+
 ## 2026-11-06 — Backend autónomo, Agenda, Mensajería y Calificaciones en Profesores (Nicolás)
 
 - **Backend Autónomo (`profesores-nicolas/backend/`)**:

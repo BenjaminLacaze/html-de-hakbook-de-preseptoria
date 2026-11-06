@@ -33,6 +33,8 @@ La matriz `docs/ESTADO_VALIDACION.md` distingue implementado, probado en local, 
 
 ## Bitácora
 
+- 2026-11-06 — GPT/Codex — Se documentó la integración pendiente de los paneles nuevos en `docs/INTEGRACION_ECOSISTEMA_2026-11-06.md`. Queda establecido que la API Hono/Prisma y Neon son la única fuente institucional; los backends autónomos y datos JSON de los equipos no se publican. Se agregaron al árbol de integración las migraciones aditivas para revisión, sin aplicarlas a Neon ni publicar código todavía.
+
 - 2026-11-06 — Antigravity / Nicolas — Módulo Docente / Profesor:
   - Creación del backend autónomo para `profesores-nicolas` en `profesores-nicolas/backend/` (Node.js ESM, `server.js`, `store.js`, persistencia local `db.json` y batería de pruebas `test.js` con 9/9 tests superados).
   - Incorporación de las funcionalidades requeridas:
