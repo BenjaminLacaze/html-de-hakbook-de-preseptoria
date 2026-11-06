@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 2026-11-06 — Presentación institucional para autoridades
+
+- Nueva `docs/PRESENTACION_AUTORIDADES_I26.html`: presentación visual del proyecto SRI I26, sus módulos, alcance para primaria, secundaria y terciario, y propuesta de valor institucional. Incluye gráficos conceptuales y utiliza el logotipo institucional local provisto.
+
 ## 2026-11-06 — Guía HTML del ecosistema
 
 - Nueva `docs/GUIA_ECOSISTEMA_I26.html`: explicación visual y en lenguaje simple de los portales, datos compartidos, seguridad y estado de integración para estudiantes y equipos.
