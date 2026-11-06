@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nota para Directivos i26</title>
+<meta name="description" content="Qué tiene que cambiar la App perfil directivo neon para sumarse al backend común del Sistema de Gestión i26.">
+<style>
+:root{
+  --blue:#14214f; --blue-2:#22336e; --gold:#89743a; --gold-text:#6b5b2e; --sand:#af9b63;
+  --bg:#f4f6f9; --card:#fff; --ink:#1b2333; --muted:#5b6476; --line:#dde2ea;
+  --ok:#1f7a4a; --ok-bg:#e6f4ec; --warn:#8a5a00; --warn-bg:#fff4dc; --bad:#a3262a; --bad-bg:#fde8e8; --code-bg:#f0f2f6;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{background:var(--blue);color:#fff;padding:30px 16px 26px}
+header .wrap,main{max-width:960px;margin:0 auto}
+header .k{color:var(--sand);font-weight:600;letter-spacing:.06em;text-transform:uppercase;font-size:12px}
+header h1{font-family:Outfit,Inter,system-ui,sans-serif;font-size:28px;line-height:1.2;margin:6px 0 8px}
+header p{margin:0;color:#d7dcea;max-width:720px}
+main{padding:22px 16px 56px}
+section{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px 22px;margin-bottom:16px}
+h2{font-family:Outfit,Inter,system-ui,sans-serif;color:var(--blue);font-size:20px;margin:0 0 6px}
+h2 .n{color:var(--gold);margin-right:6px}
+h3{color:var(--blue-2);font-size:15.5px;margin:16px 0 4px}
+.lead{color:var(--muted);margin:0 0 12px}
+code{font-family:"JetBrains Mono",Consolas,monospace;font-size:12.8px;background:var(--code-bg);padding:1px 5px;border-radius:4px}
+pre{font-family:"JetBrains Mono",Consolas,monospace;font-size:12.6px;line-height:1.5;background:#0f1733;color:#e6e9f2;padding:14px 16px;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0;color:inherit}
+.tbl{overflow-x:auto;margin:10px 0}
+table{border-collapse:collapse;width:100%;font-size:13.6px}
+th,td{text-align:left;vertical-align:top;padding:7px 10px;border-bottom:1px solid var(--line)}
+th{background:#f7f8fb;color:var(--blue);font-weight:600;white-space:nowrap}
+.callout{border-left:4px solid var(--gold);background:#faf7ef;padding:10px 14px;border-radius:0 8px 8px 0;margin:12px 0}
+.callout.bad{border-color:var(--bad);background:var(--bad-bg)}
+.callout.ok{border-color:var(--ok);background:var(--ok-bg)}
+.badge{display:inline-block;font-size:11.5px;font-weight:600;padding:1px 8px;border-radius:999px;white-space:nowrap}
+.b-ok{background:var(--ok-bg);color:var(--ok)} .b-prop{background:var(--warn-bg);color:var(--warn)} .b-no{background:var(--bad-bg);color:var(--bad)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.box{border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:#fbfcfe}
+.box h4{margin:0 0 4px;color:var(--blue);font-size:15px}
+.box p{margin:0;font-size:13.8px}
+ol li,ul li{margin:5px 0}
+footer{color:var(--muted);font-size:12.5px;text-align:center;padding:0 16px 30px}
+@media (max-width:640px){section{padding:16px 14px} header h1{font-size:24px}}
+@media print{body{background:#fff} section{border:none;padding:6px 0;break-inside:avoid-page} header{background:#fff;color:var(--ink);border-bottom:2px solid var(--blue)} header p{color:var(--ink)} pre{background:#f4f4f4;color:#111}}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <div class="k">Sistema de Gestión i26 · Nota para el equipo de Directivos</div>
+  <h1>Para Jesica y Agustín: cómo sumar la «App perfil directivo neon» al sistema común</h1>
+  <p>Revisamos la versión que subieron el 06/11/2026 (commits <code style="background:none;color:inherit">814a520</code> y <code style="background:none;color:inherit">5be26e8</code>). Las pantallas están muy bien. Lo que hay que cambiar es por dónde entran y adónde van los datos. Esta nota dice qué, por qué y en qué orden.</p>
+</div></header>
+
+<main>
+
+<section>
+  <h2><span class="n">0.</span>Lo primero, hoy</h2>
+  <div class="callout bad">
+    <b>¿A qué base de Neon conectaron el proyecto de Vercel de esta app?</b><br>
+    La app usa la variable <code>DATABASE_URL</code>, la misma que usa la API común. Si apunta a la base del sistema (<code>neondb</code>), la app le está creando tablas sueltas (<code>institution_state</code>, <code>app_accounts</code>, <code>app_sessions</code>, <code>app_login_attempts</code>) al lado de las nuestras, con cuentas que no son las del sistema.
+    <ul>
+      <li>Avísennos a qué base está conectada.</li>
+      <li><b>No borren tablas ustedes.</b> Si están en la base común, las sacamos nosotros con respaldo previo.</li>
+      <li>Si para eso alguien les pasó la cadena de conexión de la base común, avísennos también: hay que cambiar esa contraseña.</li>
+      <li>Hasta que lo resolvamos, no carguen datos reales en esta app.</li>
+    </ul>
+  </div>
+</section>
+
+<section>
+  <h2><span class="n">1.</span>Lo que está bien y se queda</h2>
+  <div class="grid">
+    <div class="box"><h4>El diseño</h4><p>Usa la misma paleta institucional que el sistema (<code>#14214F</code>, <code>#89743A</code>, <code>#AF9B63</code>). Se mantiene.</p></div>
+    <div class="box"><h4>Las pantallas</h4><p>Tablero, usuarios, cursos, asistencia, notas, horarios, comunicados, informes, auditoría y configuración. Son exactamente lo que tiene que tener Directivos.</p></div>
+    <div class="box"><h4>Impresión y CSV</h4><p>El boletín, las circulares con membrete y la exportación a Excel se quedan. Solo cambia de dónde salen los datos.</p></div>
+    <div class="box"><h4>Cuidado con la seguridad</h4><p>Contraseñas con hash, cookies HttpOnly, bloqueo tras 5 intentos. Es lo mismo que ya hace la API común, así que no hace falta repetirlo.</p></div>
+  </div>
+</section>
+
+<section>
+  <h2><span class="n">2.</span>Los cuatro problemas</h2>
+  <h3>a) Login y cuentas propias</h3>
+  <p>La app tiene sus propios usuarios y contraseñas. El sistema ya tiene uno solo para todas las apps (<code>/api/v1/auth/login</code>), y <b>Directivos es justamente quien crea esas cuentas</b> para alumnos, docentes, preceptores, Centro y Auxiliares. Con dos juegos de cuentas, la cuenta que crea Directivos no le sirve a nadie.</p>
+  <h3>b) Todos los datos en un solo «cajón»</h3>
+  <p><code>/api/state</code> guarda todo el estado de la app como un único JSON (<code>institution_state.payload</code>) y lo reemplaza entero en cada guardado. Las otras apps no lo pueden leer, dos personas guardando a la vez se pisan, y no se puede auditar quién cambió qué. El sistema tiene una tabla por cosa (alumnos, comisiones, asistencia, notas…) y una ruta para cada una.</p>
+  <h3>c) Modelo de secundaria</h3>
+  <p>La app usa divisiones, trimestres, período de intensificación (diciembre–febrero) y familias. El instituto es <b>terciario</b>: carreras, planes, materias que se dictan en <b>comisiones</b>, cuatrimestres, parciales, recuperatorios y finales.</p>
+  <h3>d) Datos que se van del sistema</h3>
+  <p>El respaldo a Google Drive desde el navegador (con Firebase) y el respaldo en <code>localStorage</code> sacan datos personales de alumnos fuera de la base. Los respaldos se hacen de Neon, del lado del servidor.</p>
+</section>
+
+<section>
+  <h2><span class="n">3.</span>Qué usar en cada pantalla</h2>
+  <p class="lead">Casi todo ya existe en la API común. Todas las rutas empiezan con <code>/api/v1</code>. <span class="badge b-ok">existe</span> úsenla · <span class="badge b-prop">propuesta</span> anótenla en <code>PROPUESTAS.md</code> y la sumamos nosotros.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Pantalla</th><th>Qué usar</th><th>Notas</th></tr></thead>
+    <tbody>
+      <tr><td><b>Login</b></td><td><span class="badge b-ok">existe</span> <code>POST /auth/login</code> · <code>GET /auth/me</code> · <code>POST /auth/logout</code> · <code>POST /auth/change-password</code></td><td>Cookie <code>sga_session</code>; el frontend manda <code>credentials: 'include'</code>. Primer ingreso con clave temporal y cambio obligatorio. Sacar <code>INITIAL_ADMIN_*</code>: la cuenta de Dirección ya existe.</td></tr>
+      <tr><td><b>Usuarios</b></td><td><span class="badge b-ok">existe</span> <code>GET|POST /users</code> · <code>PATCH /users/:id</code> · <code>POST /users/:id/reset-password</code></td><td>Una persona puede tener varios roles: es una lista, no un valor.</td></tr>
+      <tr><td><b>Cursos y matrícula</b></td><td><span class="badge b-ok">existe</span> <code>/structure/careers</code>, <code>plans</code>, <code>subjects</code>, <code>cycles</code>, <code>commissions</code>, <code>students</code>, <code>teachers</code>, <code>enrollments</code></td><td>«División» → <code>Commission</code> (materia + ciclo + turno). Capacidad → <code>capacity</code>. Preceptor responsable → <code>preceptorUserId</code>. Contacto del tutor y alertas médicas → <code>GET|PUT /structure/students/:id/sensitive</code> (<code>emergencyContact*</code>, <code>healthNotes</code>).</td></tr>
+      <tr><td><b>Asistencia</b></td><td><span class="badge b-ok">existe</span> <code>GET /attendance</code> · <code>GET /attendance/summary</code> · <code>GET /attendance/justifications</code></td><td>Directivos <b>consulta</b> y reabre clases cerradas. La carga la hacen Profesores y Preceptoría, sobre la misma planilla. El porcentaje lo calcula la API, no la pantalla.</td></tr>
+      <tr><td><b>Calificaciones</b></td><td><span class="badge b-ok">existe</span> <code>GET|PUT /records/grades</code> · <code>POST /records/grades/publish</code></td><td>Por comisión, con <code>PARTIAL</code>, <code>MAKEUP</code>, <code>ASSIGNMENT</code>, <code>COLLOQUIUM</code>, <code>FINAL_EXAM</code> + número de instancia. Las carga el docente; <code>DIRECTOR</code> ya puede rectificarlas con <code>PUT</code> (queda en auditoría). <span class="badge b-prop">propuesta</span> motivo obligatorio en la rectificación.</td></tr>
+      <tr><td><b>Horarios</b></td><td><span class="badge b-ok">existe</span> <code>schedule</code> de cada comisión (<code>PATCH /structure/commissions/:id</code>)</td><td><code>[{ day, start, end, room }]</code>. <span class="badge b-prop">propuesta</span> que la API rechace solapamientos de un mismo docente.</td></tr>
+      <tr><td><b>Calendario</b></td><td><span class="badge b-ok">existe</span> <code>GET|POST /records/events</code> · <code>PATCH|DELETE /records/events/:id</code></td><td>Tipos: <code>INSTITUTIONAL_DAY</code>, <code>CEREMONY</code>, <code>EXAM_PERIOD</code>, <code>GRADES_DEADLINE</code>, <code>HOLIDAY</code>, <code>CLASS</code>, <code>OTHER</code>.</td></tr>
+      <tr><td><b>Circulares</b></td><td><span class="badge b-ok">existe</span> <code>GET|POST /records/notices</code> · <code>PATCH /records/notices/:id</code></td><td>Destinatarios → <code>audience</code> (roles, carreras, años, comisiones). El contador de lecturas ya está preparado por Julián (propuesta P-JUL-01): usen ese, no armen otro.</td></tr>
+      <tr><td><b>Informes</b></td><td><span class="badge b-ok">existe</span> las mismas lecturas de arriba</td><td>El CSV se arma en pantalla con datos de la API. <span class="badge b-prop">propuesta</span> registrar cada exportación en auditoría (<code>EXPORT</code>).</td></tr>
+      <tr><td><b>Auditoría</b></td><td><span class="badge b-ok">existe</span> <code>GET /records/audit</code></td><td>La escribe la API sola en cada cambio. No hace falta una bitácora propia. Solo la ven <code>DIRECTOR</code> y <code>SUPER_ADMIN</code>.</td></tr>
+      <tr><td><b>Configuración</b></td><td><span class="badge b-ok">existe</span> <code>GET|PATCH /records/settings</code> · ciclo: <code>PATCH /structure/cycles/:id</code></td><td>Solo la cambian <code>DIRECTOR</code> y <code>SUPER_ADMIN</code> (Secretaría no). Ya tiene CUE, distrito, asistencia mínima y umbral de riesgo. <span class="badge b-prop">propuesta</span> región, autoridades, días seguidos para alerta temprana, nota mínima. Sacar «restablecer datos de demostración».</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section>
+  <h2><span class="n">4.</span>Traducción de valores</h2>
+  <p class="lead">En la base y en la API, siempre los códigos de la derecha. En pantalla pueden seguir mostrando los textos en castellano.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Hoy en la app</th><th>En el sistema</th></tr></thead>
+    <tbody>
+      <tr><td>Roles <code>DIRECTIVO</code> · <code>VICEDIRECTOR</code> · <code>SECRETARIA</code> · <code>PRECEPTORIA</code> · <code>DOCENTE</code></td><td><code>DIRECTOR</code> · <code>DIRECTOR</code> · <code>ADMINISTRATIVE</code> · <code>PRECEPTOR</code> · <code>TEACHER</code></td></tr>
+      <tr><td><code>ORIENTACION_ESCOLAR</code> (EOE)</td><td><span class="badge b-prop">propuesta</span> no existe todavía. Si distinguir a la vicedirección importa para los permisos, también va como propuesta.</td></tr>
+      <tr><td>Usuario <code>ACTIVO</code> / <code>INACTIVO</code></td><td><code>ACTIVE</code> / <code>INACTIVE</code></td></tr>
+      <tr><td>Turno <code>MAÑANA</code> / <code>TARDE</code> / <code>VESPERTINO</code></td><td><code>MORNING</code> / <code>AFTERNOON</code> / <code>EVENING</code></td></tr>
+      <tr><td>Ciclo <code>VIGENTE</code> / <code>CERRADO</code></td><td><code>ACTIVE</code> / <code>CLOSED</code> (también <code>PLANNED</code>)</td></tr>
+      <tr><td>Régimen <code>ANUAL</code> / <code>CUATRIMESTRAL</code></td><td><code>ANNUAL</code> / <code>FIRST_TERM</code> o <code>SECOND_TERM</code></td></tr>
+      <tr><td>Trimestres <code>1_TRIMESTRE</code>… <code>DICIEMBRE_FEBRERO</code></td><td>No aplica: las notas van por instancia de evaluación (ver sección 3).</td></tr>
+      <tr><td>Alumno <code>REGULAR</code> / <code>CONDICIONAL</code> / <code>EGRESADO</code> / <code>PASIVADO</code></td><td>Del alumno: <code>ACTIVE</code> / <code>GRADUATED</code> / <code>WITHDRAWN</code> / <code>INACTIVE</code>. «Regular» o «libre» es <b>por materia</b>: <code>Enrollment.condition</code> (<code>IN_PROGRESS</code>, <code>REGULAR</code>, <code>FREE</code>, <code>PROMOTED</code>, <code>PASSED</code>, <code>DROPPED</code>).</td></tr>
+      <tr><td>Docente <code>ACTIVO</code> / <code>LICENCIA</code> / <code>INACTIVO</code></td><td><code>ACTIVE</code> / <code>ON_LEAVE</code> / <code>INACTIVE</code></td></tr>
+      <tr><td>Situación de revista <code>TITULAR</code> / <code>PROVISIONAL</code> / <code>SUPLENTE</code></td><td><span class="badge b-prop">propuesta</span> no existe todavía en la asignación docente–comisión.</td></tr>
+      <tr><td>Asistencia <code>PRESENTE</code> · <code>TARDANZA</code> · <code>AUSENTE_INJUSTIFICADO</code></td><td><code>PRESENT</code> · <code>LATE</code> · <code>ABSENT</code></td></tr>
+      <tr><td><code>AUSENTE_JUSTIFICADO</code></td><td><code>ABSENT</code> + una justificación aprobada (<code>Justification</code>, <code>APPROVED</code>). «Justificado» no es un estado.</td></tr>
+      <tr><td>Umbral de inasistencia 15 %</td><td>La API trabaja con asistencia mínima (<code>minAttendancePercent</code>, hoy 75 %). 15 % de inasistencia equivale a 85 % de asistencia.</td></tr>
+      <tr><td>Circular: categoría <code>URGENTE</code> · <code>INSTITUCIONAL</code> · <code>PEDAGOGICO</code> · <code>ACADEMICO</code></td><td><code>URGENT</code> · <code>INSTITUTIONAL</code> · <code>PEDAGOGICAL</code> · <code>ACADEMIC</code></td></tr>
+      <tr><td>Circular: estado <code>BORRADOR</code> · <code>PUBLICADO</code> · <code>VENCIDO</code> · <code>ARCHIVADO</code></td><td><code>DRAFT</code> · <code>PUBLISHED</code> · <code>EXPIRED</code> · <code>ARCHIVED</code></td></tr>
+      <tr><td>Destinatarios <code>TODOS</code> · <code>DOCENTES</code> · <code>PRECEPTORES</code> · <code>FAMILIAS</code></td><td><code>audience.roles</code> vacío = todos · <code>["TEACHER"]</code> · <code>["PRECEPTOR"]</code> · <span class="badge b-prop">propuesta</span> familias (no hay cuentas de familias en terciario; confirmar si hace falta)</td></tr>
+      <tr><td>Ciclo como texto <code>'2026'</code></td><td>ID UUID del ciclo (<code>GET /academic/cycles/active</code> devuelve el vigente)</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section>
+  <h2><span class="n">5.</span>Qué sacar</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>Archivo o parte</th><th>Por qué</th></tr></thead>
+    <tbody>
+      <tr><td><code>api/state.ts</code>, <code>api/_auth.ts</code>, <code>api/auth/*</code>, <code>db/schema.sql</code></td><td>Los reemplaza la API común.</td></tr>
+      <tr><td>Variables <code>DATABASE_URL</code>, <code>INITIAL_ADMIN_USERNAME</code>, <code>INITIAL_ADMIN_PASSWORD</code> en su Vercel</td><td>El frontend no se conecta a ninguna base: habla con <code>/api/v1</code>.</td></tr>
+      <tr><td><code>services/googleAuth.ts</code>, <code>services/googleDriveService.ts</code>, <code>GoogleDriveBackupModal.tsx</code></td><td>Sacan datos personales de alumnos a un Drive. Los respaldos se hacen de Neon.</td></tr>
+      <tr><td>Respaldo en <code>localStorage</code> dentro de <code>AppContext</code></td><td>En <code>localStorage</code> solo van preferencias de pantalla. Si la API no responde, se muestra un aviso; no se trabaja con una copia vieja.</td></tr>
+      <tr><td><code>data/mockData.ts</code> como dato inicial de la base</td><td>Puede quedar para el modo demostración, pero nunca debe guardarse en la base.</td></tr>
+      <tr><td>Selector de rol en la barra superior</td><td>El rol sale de la sesión (<code>/auth/me</code>), no se elige.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section>
+  <h2><span class="n">6.</span>En qué orden hacerlo</h2>
+  <ol>
+    <li><b>Responder la pregunta de la sección 0</b> (a qué base está conectada) y frenar la carga de datos reales.</li>
+    <li><b>Levantar la API común en local</b>: en la raíz del repo, <code>npm run dev:api</code> (puerto 4000). Para Directivos conviene trabajar directo contra ella: casi todo lo que necesitan ya existe, así que no hace falta una base propia.</li>
+    <li><b>Armar la capa de API</b> en <code>src/api/</code>: un <code>client.ts</code> con la dirección base, y un archivo por grupo (<code>users.ts</code>, <code>structure.ts</code>, <code>attendance.ts</code>, <code>records.ts</code>). Pueden copiar los tipos de <code>shared/types.ts</code> y las funciones de <code>shared/api.ts</code> del repo.</li>
+    <li><b>Cambiar el login</b> por <code>/auth/login</code> + <code>/auth/me</code>, y sacar el selector de rol.</li>
+    <li><b>Pasar pantalla por pantalla</b> de <code>AppContext</code> a la capa de API, en este orden: usuarios → cursos y matrícula → configuración → comunicados y calendario → asistencia y notas (lectura) → informes y auditoría.</li>
+    <li><b>Anotar en <code>PROPUESTAS.md</code></b> lo marcado como propuesta (EOE, vicedirección, situación de revista, rectificación de notas, solapamientos, alerta temprana, datos de la institución, familias). Usen el prefijo <code>P-DIR-</code>.</li>
+    <li><b>Sacar</b> lo de la sección 5.</li>
+    <li><b>Dejar el CHANGELOG</b> con lo hecho y lo que no probaron.</li>
+  </ol>
+  <div class="callout ok">Las reglas generales (nombres, formatos, errores, cómo proponer cosas nuevas) están en <code>docs/CONTRATO_UNIFICACION.html</code> del repo. Esta nota es lo específico de su app.</div>
+</section>
+
+<section>
+  <h2><span class="n">7.</span>Texto para pegar en las instrucciones de su agente</h2>
+<pre><code>## Integración con el sistema común (obligatorio)
+
+Esta app es el panel de Directivos del Sistema de Gestión i26. NO tiene base ni
+login propios: usa la API común /api/v1 (backend/ en la raíz del repo, en local
+con `npm run dev:api` en el puerto 4000).
+
+Antes de cambiar algo, leé docs/CONTRATO_UNIFICACION.html y
+docs/NOTA_DIRECTIVOS_UNIFICACION.html.
+
+- Login: POST /auth/login, GET /auth/me, cookie sga_session, credentials:'include'.
+  El rol sale de la sesión; no hay selector de rol.
+- Datos: /users, /structure/*, /attendance/*, /records/* (ver la tabla de la nota).
+  Nada de /api/state, institution_state, app_accounts ni DATABASE_URL en esta app.
+- Modelo terciario: carrera, plan, materia, comisión, ciclo. Sin divisiones ni
+  trimestres. Códigos en inglés (DIRECTOR, PRESENT, MORNING…); castellano en pantalla.
+- "Ausente justificado" = ABSENT + Justification APPROVED.
+- Toda llamada al servidor va en src/api/. localStorage solo para preferencias.
+- Sin Google Drive ni Firebase: no sacar datos de alumnos del sistema.
+- Lo que no exista en la API se anota en PROPUESTAS.md (prefijo P-DIR-) y se
+  marca "// PROPUESTA directivos: motivo". No se inventan rutas ni tablas.
+- Al terminar: CHANGELOG.md con lo hecho y lo que no se probó.</code></pre>
+</section>
+
+</main>
+<footer>Sistema de Gestión i26 · Nota para Directivos · 06/11/2026 · Dudas: equipo central de integración.</footer>
+</body>
+</html>

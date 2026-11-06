@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 2026-11-06 — Nota de integración para Directivos (App perfil directivo neon)
+
+- Nuevo `docs/NOTA_DIRECTIVOS_UNIFICACION.html`: qué tiene que cambiar la app subida en 814a520/5be26e8 para sumarse al sistema común. Detectado: login y cuentas propias (`app_accounts`, `app_sessions`), todo el estado en un JSON (`institution_state`), modelo de secundaria (divisiones, trimestres), respaldo a Google Drive/Firebase y `localStorage`, y uso de `DATABASE_URL` (riesgo de tablas sueltas en la base común).
+- La nota incluye: pregunta urgente sobre a qué Neon está conectado su Vercel, pantalla por pantalla qué ruta de `/api/v1` usar, traducción de valores, qué archivos sacar, orden de trabajo, propuestas `P-DIR-` y texto para su agente.
+- Pendiente: que Directivos confirme a qué base conectó su proyecto de Vercel. No se pudo revisar Neon desde esta máquina (`P1001: Can't reach database server`).
+- Sin cambios de código, base ni despliegue.
+
 ## 2026-11-06 — Backend autónomo, Agenda, Mensajería y Calificaciones en Profesores (Nicolás)
 
 - **Backend Autónomo (`profesores-nicolas/backend/`)**:
