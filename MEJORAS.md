@@ -33,6 +33,15 @@ La matriz `docs/ESTADO_VALIDACION.md` distingue implementado, probado en local, 
 
 ## Bitácora
 
+- 2026-11-06 — Antigravity / Nicolas — Módulo Docente / Profesor:
+  - Creación del backend autónomo para `profesores-nicolas` en `profesores-nicolas/backend/` (Node.js ESM, `server.js`, `store.js`, persistencia local `db.json` y batería de pruebas `test.js` con 9/9 tests superados).
+  - Incorporación de las funcionalidades requeridas:
+    1. **Agenda Académica**: calendario de exámenes parciales, recuperatorios, mesas de final, entregas de trabajos prácticos y eventos con recordatorios.
+    2. **Mensajería Institucional**: comunicación directa con estudiantes, preceptoría y directivos con clasificación de mensajes, estado de lectura e hilos de chat.
+    3. **Calificaciones (Parciales y Finales)**: planilla integral de cursada, 1° y 2° parcial, recuperatorios, examen final, promedios automáticos, sugerencia de condición académica (Promocionado, Regular, Libre) y publicación formal de actas.
+  - Vistas añadidas y actualizadas en `profesores-nicolas/app/`: `AgendaView.tsx`, `MessagesView.tsx`, `GradesView.tsx`, `Sidebar.tsx`, `App.tsx` y `DashboardView.tsx`.
+  - Sin modificaciones a otros módulos del repositorio, preservando la compatibilidad de contratos para la futura integración del profesor.
+
 - 2026-10-30 — GPT/Codex — Inicio arquitectónico de la conexión de Alumnos V2: confirmé que Neon + Prisma + `/api/v1` ya es la base/API compartida de los cuatro módulos. No se crea una segunda base ni se ejecutan migraciones. El contrato documenta las relaciones, límites de acceso, proxy con cookie HttpOnly y fases para sustituir `demoDB`; lecturas públicas de salud/rutas solo, sin cambios ni exposición de datos personales.
 
 - 2026-10-30 — GPT/Codex — Publicado el panel de AI Studio `alumnos-julian/app v2/` en el proyecto Vercel independiente [alumnos-julian-v2.vercel.app](https://alumnos-julian-v2.vercel.app). Build de producción listo y HTTP 200 confirmado. No cambia el sitio unificado; la app todavía usa datos locales de demostración y no está conectada a la base institucional.

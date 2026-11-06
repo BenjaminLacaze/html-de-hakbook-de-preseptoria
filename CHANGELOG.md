@@ -1,5 +1,19 @@
 # CHANGELOG
 
+## 2026-11-06 — Backend autónomo, Agenda, Mensajería y Calificaciones en Profesores (Nicolás)
+
+- **Backend Autónomo (`profesores-nicolas/backend/`)**:
+  - Servidor REST nativo en Node.js ESM (`server.js`) en puerto 4001, sin dependencias pesadas de terceros, con soporte CORS y persistencia local estructurada en `data/db.json`.
+  - Capa de datos semilla precargada con cátedras del ISFDyT N.° 26, estudiantes con legajo/DNI, asistencias, observaciones, notas de parciales/finales, eventos de agenda y mensajes.
+  - Batería de pruebas automatizadas `test.js` que valida 9 circuitos REST completos (salud, perfil docente, comisiones, agenda, cálculo de notas y promedios, guardado y mensajería).
+- **Funcionalidades Agregadas al Módulo Docente**:
+  - **Agenda Académica (`AgendaView.tsx`)**: Gestión de fechas de clases, 1° y 2° parcial, recuperatorios, mesas de exámenes finales y entregas de TP con días de anticipación y marcado de cumplimiento.
+  - **Mensajería Institucional (`MessagesView.tsx`)**: Bandeja de entrada y enviados, selección de destinatarios (alumnos, preceptor, directivos), clasificación por categorías (*Académico*, *Institucional*, *Directivo*) e hilos de conversación.
+  - **Calificaciones de Parciales y Finales (`GradesView.tsx`)**: Sábana general de notas por comisión, cálculo automático de promedios de cursada, asignación de condición (*Promocionado* $\ge 7$, *Regular* $\ge 4$, *Libre*), soporte para recuperatorios 1 y 2, registro de mesa de examen final y publicación formal de actas.
+- **Navegación e Integración (`profesores-nicolas/app/`)**:
+  - `Sidebar.tsx`, `App.tsx` y `DashboardView.tsx` integran los accesos y vistas con accesibilidad WCAG AAA y estilos institucionales del instituto.
+  - No se modificaron archivos fuera de `profesores-nicolas/`, asegurando que la conexión posterior con el backend central por parte del profesor sea directa y limpia.
+
 ## 2026-10-30 — Contrato de unificación para los equipos
 
 - Nuevo `docs/CONTRATO_UNIFICACION.html`: hoja técnica autocontenida (se abre sin servidor) para que cada equipo y su agente de IA prototipen en local con SQLite + Prisma siguiendo el modelo central. Equipos: Julián (Alumnos, Preceptoría, Centro, Auxiliares), Jesica y Agustín (Directivos), Nicolás (Profesores).

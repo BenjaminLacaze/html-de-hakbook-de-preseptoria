@@ -10,6 +10,8 @@ import {
   Calendar,
   Clock,
   MapPin,
+  GraduationCap,
+  Mail,
 } from 'lucide-react';
 
 interface DashboardViewProps {
@@ -235,6 +237,138 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </div>
             </div>
             <ArrowRight size={18} color="var(--isf-gold-ochre)" aria-hidden="true" />
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onNavigate('grades')}
+            className="card card-interactive"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              cursor: 'pointer',
+              border: '1px solid var(--color-border-light)',
+              borderTop: '3px solid #89743A',
+              backgroundColor: '#FFFFFF',
+              textAlign: 'left',
+              padding: '1.25rem',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <div
+                style={{
+                  width: '44px',
+                  height: '44px',
+                  borderRadius: '10px',
+                  backgroundColor: '#89743A',
+                  color: '#FFFFFF',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                }}
+              >
+                <GraduationCap size={22} aria-hidden="true" />
+              </div>
+              <div>
+                <strong style={{ fontSize: '1rem', color: 'var(--isf-blue-primary)', display: 'block' }}>
+                  Calificaciones: Parciales y Finales
+                </strong>
+                <span style={{ fontSize: '0.82rem', color: 'var(--color-text-muted)' }}>
+                  Planilla de notas, promedios, actas y condición
+                </span>
+              </div>
+            </div>
+            <ArrowRight size={18} color="#89743A" aria-hidden="true" />
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onNavigate('agenda')}
+            className="card card-interactive"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              cursor: 'pointer',
+              border: '1px solid var(--color-border-light)',
+              borderTop: '3px solid var(--isf-blue-sky)',
+              backgroundColor: '#FFFFFF',
+              textAlign: 'left',
+              padding: '1.25rem',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <div
+                style={{
+                  width: '44px',
+                  height: '44px',
+                  borderRadius: '10px',
+                  backgroundColor: 'var(--isf-blue-sky)',
+                  color: '#FFFFFF',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                }}
+              >
+                <Calendar size={22} aria-hidden="true" />
+              </div>
+              <div>
+                <strong style={{ fontSize: '1rem', color: 'var(--isf-blue-primary)', display: 'block' }}>
+                  Agenda Académica
+                </strong>
+                <span style={{ fontSize: '0.82rem', color: 'var(--color-text-muted)' }}>
+                  Fechas de parciales, recuperatorios y mesas de final
+                </span>
+              </div>
+            </div>
+            <ArrowRight size={18} color="var(--isf-blue-sky)" aria-hidden="true" />
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onNavigate('messages')}
+            className="card card-interactive"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              cursor: 'pointer',
+              border: '1px solid var(--color-border-light)',
+              borderTop: '3px solid #10B981',
+              backgroundColor: '#FFFFFF',
+              textAlign: 'left',
+              padding: '1.25rem',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <div
+                style={{
+                  width: '44px',
+                  height: '44px',
+                  borderRadius: '10px',
+                  backgroundColor: '#10B981',
+                  color: '#FFFFFF',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                }}
+              >
+                <Mail size={22} aria-hidden="true" />
+              </div>
+              <div>
+                <strong style={{ fontSize: '1rem', color: 'var(--isf-blue-primary)', display: 'block' }}>
+                  Mensajería Institucional
+                </strong>
+                <span style={{ fontSize: '0.82rem', color: 'var(--color-text-muted)' }}>
+                  Comunicación directa con alumnos, preceptores y directivos
+                </span>
+              </div>
+            </div>
+            <ArrowRight size={18} color="#10B981" aria-hidden="true" />
           </button>
         </div>
       </section>

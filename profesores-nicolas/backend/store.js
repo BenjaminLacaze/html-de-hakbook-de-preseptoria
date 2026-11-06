@@ -1,0 +1,482 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const DATA_DIR = path.join(__dirname, 'data');
+const DB_FILE = path.join(DATA_DIR, 'db.json');
+
+// Semilla inicial completa con datos del ISFDyT N.° 26
+const initialSeed = {
+  teacher: {
+    id: 'tch-8492',
+    legajo: 'DOC-8492',
+    name: 'Prof. Lic. Martín Soler',
+    title: 'Profesor en Matemática y Especialista en Didáctica Superior',
+    email: 'martin.soler@isfdyt26.edu.ar',
+    department: 'Departamento de Formación Docente y Ciencias Exactas',
+    avatarUrl: null
+  },
+  commissions: [
+    {
+      id: 'com-mat-1a',
+      code: 'MAT-101-1A',
+      name: 'Matemática y su Enseñanza I - 1° A',
+      subjectId: 'sub-mat-1',
+      subjectName: 'Matemática y su Enseñanza I',
+      careerName: 'Profesorado de Educación Primaria',
+      academicYear: '2026',
+      shift: 'Mañana',
+      schedule: 'Lunes 08:00–10:00 · Miércoles 08:00–10:00',
+      classroom: 'Aula 4 (Planta Baja)',
+      teacherId: 'tch-8492',
+      studentCount: 5
+    },
+    {
+      id: 'com-alg-1b',
+      code: 'ALG-102-1B',
+      name: 'Álgebra y Geometría I - 1° B',
+      subjectId: 'sub-alg-1',
+      subjectName: 'Álgebra y Geometría I',
+      careerName: 'Profesorado de Matemática',
+      academicYear: '2026',
+      shift: 'Vespertino',
+      schedule: 'Martes 18:30–21:30 · Jueves 18:30–20:30',
+      classroom: 'Aula Magna 2',
+      teacherId: 'tch-8492',
+      studentCount: 4
+    },
+    {
+      id: 'com-did-2a',
+      code: 'DID-201-2A',
+      name: 'Didáctica de la Matemática - 2° A',
+      subjectId: 'sub-did-2',
+      subjectName: 'Didáctica de la Matemática',
+      careerName: 'Profesorado de Matemática',
+      academicYear: '2026',
+      shift: 'Tarde',
+      schedule: 'Viernes 13:30–17:30',
+      classroom: 'Aula 8',
+      teacherId: 'tch-8492',
+      studentCount: 3
+    }
+  ],
+  students: [
+    {
+      id: 'stu-001',
+      legajo: 'ALU-4819',
+      dni: '44.821.903',
+      lastName: 'Álvarez',
+      firstName: 'Camila Belén',
+      email: 'c.alvarez@alumnos.isfdyt26.edu.ar',
+      commissionId: 'com-mat-1a',
+      status: 'REGULAR',
+      enrollmentDate: '2026-03-05'
+    },
+    {
+      id: 'stu-002',
+      legajo: 'ALU-4820',
+      dni: '43.210.874',
+      lastName: 'Benítez',
+      firstName: 'Mateo Alejandro',
+      email: 'm.benitez@alumnos.isfdyt26.edu.ar',
+      commissionId: 'com-mat-1a',
+      status: 'REGULAR',
+      enrollmentDate: '2026-03-05'
+    },
+    {
+      id: 'stu-003',
+      legajo: 'ALU-4821',
+      dni: '45.109.432',
+      lastName: 'Cardozo',
+      firstName: 'Luciana Inés',
+      email: 'l.cardozo@alumnos.isfdyt26.edu.ar',
+      commissionId: 'com-mat-1a',
+      status: 'CURSANDO',
+      enrollmentDate: '2026-03-06'
+    },
+    {
+      id: 'stu-004',
+      legajo: 'ALU-4822',
+      dni: '42.987.654',
+      lastName: 'Díaz',
+      firstName: 'Gonzalo Esteban',
+      email: 'g.diaz@alumnos.isfdyt26.edu.ar',
+      commissionId: 'com-mat-1a',
+      status: 'LIBRE',
+      enrollmentDate: '2026-03-06'
+    },
+    {
+      id: 'stu-005',
+      legajo: 'ALU-4823',
+      dni: '44.567.890',
+      lastName: 'Espínola',
+      firstName: 'Sofía Valentina',
+      email: 's.espinola@alumnos.isfdyt26.edu.ar',
+      commissionId: 'com-mat-1a',
+      status: 'PROMOCIONADO',
+      enrollmentDate: '2026-03-07'
+    },
+    {
+      id: 'stu-006',
+      legajo: 'ALU-4901',
+      dni: '43.882.119',
+      lastName: 'Ferrari',
+      firstName: 'Agustín Tomás',
+      email: 'a.ferrari@alumnos.isfdyt26.edu.ar',
+      commissionId: 'com-alg-1b',
+      status: 'REGULAR',
+      enrollmentDate: '2026-03-08'
+    },
+    {
+      id: 'stu-007',
+      legajo: 'ALU-4902',
+      dni: '45.340.912',
+      lastName: 'Giménez',
+      firstName: 'Valeria Rocío',
+      email: 'v.gimenez@alumnos.isfdyt26.edu.ar',
+      commissionId: 'com-alg-1b',
+      status: 'CURSANDO',
+      enrollmentDate: '2026-03-08'
+    },
+    {
+      id: 'stu-008',
+      legajo: 'ALU-4903',
+      dni: '42.119.554',
+      lastName: 'Herrera',
+      firstName: 'Facundo Damián',
+      email: 'f.herrera@alumnos.isfdyt26.edu.ar',
+      commissionId: 'com-alg-1b',
+      status: 'REGULAR',
+      enrollmentDate: '2026-03-09'
+    },
+    {
+      id: 'stu-009',
+      legajo: 'ALU-4904',
+      dni: '44.009.281',
+      lastName: 'Ibarra',
+      firstName: 'Micaela Soledad',
+      email: 'm.ibarra@alumnos.isfdyt26.edu.ar',
+      commissionId: 'com-alg-1b',
+      status: 'REGULAR',
+      enrollmentDate: '2026-03-09'
+    },
+    {
+      id: 'stu-010',
+      legajo: 'ALU-5011',
+      dni: '41.982.333',
+      lastName: 'Juárez',
+      firstName: 'Martín Ignacio',
+      email: 'm.juarez@alumnos.isfdyt26.edu.ar',
+      commissionId: 'com-did-2a',
+      status: 'REGULAR',
+      enrollmentDate: '2026-03-10'
+    },
+    {
+      id: 'stu-011',
+      legajo: 'ALU-5012',
+      dni: '43.765.221',
+      lastName: 'López',
+      firstName: 'Clara Victoria',
+      email: 'c.lopez@alumnos.isfdyt26.edu.ar',
+      commissionId: 'com-did-2a',
+      status: 'PROMOCIONADO',
+      enrollmentDate: '2026-03-10'
+    },
+    {
+      id: 'stu-012',
+      legajo: 'ALU-5013',
+      dni: '44.112.980',
+      lastName: 'Martínez',
+      firstName: 'Emiliano',
+      email: 'e.martinez@alumnos.isfdyt26.edu.ar',
+      commissionId: 'com-did-2a',
+      status: 'CURSANDO',
+      enrollmentDate: '2026-03-11'
+    }
+  ],
+  sessions: [
+    {
+      id: 'ses-101',
+      commissionId: 'com-mat-1a',
+      date: '2026-04-06',
+      topic: 'Presentación del programa y campos numéricos',
+      isClosed: true,
+      registeredCount: 5
+    },
+    {
+      id: 'ses-102',
+      commissionId: 'com-mat-1a',
+      date: '2026-04-13',
+      topic: 'Sistemas de numeración posicionales y no posicionales',
+      isClosed: true,
+      registeredCount: 5
+    },
+    {
+      id: 'ses-103',
+      commissionId: 'com-mat-1a',
+      date: '2026-04-20',
+      topic: 'Operaciones fundamentales y propiedades algebraicas',
+      isClosed: false,
+      registeredCount: 5
+    }
+  ],
+  attendance: [
+    { id: 'att-101-1', classSessionId: 'ses-101', studentId: 'stu-001', status: 'PRESENTE', recordedAt: '2026-04-06T08:15:00Z', recordedByTeacherId: 'tch-8492' },
+    { id: 'att-101-2', classSessionId: 'ses-101', studentId: 'stu-002', status: 'PRESENTE', recordedAt: '2026-04-06T08:15:00Z', recordedByTeacherId: 'tch-8492' },
+    { id: 'att-101-3', classSessionId: 'ses-101', studentId: 'stu-003', status: 'TARDE', recordedAt: '2026-04-06T08:15:00Z', recordedByTeacherId: 'tch-8492' },
+    { id: 'att-101-4', classSessionId: 'ses-101', studentId: 'stu-004', status: 'AUSENTE', recordedAt: '2026-04-06T08:15:00Z', recordedByTeacherId: 'tch-8492' },
+    { id: 'att-101-5', classSessionId: 'ses-101', studentId: 'stu-005', status: 'PRESENTE', recordedAt: '2026-04-06T08:15:00Z', recordedByTeacherId: 'tch-8492' }
+  ],
+  observations: [
+    {
+      id: 'obs-001',
+      commissionId: 'com-mat-1a',
+      commissionName: 'Matemática y su Enseñanza I - 1° A',
+      studentId: 'stu-001',
+      studentName: 'Álvarez, Camila Belén',
+      studentLegajo: 'ALU-4819',
+      pedagogicalDate: '2026-04-13',
+      createdAt: '2026-04-13T10:30:00Z',
+      content: 'Excelente participación en la resolución de problemas en el pizarrón. Manifiesta solvencia en propiedades conmutativa y asociativa.',
+      category: 'Participación y desempeño',
+      teacherId: 'tch-8492'
+    },
+    {
+      id: 'obs-002',
+      commissionId: 'com-mat-1a',
+      commissionName: 'Matemática y su Enseñanza I - 1° A',
+      studentId: 'stu-004',
+      studentName: 'Díaz, Gonzalo Esteban',
+      studentLegajo: 'ALU-4822',
+      pedagogicalDate: '2026-04-20',
+      createdAt: '2026-04-20T11:00:00Z',
+      content: 'Acumula 3 inasistencias consecutivas sin justificación. Se dio aviso a Preceptoría para seguimiento pedagógico integral.',
+      category: 'Seguimiento pedagógico',
+      teacherId: 'tch-8492'
+    }
+  ],
+  grades: [
+    // 1° Parcial
+    { id: 'grd-001', commissionId: 'com-mat-1a', studentId: 'stu-001', type: 'PARCIAL_1', instance: 1, date: '2026-05-18', value: 8.5, absent: false, published: true, publishedAt: '2026-05-20T14:00:00Z', notes: 'Buen desarrollo metodológico.' },
+    { id: 'grd-002', commissionId: 'com-mat-1a', studentId: 'stu-002', type: 'PARCIAL_1', instance: 1, date: '2026-05-18', value: 6.0, absent: false, published: true, publishedAt: '2026-05-20T14:00:00Z', notes: 'Aprobado justo. Revisar polinomios.' },
+    { id: 'grd-003', commissionId: 'com-mat-1a', studentId: 'stu-003', type: 'PARCIAL_1', instance: 1, date: '2026-05-18', value: 4.0, absent: false, published: true, publishedAt: '2026-05-20T14:00:00Z', notes: 'Alcanza el mínimo de regularidad.' },
+    { id: 'grd-004', commissionId: 'com-mat-1a', studentId: 'stu-004', type: 'PARCIAL_1', instance: 1, date: '2026-05-18', value: null, absent: true, published: true, publishedAt: '2026-05-20T14:00:00Z', notes: 'Ausente en primera fecha.' },
+    { id: 'grd-005', commissionId: 'com-mat-1a', studentId: 'stu-005', type: 'PARCIAL_1', instance: 1, date: '2026-05-18', value: 9.5, absent: false, published: true, publishedAt: '2026-05-20T14:00:00Z', notes: 'Sobresaliente.' },
+    // 2° Parcial
+    { id: 'grd-006', commissionId: 'com-mat-1a', studentId: 'stu-001', type: 'PARCIAL_2', instance: 1, date: '2026-06-22', value: 9.0, absent: false, published: true, publishedAt: '2026-06-24T12:00:00Z', notes: 'Excelente dominio de derivadas.' },
+    { id: 'grd-007', commissionId: 'com-mat-1a', studentId: 'stu-002', type: 'PARCIAL_2', instance: 1, date: '2026-06-22', value: 7.0, absent: false, published: true, publishedAt: '2026-06-24T12:00:00Z', notes: 'Aprobado con solvencia.' },
+    { id: 'grd-008', commissionId: 'com-mat-1a', studentId: 'stu-003', type: 'PARCIAL_2', instance: 1, date: '2026-06-22', value: 3.5, absent: false, published: true, publishedAt: '2026-06-24T12:00:00Z', notes: 'Desaprobado. Pasa a instancia de recuperatorio.' },
+    { id: 'grd-009', commissionId: 'com-mat-1a', studentId: 'stu-004', type: 'PARCIAL_2', instance: 1, date: '2026-06-22', value: null, absent: true, published: true, publishedAt: '2026-06-24T12:00:00Z', notes: 'Ausente.' },
+    { id: 'grd-010', commissionId: 'com-mat-1a', studentId: 'stu-005', type: 'PARCIAL_2', instance: 1, date: '2026-06-22', value: 10.0, absent: false, published: true, publishedAt: '2026-06-24T12:00:00Z', notes: 'Promoción directa asegurada.' },
+    // Recuperatorios
+    { id: 'grd-011', commissionId: 'com-mat-1a', studentId: 'stu-003', type: 'RECUPERATORIO_2', instance: 1, date: '2026-07-01', value: 6.0, absent: false, published: true, publishedAt: '2026-07-03T10:00:00Z', notes: 'Recuperatorio aprobado; alcanza regularidad.' },
+    // Examen Final / Cierre
+    { id: 'grd-012', commissionId: 'com-mat-1a', studentId: 'stu-001', type: 'FINAL', instance: 1, date: '2026-07-15', value: 9.0, absent: false, published: true, publishedAt: '2026-07-16T18:00:00Z', notes: 'Mesa de Julio: Promoción directa acreditada.' },
+    { id: 'grd-013', commissionId: 'com-mat-1a', studentId: 'stu-005', type: 'FINAL', instance: 1, date: '2026-07-15', value: 10.0, absent: false, published: true, publishedAt: '2026-07-16T18:00:00Z', notes: 'Mesa de Julio: Promoción con distinción.' }
+  ],
+  agenda: [
+    {
+      id: 'ev-001',
+      commissionId: 'com-mat-1a',
+      commissionName: 'Matemática y su Enseñanza I - 1° A',
+      title: '1° Examen Parcial Teórico-Práctico',
+      description: 'Evaluación presencial individual. Contenidos: Unidades 1 y 2. Aula 4.',
+      type: 'PARCIAL',
+      date: '2026-05-18',
+      time: '08:00',
+      location: 'Aula 4',
+      reminderDaysBefore: 3,
+      isCompleted: true
+    },
+    {
+      id: 'ev-002',
+      commissionId: 'com-mat-1a',
+      commissionName: 'Matemática y su Enseñanza I - 1° A',
+      title: 'Entrega Trabajo Práctico Integrador N.° 1',
+      description: 'Informe grupal sobre resolución de situaciones problemáticas en Nivel Primario.',
+      type: 'ENTREGA_TP',
+      date: '2026-06-08',
+      time: '10:00',
+      location: 'Plataforma / En mano',
+      reminderDaysBefore: 2,
+      isCompleted: true
+    },
+    {
+      id: 'ev-003',
+      commissionId: 'com-mat-1a',
+      commissionName: 'Matemática y su Enseñanza I - 1° A',
+      title: '2° Examen Parcial',
+      description: 'Evaluación de Unidades 3 y 4: Cálculo diferencial e integral básico.',
+      type: 'PARCIAL',
+      date: '2026-06-22',
+      time: '08:00',
+      location: 'Aula 4',
+      reminderDaysBefore: 5,
+      isCompleted: true
+    },
+    {
+      id: 'ev-004',
+      commissionId: 'com-mat-1a',
+      commissionName: 'Matemática y su Enseñanza I - 1° A',
+      title: 'Instancia Integradora de Recuperatorios',
+      description: 'Recuperatorio de 1° y 2° parcial para alumnos en condición de cursada.',
+      type: 'RECUPERATORIO',
+      date: '2026-07-01',
+      time: '08:00',
+      location: 'Aula 4',
+      reminderDaysBefore: 2,
+      isCompleted: true
+    },
+    {
+      id: 'ev-005',
+      commissionId: 'com-mat-1a',
+      commissionName: 'Matemática y su Enseñanza I - 1° A',
+      title: 'Mesa de Exámenes Finales - Turno Julio/Agosto',
+      description: 'Mesa regular y promocionados. Vocal: Prof. González. Presidente: Prof. Soler.',
+      type: 'FINAL',
+      date: '2026-07-15',
+      time: '08:30',
+      location: 'Aula Magna 1',
+      reminderDaysBefore: 7,
+      isCompleted: false
+    },
+    {
+      id: 'ev-006',
+      commissionId: 'com-alg-1b',
+      commissionName: 'Álgebra y Geometría I - 1° B',
+      title: 'Clase Especial de Consulta y Ejercitación',
+      description: 'Resolución de guías de vectores y matrices.',
+      type: 'CLASE',
+      date: '2026-11-12',
+      time: '18:30',
+      location: 'Aula Magna 2',
+      reminderDaysBefore: 1,
+      isCompleted: false
+    },
+    {
+      id: 'ev-007',
+      commissionId: 'com-did-2a',
+      commissionName: 'Didáctica de la Matemática - 2° A',
+      title: 'Jornada Institucional de Planificación',
+      description: 'Encuentro pedagógico general de docentes del ISFDyT N.° 26.',
+      type: 'EVENTO',
+      date: '2026-11-20',
+      time: '14:00',
+      location: 'Salón de Actos',
+      reminderDaysBefore: 3,
+      isCompleted: false
+    }
+  ],
+  contacts: [
+    { id: 'usr-dir-01', name: 'Lic. Agustina Valenzuela', role: 'Directora', email: 'direccion@isfdyt26.edu.ar', avatar: '👩‍🏫', category: 'Directivo' },
+    { id: 'usr-prec-01', name: 'Benjamín Lacaze', role: 'Preceptor Cátedra Exactas', email: 'preceptoria.exactas@isfdyt26.edu.ar', avatar: '👨‍💼', category: 'Preceptor' },
+    { id: 'stu-001', name: 'Camila Belén Álvarez', role: 'Estudiante (Matemática I)', email: 'c.alvarez@alumnos.isfdyt26.edu.ar', avatar: '🎓', category: 'Alumno' },
+    { id: 'stu-002', name: 'Mateo Alejandro Benítez', role: 'Estudiante (Matemática I)', email: 'm.benitez@alumnos.isfdyt26.edu.ar', avatar: '🎓', category: 'Alumno' },
+    { id: 'stu-003', name: 'Luciana Inés Cardozo', role: 'Estudiante (Matemática I)', email: 'l.cardozo@alumnos.isfdyt26.edu.ar', avatar: '🎓', category: 'Alumno' },
+    { id: 'stu-004', name: 'Gonzalo Esteban Díaz', role: 'Estudiante (Matemática I)', email: 'g.diaz@alumnos.isfdyt26.edu.ar', avatar: '🎓', category: 'Alumno' },
+    { id: 'stu-005', name: 'Sofía Valentina Espínola', role: 'Estudiante (Matemática I)', email: 's.espinola@alumnos.isfdyt26.edu.ar', avatar: '🎓', category: 'Alumno' }
+  ],
+  messages: [
+    {
+      id: 'msg-001',
+      senderId: 'usr-prec-01',
+      senderName: 'Benjamín Lacaze (Preceptor)',
+      recipientId: 'tch-8492',
+      recipientName: 'Prof. Lic. Martín Soler',
+      subject: 'Inasistencias del estudiante Gonzalo Díaz',
+      body: 'Estimado profesor Martín, hemos tomado nota de su observación pedagógica sobre el estudiante Gonzalo Díaz. Coordinaremos una entrevista con el equipo de orientación escolar.',
+      createdAt: '2026-04-21T09:15:00Z',
+      isRead: true,
+      category: 'INSTITUCIONAL'
+    },
+    {
+      id: 'msg-002',
+      senderId: 'tch-8492',
+      senderName: 'Prof. Lic. Martín Soler',
+      recipientId: 'usr-prec-01',
+      recipientName: 'Benjamín Lacaze (Preceptor)',
+      subject: 'Re: Inasistencias del estudiante Gonzalo Díaz',
+      body: 'Muchas gracias Benjamín por la rápida intervención. Quedo a disposición para lo que requiera el gabinete pedagógico.',
+      createdAt: '2026-04-21T10:45:00Z',
+      isRead: true,
+      category: 'INSTITUCIONAL'
+    },
+    {
+      id: 'msg-003',
+      senderId: 'stu-001',
+      senderName: 'Camila Belén Álvarez',
+      recipientId: 'tch-8492',
+      recipientName: 'Prof. Lic. Martín Soler',
+      subject: 'Consulta sobre el ejercicio 4 del Trabajo Práctico',
+      body: 'Buenas tardes profesor. Con mi grupo tenemos una duda respecto a la demostración por inducción completa del ejercicio 4. ¿Podremos consultarlo 10 minutos antes de la clase del lunes?',
+      createdAt: '2026-06-05T16:20:00Z',
+      isRead: true,
+      category: 'ACADEMICO'
+    },
+    {
+      id: 'msg-004',
+      senderId: 'tch-8492',
+      senderName: 'Prof. Lic. Martín Soler',
+      recipientId: 'stu-001',
+      recipientName: 'Camila Belén Álvarez',
+      subject: 'Re: Consulta sobre el ejercicio 4 del Trabajo Práctico',
+      body: 'Hola Camila. Por supuesto, estaré en el aula 4 desde las 07:45 para revisar la duda con ustedes. ¡Saludos!',
+      createdAt: '2026-06-05T18:00:00Z',
+      isRead: true,
+      category: 'ACADEMICO'
+    },
+    {
+      id: 'msg-005',
+      senderId: 'usr-dir-01',
+      senderName: 'Lic. Agustina Valenzuela (Directora)',
+      recipientId: 'tch-8492',
+      recipientName: 'Prof. Lic. Martín Soler',
+      subject: 'Recordatorio: Cierre de Actas Primer Cuatrimestre',
+      body: 'Estimados docentes: Les recordamos que la fecha límite para la publicación y cierre de actas de cursada del primer cuatrimestre es el 20 de julio. Saludos cordiales.',
+      createdAt: '2026-07-02T11:00:00Z',
+      isRead: false,
+      category: 'DIRECTIVO'
+    }
+  ]
+};
+
+// Carga o inicializa la base local
+export function getStore() {
+  try {
+    if (!fs.existsSync(DATA_DIR)) {
+      fs.mkdirSync(DATA_DIR, { recursive: true });
+    }
+    if (!fs.existsSync(DB_FILE)) {
+      fs.writeFileSync(DB_FILE, JSON.stringify(initialSeed, null, 2), 'utf-8');
+      return structuredClone(initialSeed);
+    }
+    const raw = fs.readFileSync(DB_FILE, 'utf-8');
+    return JSON.parse(raw);
+  } catch (err) {
+    console.error('Error leyendo base de datos local:', err);
+    return structuredClone(initialSeed);
+  }
+}
+
+// Guarda los datos en el archivo local
+export function saveStore(store) {
+  try {
+    if (!fs.existsSync(DATA_DIR)) {
+      fs.mkdirSync(DATA_DIR, { recursive: true });
+    }
+    fs.writeFileSync(DB_FILE, JSON.stringify(store, null, 2), 'utf-8');
+    return true;
+  } catch (err) {
+    console.error('Error guardando en base de datos local:', err);
+    return false;
+  }
+}
+
+// Restablece la semilla original
+export function resetStore() {
+  saveStore(initialSeed);
+  return structuredClone(initialSeed);
+}
+

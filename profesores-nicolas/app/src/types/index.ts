@@ -94,4 +94,65 @@ export interface AcademicObservation {
   teacherId: string;
 }
 
-export type ActiveScreen = 'dashboard' | 'commissions' | 'students' | 'attendance' | 'observations' | 'grades';
+export type AgendaEventType = 'PARCIAL' | 'FINAL' | 'RECUPERATORIO' | 'ENTREGA_TP' | 'CLASE' | 'EVENTO';
+
+export interface AgendaEvent {
+  id: string;
+  commissionId: string;
+  commissionName: string;
+  title: string;
+  description: string;
+  type: AgendaEventType;
+  date: string; // YYYY-MM-DD
+  time: string; // HH:mm
+  location: string;
+  reminderDaysBefore: number;
+  isCompleted: boolean;
+}
+
+export type MessageCategory = 'ACADEMICO' | 'INSTITUCIONAL' | 'DIRECTIVO';
+
+export interface ChatMessage {
+  id: string;
+  senderId: string;
+  senderName: string;
+  recipientId: string;
+  recipientName: string;
+  subject: string;
+  body: string;
+  createdAt: string;
+  isRead: boolean;
+  category: MessageCategory;
+}
+
+export interface InstitutionalContact {
+  id: string;
+  name: string;
+  role: string;
+  email: string;
+  avatar: string;
+  category: 'Alumno' | 'Preceptor' | 'Directivo';
+}
+
+export type GradeEvaluationType = 'PARCIAL_1' | 'PARCIAL_2' | 'RECUPERATORIO_1' | 'RECUPERATORIO_2' | 'FINAL';
+
+export interface StudentGradeSummary {
+  student: Student;
+  parcial1: { value: number | null; absent: boolean; published: boolean } | null;
+  parcial2: { value: number | null; absent: boolean; published: boolean } | null;
+  recuperatorio1: { value: number | null; absent: boolean; published: boolean } | null;
+  recuperatorio2: { value: number | null; absent: boolean; published: boolean } | null;
+  finalExam: { value: number | null; absent: boolean; published: boolean } | null;
+  average: number | null;
+  finalStatus: 'PROMOCIONADO' | 'REGULAR' | 'LIBRE' | 'CURSANDO';
+}
+
+export type ActiveScreen =
+  | 'dashboard'
+  | 'commissions'
+  | 'students'
+  | 'attendance'
+  | 'grades'
+  | 'observations'
+  | 'agenda'
+  | 'messages';

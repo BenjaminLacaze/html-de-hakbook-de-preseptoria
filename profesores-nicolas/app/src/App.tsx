@@ -1,4 +1,6 @@
 import { GradesView } from './views/GradesView';
+import { AgendaView } from './views/AgendaView';
+import { MessagesView } from './views/MessagesView';
 import React, { useState, useEffect } from 'react';
 import type { ActiveScreen, Commission, Teacher, ClassSession, AcademicObservation } from './types';
 import { academicService } from './services/academicService';
@@ -193,6 +195,10 @@ const TeacherApp: React.FC<{ me: AuthMe }> = ({ me }) => {
               )}
 
               {activeScreen === 'grades' && <GradesView commissions={commissions} />}
+
+              {activeScreen === 'agenda' && <AgendaView commissions={commissions} />}
+
+              {activeScreen === 'messages' && <MessagesView />}
 
               {activeScreen === 'observations' && (
                 <ObservationsView

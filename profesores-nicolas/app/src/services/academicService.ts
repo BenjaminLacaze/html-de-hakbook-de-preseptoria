@@ -1,7 +1,7 @@
 import { apiFetch, getMe } from '@shared/api';
 import { SHIFT_LABELS, OBSERVATION_CATEGORY_LABELS } from '@shared/types';
 import type { AuthMe, CommissionView, AcademicCycle, Teacher as ApiTeacher, PreceptorScope, Enrollment, Observation, AttendanceStatus as ApiStatus, ObservationCategory } from '@shared/types';
-import type { Teacher, Commission, Student, ClassSession, AttendanceRecord, AcademicObservation, AttendanceStatus } from '../types';
+import type { Teacher, Commission, Student, ClassSession, AttendanceRecord, AcademicObservation, AttendanceStatus, AgendaEvent, ChatMessage, InstitutionalContact, StudentGradeSummary } from '../types';
 
 const toApiStatus: Record<AttendanceStatus, ApiStatus> = { PRESENTE: 'PRESENT', AUSENTE: 'ABSENT', TARDE: 'LATE' };
 const fromApiStatus: Record<ApiStatus, AttendanceStatus> = { PRESENT: 'PRESENTE', ABSENT: 'AUSENTE', LATE: 'TARDE' };
@@ -75,4 +75,83 @@ export const academicService = {
     if (!saved) throw new Error('La observación se guardó, pero no se pudo recargar. Actualizá la pantalla antes de intentar otra vez.');
     return saved;
   },
+
+  // --- AGENDA ACADÉMICA ---
+  async getAgendaEvents(filters?: { commissionId?: string; type?: string }): Promise<AgendaEvent[]> {
+    return apiFetch<AgendaEvent[]>('/agenda', {
+      query: {
+        commissionId: filters?.commissionId === 'TODAS' ? undefined : filters?.commissionId,
+        type: filters?.type === 'TODOS' ? undefined : filters?.type
+      }
+    });
+  },
+
+  async createAgendaEvent(event: Omit<AgendaEvent, 'id'>): Promise<AgendaEvent> {
+    return apiFetch<AgendaEvent>('/agenda', {
+      method: 'POST',
+      body: event
+    });
+  },
+
+  async updateAgendaEvent(id: string, updates: Partial<AgendaEvent>): Promise<AgendaEvent> {
+    return apiFetch<AgendaEvent>(`/agenda/${id}`, {
+      method: 'PUT',
+      body: updates
+    });
+  },
+
+  async deleteAgendaEvent(id: string): Promise<boolean> {
+    await apiFetch(`/agenda/${id}`, { method: 'DELETE' });
+    return true;
+  },
+
+  // --- MENSAJERÍA INSTITUCIONAL ---
+  async getInstitutionalContacts(): Promise<InstitutionalContact[]> {
+    return apiFetch<InstitutionalContact[]>('/messages/contacts');
+  },
+
+  async getMessages(): Promise<ChatMessage[]> {
+    return apiFetch<ChatMessage[]>('/messages');
+  },
+
+  async sendMessage(data: { recipientId: string; subject: string; body: string; category?: string }): Promise<ChatMessage> {
+    return apiFetch<ChatMessage>('/messages', {
+      method: 'POST',
+      body: data
+    });
+  },
+
+  async markMessageAsRead(id: string): Promise<ChatMessage> {
+    return apiFetch<ChatMessage>(`/messages/${id}/read`, {
+      method: 'PATCH'
+    });
+  },
+
+  // --- NOTAS (PARCIALES, RECUPERATORIOS Y FINALES) ---
+  async getGradesSummary(commissionId: string): Promise<{ commissionId: string; studentCount: number; summary: StudentGradeSummary[] }> {
+    return apiFetch<{ commissionId: string; studentCount: number; summary: StudentGradeSummary[] }>(`/grades/summary/${commissionId}`);
+  },
+
+  async saveGrade(data: {
+    studentId: string;
+    commissionId: string;
+    type: string;
+    instance?: number;
+    date: string;
+    value: number | null;
+    absent: boolean;
+    notes?: string;
+  }): Promise<unknown> {
+    return apiFetch('/grades', {
+      method: 'PUT',
+      body: data
+    });
+  },
+
+  async publishGrades(commissionId: string, type?: string, instance?: number): Promise<{ published: number }> {
+    return apiFetch<{ published: number }>('/grades/publish', {
+      method: 'POST',
+      body: { commissionId, type, instance }
+    });
+  }
 };

@@ -7,6 +7,8 @@ import {
   ClipboardCheck,
   MessageSquare,
   GraduationCap,
+  Calendar,
+  Mail,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -50,6 +52,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
       id: 'grades',
       label: 'Calificaciones',
       icon: <GraduationCap size={20} aria-hidden="true" />,
+    },
+    {
+      id: 'agenda',
+      label: 'Agenda y Exámenes',
+      icon: <Calendar size={20} aria-hidden="true" />,
+    },
+    {
+      id: 'messages',
+      label: 'Mensajería',
+      icon: <Mail size={20} aria-hidden="true" />,
     },
     {
       id: 'observations',

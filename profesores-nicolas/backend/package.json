@@ -1,0 +1,22 @@
+{
+  "name": "backend-profesores-nicolas",
+  "version": "1.0.0",
+  "description": "Backend autónomo y REST API para el Módulo Docente / Profesor (ISFDyT N.° 26)",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "node test.js"
+  },
+  "keywords": [
+    "sga",
+    "profesores",
+    "isfdyt26",
+    "backend",
+    "api"
+  ],
+  "author": "Nicolas - Módulo Profesor",
+  "license": "ISC"
+}
+
