@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 2026-11-06 — Guía HTML del ecosistema
+
+- Nueva `docs/GUIA_ECOSISTEMA_I26.html`: explicación visual y en lenguaje simple de los portales, datos compartidos, seguridad y estado de integración para estudiantes y equipos.
+
 ## 2026-11-06 — Registro de integración de ecosistema
 
 - Nueva guía `docs/INTEGRACION_ECOSISTEMA_2026-11-06.md`: define la API y Neon institucionales como única fuente de datos, separa los módulos locales de producción y enumera las rutas, migraciones, pruebas y condiciones necesarias para publicar los paneles nuevos.

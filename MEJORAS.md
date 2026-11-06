@@ -33,6 +33,8 @@ La matriz `docs/ESTADO_VALIDACION.md` distingue implementado, probado en local, 
 
 ## Bitácora
 
+- 2026-11-06 — GPT/Codex — Se creó `docs/GUIA_ECOSISTEMA_I26.html`, guía visual en español para explicar a alumnos y equipos qué hace cada portal, qué datos comparten y cuáles son las condiciones de una publicación segura.
+
 - 2026-11-06 — GPT/Codex — Se documentó la integración pendiente de los paneles nuevos en `docs/INTEGRACION_ECOSISTEMA_2026-11-06.md`. Queda establecido que la API Hono/Prisma y Neon son la única fuente institucional; los backends autónomos y datos JSON de los equipos no se publican. Se agregaron al árbol de integración las migraciones aditivas para revisión, sin aplicarlas a Neon ni publicar código todavía.
 
 - 2026-11-06 — Antigravity / Nicolas — Módulo Docente / Profesor:

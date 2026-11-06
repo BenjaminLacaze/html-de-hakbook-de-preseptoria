@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Cómo se integra el Sistema I26</title>
+  <style>
+    :root{--azul:#122550;--celeste:#2879b9;--oro:#a78437;--fondo:#f5f7fb;--texto:#172033}*{box-sizing:border-box}body{margin:0;font:16px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--texto);background:var(--fondo)}header{background:linear-gradient(135deg,var(--azul),#1d4d82);color:#fff;padding:56px max(24px,calc((100% - 1050px)/2))}header h1{max-width:1050px;margin:0 auto 10px;font-size:clamp(2rem,5vw,3.3rem)}header p{max-width:1050px;margin:auto;font-size:1.15rem;opacity:.94}main{max-width:1050px;margin:36px auto;padding:0 24px}section{background:#fff;border:1px solid #dde4f0;border-radius:16px;padding:26px;margin:20px 0;box-shadow:0 3px 14px #10214a0a}h2{margin-top:0;color:var(--azul)}.flujo{display:flex;flex-wrap:wrap;gap:10px;align-items:center;font-weight:700}.paso{background:#e9f3fc;color:#123d67;border-radius:999px;padding:8px 14px}.flecha{color:var(--oro);font-size:22px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}.card{border-left:5px solid var(--celeste);background:#f8fbff;padding:16px;border-radius:8px}.card h3{margin:0 0 8px;color:var(--azul)}.estado{display:inline-block;background:#fff5d9;color:#735515;border-radius:999px;padding:3px 10px;font-size:.85rem;font-weight:700}ul{padding-left:20px}footer{text-align:center;color:#526077;padding:20px 24px 40px}code{background:#edf1f7;padding:2px 5px;border-radius:4px}@media print{body{background:#fff}section{box-shadow:none}}
+  </style>
+</head>
+<body>
+  <header><h1>Sistema de Gestión I26</h1><p>Guía simple sobre los portales, los datos que comparten y las mejoras incorporadas al ecosistema institucional.</p></header>
+  <main>
+    <section><h2>Una sola información institucional</h2><p>Antes, algunas aplicaciones podían trabajar con datos locales o de ejemplo. La decisión actual es que todos los portales usen una única fuente: la API institucional y su base PostgreSQL en Neon. Así, lo que registra un rol autorizado puede ser consultado por los demás roles cuando corresponde.</p><div class="flujo"><span class="paso">Portal</span><span class="flecha">→</span><span class="paso">API institucional</span><span class="flecha">→</span><span class="paso">Base institucional</span><span class="flecha">→</span><span class="paso">Información actualizada</span></div></section>
+    <section><h2>Qué cambia en cada sistema</h2><div class="grid">
+      <article class="card"><h3>Alumnos</h3><p>Consulta de materias, asistencia, notas publicadas, comunicados, perfil, mensajes y participación en actividades. También se preparan QR de asistencia, pedidos de corrección de ficha y justificaciones.</p></article>
+      <article class="card"><h3>Preceptoría</h3><p>Padrón institucional, asistencia por comisión, justificaciones, avisos, seguimiento y comunicación con estudiantes. Los datos sensibles se consultan solo con permiso y quedan auditados.</p></article>
+      <article class="card"><h3>Profesores</h3><p>Comisiones asignadas, asistencia, observaciones y calificaciones. Se integran Agenda académica, mensajería institucional y resumen de notas al backend común, no a una base separada.</p></article>
+      <article class="card"><h3>Dirección y administración</h3><p>Altas académicas, carreras, comisiones, cuentas e inscripciones. Conservan el control de datos sensibles, cuentas y configuraciones institucionales.</p></article>
+      <article class="card"><h3>Centro de Estudiantes</h3><p>Eventos, inscripciones, comunicados, foros y reclamos. Se amplían cupos, borradores, moderación y seguimiento de cada reclamo.</p></article>
+      <article class="card"><h3>Auxiliares</h3><p>Tareas, sectores, incidencias y mantenimiento. Se incorporan turnos, solicitudes de cambio y ausencias para que el equipo pueda coordinarse dentro del sistema.</p></article>
+    </div></section>
+    <section><h2>Cómo se protege la información</h2><ul><li>La cuenta define qué portal y qué datos puede usar cada persona.</li><li>Las contraseñas y sesiones se gestionan de forma segura; las pantallas no ven claves ni conexiones de base.</li><li>Las notas, asistencias y registros históricos no se eliminan de forma informal.</li><li>Las acciones relevantes quedan registradas para control institucional.</li></ul></section>
+    <section><h2>Estado de la integración</h2><p><span class="estado">En implementación y validación</span></p><p>Las pantallas nuevas y las migraciones necesarias ya están registradas en el repositorio. Antes de publicar una versión nueva se validan las rutas de la API, los permisos de cada rol, las migraciones en una base de prueba y el recorrido real desde cada pantalla. De este modo se evita publicar botones o secciones que todavía no puedan guardar información correctamente.</p></section>
+    <section><h2>Documentación técnica para equipos</h2><p>El detalle para desarrolladores está en <code>docs/INTEGRACION_ECOSISTEMA_2026-11-06.md</code>. Allí se indica qué rutas, datos y pruebas debe completar cada módulo antes del despliegue.</p></section>
+  </main>
+  <footer>ISFDyT N.° 26 · Documento informativo del ecosistema institucional · 6 de noviembre de 2026</footer>
+</body>
+</html>
