@@ -33,6 +33,18 @@ La matriz `docs/ESTADO_VALIDACION.md` distingue implementado, probado en local, 
 
 ## Bitácora
 
+- 2026-11-13 — Nicolás / asistente — Integración del módulo Profesor con la API común:
+  - Agenda, Mensajería y Calificaciones dejaron de usar el contrato del backend autónomo y ahora
+    consumen `/records/events`, `/social/*` y `/records/grades`; la agenda quedó de solo lectura.
+  - La planilla de asistencia muestra las ausencias justificadas por Preceptoría.
+  - El backend autónomo quedó archivado en `profesores-nicolas/legacy/backend-local/` y fuera del
+    build; la documentación histórica quedó señalizada y el duplicado del contrato, reducido a un
+    puntero.
+  - Verificado: `npm run build` (tsc + Vite) y `npm run lint` (0 errores, advertencias no
+    bloqueantes de hooks). Pendiente: QA con cuenta `TEACHER`, prueba de escrituras y publicación en Vercel.
+    No hubo cambios en Neon, `shared/`, `backend/` ni otros módulos.
+  - Este checkout no tiene `.git`; no se hizo commit ni push.
+
 - 2026-11-06 — Antigravity / Nicolas — Módulo Docente / Profesor:
   - Creación del backend autónomo para `profesores-nicolas` en `profesores-nicolas/backend/` (Node.js ESM, `server.js`, `store.js`, persistencia local `db.json` y batería de pruebas `test.js` con 9/9 tests superados).
   - Incorporación de las funcionalidades requeridas:

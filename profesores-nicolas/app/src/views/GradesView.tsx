@@ -1,29 +1,16 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { FormEvent } from 'react';
-import { apiFetch } from '@shared/api';
-import type { Commission, Student } from '../types';
+import type { Commission, GradeEntry, GradeEvaluation, Student } from '../types';
 import { academicService } from '../services/academicService';
 import { AlertNotification } from '../components/common/AlertNotification';
 import { ConfirmModal } from '../components/common/ConfirmModal';
-import {
-  GraduationCap,
-  Award,
-  CheckCircle,
-  AlertTriangle,
-  Send,
-  RefreshCw,
-  Edit3,
-  FileSpreadsheet,
-  Layers
-} from 'lucide-react';
+import { Send, RefreshCw, Edit3, FileSpreadsheet } from 'lucide-react';
 
 interface GradesViewProps {
   commissions: Commission[];
 }
 
-export type EvaluationKey = 'PARCIAL_1' | 'PARCIAL_2' | 'RECUPERATORIO_1' | 'RECUPERATORIO_2' | 'FINAL';
-
-const EVALUATION_LABELS: Record<EvaluationKey, string> = {
+const EVALUATION_LABELS: Record<GradeEvaluation, string> = {
   PARCIAL_1: '1° Examen Parcial',
   PARCIAL_2: '2° Examen Parcial',
   RECUPERATORIO_1: 'Recuperatorio 1° Parcial',
@@ -31,30 +18,15 @@ const EVALUATION_LABELS: Record<EvaluationKey, string> = {
   FINAL: 'Examen Final / Acreditación'
 };
 
-interface GradeRecord {
-  id: string;
-  commissionId: string;
-  studentId: string;
-  type: EvaluationKey;
-  instance: number;
-  date: string;
-  value: number | null;
-  absent: boolean;
-  published: boolean;
-  publishedAt?: string;
-  notes?: string;
-}
-
 export function GradesView({ commissions }: GradesViewProps) {
   const [commissionId, setCommissionId] = useState<string>(commissions[0]?.id ?? '');
   const [activeTab, setActiveTab] = useState<'matrix' | 'form'>('matrix');
   const [students, setStudents] = useState<Student[]>([]);
-  const [grades, setGrades] = useState<GradeRecord[]>([]);
+  const [grades, setGrades] = useState<GradeEntry[]>([]);
 
   // Estado del formulario de edición / carga
   const [selectedStudentId, setSelectedStudentId] = useState<string>('');
-  const [evalType, setEvalType] = useState<EvaluationKey>('PARCIAL_1');
-  const [instance, setInstance] = useState<number>(1);
+  const [evalType, setEvalType] = useState<GradeEvaluation>('PARCIAL_1');
   const [evalDate, setEvalDate] = useState<string>(new Date().toISOString().slice(0, 10));
   const [evalValue, setEvalValue] = useState<string>('');
   const [isAbsent, setIsAbsent] = useState<boolean>(false);
@@ -73,16 +45,12 @@ export function GradesView({ commissions }: GradesViewProps) {
       setError(null);
       const [people, gradeList] = await Promise.all([
         academicService.getStudentsByCommission(commissionId),
-        apiFetch<GradeRecord[]>('/grades', { query: { commissionId } }).catch(async () => {
-          // Fallback a /records/grades si el backend compartido está activo
-          return apiFetch<GradeRecord[]>('/records/grades', { query: { commissionId } });
-        })
+        academicService.getGradesByCommission(commissionId),
       ]);
       setStudents(people);
       setGrades(gradeList || []);
-      if (people.length > 0 && !selectedStudentId) {
-        setSelectedStudentId(people[0].id);
-      }
+      // Al cambiar de comisión, el alumno seleccionado puede no pertenecer a la nueva nómina.
+      setSelectedStudentId((prev) => (people.some((p) => p.id === prev) ? prev : (people[0]?.id ?? '')));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudieron cargar las calificaciones.');
     } finally {
@@ -96,9 +64,7 @@ export function GradesView({ commissions }: GradesViewProps) {
 
   // Actualizar valores del formulario cuando cambia el estudiante o tipo seleccionado
   useEffect(() => {
-    const found = grades.find(
-      g => g.studentId === selectedStudentId && g.type === evalType && g.instance === instance
-    );
+    const found = grades.find(g => g.studentId === selectedStudentId && g.type === evalType);
     if (found) {
       setEvalValue(found.value !== null ? String(found.value) : '');
       setIsAbsent(found.absent);
@@ -110,7 +76,7 @@ export function GradesView({ commissions }: GradesViewProps) {
       setEvalNotes('');
       setEvalDate(new Date().toISOString().slice(0, 10));
     }
-  }, [selectedStudentId, evalType, instance, grades]);
+  }, [selectedStudentId, evalType, grades]);
 
   const handleSaveGrade = async (e: FormEvent) => {
     e.preventDefault();
@@ -132,11 +98,10 @@ export function GradesView({ commissions }: GradesViewProps) {
         studentId: selectedStudentId,
         commissionId,
         type: evalType,
-        instance,
         date: evalDate,
         value: numValue,
         absent: isAbsent,
-        notes: evalNotes
+        notes: evalNotes,
       };
 
       await academicService.saveGrade(payload);
@@ -156,7 +121,7 @@ export function GradesView({ commissions }: GradesViewProps) {
     setMessage(null);
 
     try {
-      const res = await academicService.publishGrades(commissionId, evalType, instance);
+      const res = await academicService.publishGrades(commissionId, evalType);
       setMessage(`Se publicaron las notas de ${EVALUATION_LABELS[evalType]} para toda la comisión (${res.published} registros actualizados).`);
       await loadGradesData();
     } catch (err) {
@@ -166,7 +131,7 @@ export function GradesView({ commissions }: GradesViewProps) {
     }
   };
 
-  const openFormForStudent = (studentId: string, type: EvaluationKey) => {
+  const openFormForStudent = (studentId: string, type: GradeEvaluation) => {
     setSelectedStudentId(studentId);
     setEvalType(type);
     setActiveTab('form');
@@ -445,7 +410,7 @@ export function GradesView({ commissions }: GradesViewProps) {
                   id="grade-eval-type"
                   className="form-select"
                   value={evalType}
-                  onChange={e => setEvalType(e.target.value as EvaluationKey)}
+                  onChange={e => setEvalType(e.target.value as GradeEvaluation)}
                 >
                   <option value="PARCIAL_1">1° Examen Parcial</option>
                   <option value="PARCIAL_2">2° Examen Parcial</option>
@@ -532,9 +497,6 @@ export function GradesView({ commissions }: GradesViewProps) {
                 <h3 style={{ margin: 0, fontSize: '1.15rem', color: 'var(--isf-blue-primary)' }}>
                   Notas de: {EVALUATION_LABELS[evalType]}
                 </h3>
-                <span style={{ fontSize: '0.85rem', color: '#64748B' }}>
-                  Instancia {instance}
-                </span>
               </div>
 
               <div style={{ overflowX: 'auto' }}>
@@ -549,9 +511,7 @@ export function GradesView({ commissions }: GradesViewProps) {
                   </thead>
                   <tbody>
                     {students.map(s => {
-                      const g = grades.find(
-                        x => x.studentId === s.id && x.type === evalType && x.instance === instance
-                      );
+                      const g = grades.find(x => x.studentId === s.id && x.type === evalType);
                       return (
                         <tr key={s.id} style={{ borderBottom: '1px solid #F1F5F9' }}>
                           <td style={{ padding: '0.5rem' }}>{s.lastName}, {s.firstName}</td>

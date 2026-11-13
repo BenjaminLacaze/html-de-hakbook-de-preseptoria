@@ -40,6 +40,13 @@ const skipTop = new Set([
 ]);
 const appDirs = new Set(appsToBuild.map((app) => join(root, app.module, app.source)));
 
+// Material que no se publica: prototipos archivados y contratos históricos del módulo.
+// El contrato vigente está en docs/ (raíz) y shared/types.ts.
+const skipPaths = new Set([
+  join(root, 'profesores-nicolas', 'legacy'),
+  join(root, 'profesores-nicolas', 'docs'),
+]);
+
 function run(cmd, cwd) {
   console.log(`\n> ${cmd}   (en ${relative(root, cwd) || '.'})`);
   const r = spawnSync(cmd, { cwd, stdio: 'inherit', shell: true });
@@ -57,7 +64,7 @@ for (const entry of readdirSync(root)) {
   if (skipTop.has(entry) || entry.startsWith('.')) continue; // .env, .gitignore, etc.
   cpSync(join(root, entry), join(dist, entry), {
     recursive: true,
-    filter: (src) => !appDirs.has(src) && !src.split(sep).includes('node_modules'),
+    filter: (src) => !appDirs.has(src) && !skipPaths.has(src) && !src.split(sep).includes('node_modules'),
   });
 }
 

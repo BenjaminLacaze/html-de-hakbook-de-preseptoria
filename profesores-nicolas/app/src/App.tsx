@@ -198,7 +198,7 @@ const TeacherApp: React.FC<{ me: AuthMe }> = ({ me }) => {
 
               {activeScreen === 'agenda' && <AgendaView commissions={commissions} />}
 
-              {activeScreen === 'messages' && <MessagesView />}
+              {activeScreen === 'messages' && <MessagesView currentUserId={me.user.id} />}
 
               {activeScreen === 'observations' && (
                 <ObservationsView

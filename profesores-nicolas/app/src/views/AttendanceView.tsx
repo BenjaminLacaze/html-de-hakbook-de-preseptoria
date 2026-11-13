@@ -42,6 +42,8 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
   // Estados de asistencia por estudiante: Record<studentId, AttendanceStatus | null>
   // Inicialmente null para cumplir la regla estricta: NO marcar a todos como presentes por defecto
   const [attendanceMap, setAttendanceMap] = useState<Record<string, AttendanceStatus | null>>({});
+  // Justificaciones ya aprobadas por Preceptoría: el docente las consulta, no las edita.
+  const [justifiedMap, setJustifiedMap] = useState<Record<string, boolean>>({});
 
   const [focusRevision, setFocusRevision] = useState(0);
   useEffect(() => {
@@ -85,11 +87,14 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
           setClassTopic(match.topic || '');
           const existingRecords = await academicService.getAttendanceBySession(match.id);
           const initialMap: Record<string, AttendanceStatus | null> = {};
+          const initialJustified: Record<string, boolean> = {};
           studentList.forEach((st) => {
             const rec = existingRecords.find((r) => r.studentId === st.id);
             initialMap[st.id] = rec ? rec.status : null;
+            initialJustified[st.id] = Boolean(rec?.justified);
           });
           setAttendanceMap(initialMap);
+          setJustifiedMap(initialJustified);
         } else {
           setSelectedSessionId('');
           // Inicializar vacío (sin selección automática)
@@ -98,6 +103,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
             emptyMap[st.id] = null;
           });
           setAttendanceMap(emptyMap);
+          setJustifiedMap({});
         }
       } catch (err) {
         setValidationError(err instanceof Error ? err.message : 'No se pudieron cargar los datos.');
@@ -118,6 +124,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
         emptyMap[st.id] = null;
       });
       setAttendanceMap(emptyMap);
+      setJustifiedMap({});
       return;
     }
 
@@ -130,11 +137,14 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
       try { existingRecords = await academicService.getAttendanceBySession(session.id); }
       catch (err) { setValidationError(err instanceof Error ? err.message : 'No se pudo cargar la clase.'); return; }
       const initialMap: Record<string, AttendanceStatus | null> = {};
+      const initialJustified: Record<string, boolean> = {};
       students.forEach((st) => {
         const rec = existingRecords.find((r) => r.studentId === st.id);
         initialMap[st.id] = rec ? rec.status : null;
+        initialJustified[st.id] = Boolean(rec?.justified);
       });
       setAttendanceMap(initialMap);
+      setJustifiedMap(initialJustified);
       setValidationError(null);
     }
   };
@@ -174,6 +184,10 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
       ...prev,
       [studentId]: status,
     }));
+    // Si deja de ser ausencia, la justificación aprobada ya no aplica a esta clase.
+    if (status !== 'AUSENTE') {
+      setJustifiedMap((prev) => ({ ...prev, [studentId]: false }));
+    }
     setValidationError(null);
   };
 
@@ -184,6 +198,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
       updated[s.id] = 'PRESENTE';
     });
     setAttendanceMap(updated);
+    setJustifiedMap({});
     setValidationError(null);
   };
 
@@ -194,6 +209,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
       emptyMap[st.id] = null;
     });
     setAttendanceMap(emptyMap);
+    setJustifiedMap({});
     setIsResetConfirmOpen(false);
   };
 
@@ -641,6 +657,25 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                             }}
                           >
                             {currentStatus}
+                          </span>
+                        )}
+                        {currentStatus === 'AUSENTE' && justifiedMap[student.id] && (
+                          <span
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              marginLeft: '0.35rem',
+                              fontSize: '0.72rem',
+                              fontWeight: 700,
+                              color: '#047857',
+                              backgroundColor: 'rgba(16, 185, 129, 0.12)',
+                              border: '1px solid #6EE7B7',
+                              padding: '0.15rem 0.4rem',
+                              borderRadius: '4px',
+                            }}
+                            title="Preceptoría aprobó una justificación que cubre esta fecha"
+                          >
+                            Justificada
                           </span>
                         )}
                       </td>

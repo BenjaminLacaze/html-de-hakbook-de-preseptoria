@@ -1,8 +1,11 @@
 /**
  * ISFDyT N.° 26 - Sistema de Gestión Académica (SGA)
  * Módulo Docente / Profesor
- * Definiciones de tipos e interfaces de datos institucionales
+ * Definiciones locales de pantalla. El contrato de datos vive en `shared/types.ts`;
+ * acá solo se traducen los códigos del backend a lo que muestran las vistas.
  */
+
+import type { EventType } from '@shared/types';
 
 export type Shift = 'Mañana' | 'Tarde' | 'Vespertino';
 
@@ -78,6 +81,9 @@ export interface AttendanceRecord {
   status: AttendanceStatus;
   recordedAt: string;
   recordedByTeacherId: string;
+  /** La justificación la carga y aprueba Preceptoría; el docente solo la consulta. */
+  justified?: boolean;
+  minutesLate?: number;
 }
 
 export interface AcademicObservation {
@@ -94,23 +100,21 @@ export interface AcademicObservation {
   teacherId: string;
 }
 
-export type AgendaEventType = 'PARCIAL' | 'FINAL' | 'RECUPERATORIO' | 'ENTREGA_TP' | 'CLASE' | 'EVENTO';
-
+/**
+ * Agenda: se muestra el calendario institucional (`/records/events`).
+ * Lo carga Dirección; el docente solo lo consulta.
+ */
 export interface AgendaEvent {
   id: string;
-  commissionId: string;
+  commissionId?: string;
   commissionName: string;
   title: string;
-  description: string;
-  type: AgendaEventType;
+  description?: string;
+  type: EventType;
   date: string; // YYYY-MM-DD
-  time: string; // HH:mm
-  location: string;
-  reminderDaysBefore: number;
-  isCompleted: boolean;
+  endDate?: string; // YYYY-MM-DD
+  mandatory: boolean;
 }
-
-export type MessageCategory = 'ACADEMICO' | 'INSTITUCIONAL' | 'DIRECTIVO';
 
 export interface ChatMessage {
   id: string;
@@ -118,11 +122,9 @@ export interface ChatMessage {
   senderName: string;
   recipientId: string;
   recipientName: string;
-  subject: string;
   body: string;
   createdAt: string;
   isRead: boolean;
-  category: MessageCategory;
 }
 
 export interface InstitutionalContact {
@@ -131,20 +133,31 @@ export interface InstitutionalContact {
   role: string;
   email: string;
   avatar: string;
-  category: 'Alumno' | 'Preceptor' | 'Directivo';
+  category: 'Alumno' | 'Preceptor' | 'Directivo' | 'Docente';
 }
 
-export type GradeEvaluationType = 'PARCIAL_1' | 'PARCIAL_2' | 'RECUPERATORIO_1' | 'RECUPERATORIO_2' | 'FINAL';
+/** Resumen de conversación que devuelve `/social/messages/conversations`. */
+export interface ConversationSummary {
+  contact: InstitutionalContact;
+  lastMessage: ChatMessage;
+  unreadCount: number;
+}
 
-export interface StudentGradeSummary {
-  student: Student;
-  parcial1: { value: number | null; absent: boolean; published: boolean } | null;
-  parcial2: { value: number | null; absent: boolean; published: boolean } | null;
-  recuperatorio1: { value: number | null; absent: boolean; published: boolean } | null;
-  recuperatorio2: { value: number | null; absent: boolean; published: boolean } | null;
-  finalExam: { value: number | null; absent: boolean; published: boolean } | null;
-  average: number | null;
-  finalStatus: 'PROMOCIONADO' | 'REGULAR' | 'LIBRE' | 'CURSANDO';
+/** Instancias que muestra la planilla del docente (se traducen al enum del backend). */
+export type GradeEvaluation = 'PARCIAL_1' | 'PARCIAL_2' | 'RECUPERATORIO_1' | 'RECUPERATORIO_2' | 'FINAL';
+
+/** Fila de nota ya traducida a la nomenclatura de la planilla. */
+export interface GradeEntry {
+  id: string;
+  commissionId: string;
+  studentId: string;
+  type: GradeEvaluation;
+  date: string;
+  value: number | null;
+  absent: boolean;
+  published: boolean;
+  publishedAt?: string;
+  notes?: string;
 }
 
 export type ActiveScreen =

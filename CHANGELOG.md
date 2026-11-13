@@ -1,5 +1,36 @@
 # CHANGELOG
 
+## 2026-11-13 — Profesores: Agenda, Mensajería y Calificaciones contra la API común
+
+- **Agenda:** `academicService` dejó de llamar a `/agenda` (ruta del backend autónomo que la API
+  común no implementa) y ahora lee `GET /records/events`. La pantalla quedó **de solo lectura**:
+  las fechas las carga Dirección/Secretaría, no el docente. Se quitaron alta, edición, borrado y
+  los campos que el modelo central no tiene (hora, lugar, recordatorio, “cumplido”).
+- **Mensajería:** dejó de usar `/messages*` y el remitente fijo `tch-8492`. Ahora usa
+  `/social/directory`, `/social/messages/conversations`, `/social/messages/with/:id` y
+  `POST /social/messages`, con el id de la cuenta en sesión. Se quitaron asunto, categoría y el
+  modal de composición con esos campos; las conversaciones se marcan leídas al abrirlas.
+- **Calificaciones:** dejó de usar `/grades*`. Ahora lee `GET /records/grades`, guarda con
+  `PUT /records/grades` (por `enrollmentId`) y publica con `POST /records/grades/publish`.
+  Traducción de las cinco instancias de la planilla: `PARCIAL_1/2` → `PARTIAL` 1/2,
+  `RECUPERATORIO_1/2` → `MAKEUP` 1/2, `FINAL` → `FINAL_EXAM` 1.
+- **Asistencia:** se lee `justified` desde `GET /attendance` y se muestra el badge “Justificada”
+  cuando Preceptoría aprobó la falta; el docente no modifica la justificación.
+- **Backend autónomo:** `profesores-nicolas/backend` pasó a
+  `profesores-nicolas/legacy/backend-local/` y `scripts/build.mjs` excluye `legacy/` y `docs/`
+  del módulo para no publicar el prototipo ni los contratos históricos. Sus `test.js` ya no
+  representan la integración.
+- **Limpieza:** se eliminaron `mockData.ts`, `DemoBanner.tsx`, assets sin uso y el logo
+  duplicado. README del módulo, README de la app, `INTEGRACION_API.md`, `docs/README.md` y el
+  duplicado `docs/nico-contrato-backend-profesores.md` quedaron alineados con el contrato vigente.
+- **Propuestas:** nuevo `profesores-nicolas/PROPUESTAS.md` con P-PROF-01 (agenda editable),
+  P-PROF-02 (asunto/categoría de mensajes), P-PROF-03 (resumen de notas en el backend) y
+  P-PROF-04 (lectura de observaciones por Preceptoría). Ninguna está implementada.
+- **Verificación:** `npm run build` de la app (tsc + Vite, 2353 módulos) OK; `npm run lint` con
+  0 errores y 14 advertencias no bloqueantes de React Hooks/pureza. No se probó login
+  ni escrituras con una cuenta real y no se publicó en Vercel. Sin cambios en `shared/`,
+  `backend/` ni Neon; sin cambios en otros módulos.
+
 ## 2026-11-06 — Nota de integración para Directivos (App perfil directivo neon)
 
 - Nuevo `docs/NOTA_DIRECTIVOS_UNIFICACION.html`: qué tiene que cambiar la app subida en 814a520/5be26e8 para sumarse al sistema común. Detectado: login y cuentas propias (`app_accounts`, `app_sessions`), todo el estado en un JSON (`institution_state`), modelo de secundaria (divisiones, trimestres), respaldo a Google Drive/Firebase y `localStorage`, y uso de `DATABASE_URL` (riesgo de tablas sueltas en la base común).
