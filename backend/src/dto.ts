@@ -1,7 +1,7 @@
 // Conversión de filas de la base al formato de la API (shared/types.ts).
-import type { CommissionView, ScheduleSlot, Student, Teacher } from '../../shared/types.js';
+import type { CommissionView, DataCorrectionRequest, ScheduleSlot, Student, Teacher } from '../../shared/types.js';
 import type { Prisma } from './generated/prisma/client.js';
-import { toISODate } from './scope.js';
+import { toISO, toISODate } from './scope.js';
 
 export const commissionInclude = {
   subject: { include: { plan: { include: { career: true } } } },
@@ -67,5 +67,28 @@ export function teacherDTO(t: Prisma.TeacherGetPayload<object>): Teacher {
     status: t.status,
     createdAt: t.createdAt.toISOString(),
     updatedAt: t.updatedAt.toISOString(),
+  };
+}
+
+type CorrectionRow = Prisma.DataCorrectionRequestGetPayload<{ include: { student: true } }>;
+
+export function correctionDTO(r: CorrectionRow): DataCorrectionRequest {
+  return {
+    id: r.id,
+    studentId: r.studentId,
+    field: r.field,
+    currentValue: r.currentValue ?? undefined,
+    proposedValue: r.proposedValue,
+    reason: r.reason,
+    documentUrl: r.documentUrl ?? undefined,
+    status: r.status,
+    createdBy: r.createdBy,
+    reviewedBy: r.reviewedBy ?? undefined,
+    reviewedAt: toISO(r.reviewedAt),
+    reviewNotes: r.reviewNotes ?? undefined,
+    createdAt: r.createdAt.toISOString(),
+    updatedAt: r.updatedAt.toISOString(),
+    studentName: `${r.student.lastName}, ${r.student.firstName}`,
+    studentFileNumber: r.student.fileNumber,
   };
 }

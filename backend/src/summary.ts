@@ -4,6 +4,10 @@
 import type { AttendanceSummary } from '../../shared/types.js';
 import { prisma } from './db.js';
 
+/** ¿La justificación cubre esa clase? Sin materia, cubre todas las materias de esas fechas. */
+export const covers = (j: { fromDate: Date; toDate: Date; subjectId: string | null }, date: Date, subjectId: string) =>
+  j.fromDate <= date && j.toDate >= date && (!j.subjectId || j.subjectId === subjectId);
+
 export async function attendanceSummary(studentId: string, commissionId?: string): Promise<AttendanceSummary> {
   const settings = await prisma.institutionSettings.findUnique({ where: { id: 1 } });
   const min = settings?.minAttendancePercent ?? 75;
@@ -12,18 +16,18 @@ export async function attendanceSummary(studentId: string, commissionId?: string
 
   const records = await prisma.attendanceRecord.findMany({
     where: { studentId, ...(commissionId ? { session: { commissionId } } : {}) },
-    include: { session: true },
+    include: { session: { include: { commission: { select: { subjectId: true } } } } },
   });
   const justs = records.length
     ? await prisma.justification.findMany({ where: { studentId, status: 'APPROVED' } })
     : [];
-  const isJustified = (d: Date) => justs.some((j) => j.fromDate <= d && j.toDate >= d);
+  const isJustified = (d: Date, subjectId: string) => justs.some((j) => covers(j, d, subjectId));
 
   let present = 0, absent = 0, late = 0, justified = 0;
   for (const r of records) {
     if (r.status === 'PRESENT') present++;
     else if (r.status === 'LATE') late++;
-    else if (isJustified(r.session.date)) justified++;
+    else if (isJustified(r.session.date, r.session.commission.subjectId)) justified++;
     else absent++;
   }
   const counted = records.length - justified;

@@ -19,8 +19,8 @@ npm --prefix backend run test:integration
 npm run typecheck
 ```
 
-PG17: cluster backend/.local-test/pg, puerto 5452, solo 127.0.0.1, base qa_i26.
-Arranque: pg_ctl -D backend/.local-test/pg -l backend/.local-test/postgres.log -o "-p 5452 -h 127.0.0.1" start.
+PG17: cluster descartable backend/.local-test/pgdata, puerto 5452, solo 127.0.0.1, base qa_i26.
+Arranque: pg_ctl -D backend/.local-test/pgdata -l backend/.local-test/postgres.log -o "-p 5452 -h 127.0.0.1" start.
 Claves aleatorias y manifest ignorados por Git. No utilizar este cluster con datos reales (autenticación local trust).
 Las fixtures hacen upsert o buscan el prefijo; no borran datos. El test crea justificaciones en cada ejecución (persisten para inspección), y elimina únicamente tareas/eventos creados en esa ejecución.
 
@@ -33,6 +33,10 @@ Incidente: primer migrate deploy tomó DIRECT_DATABASE_URL del .env y mostró Ne
 
 Ahora se comprueba en los cinco escenarios: /me/summary y /me/subjects muestran 100 → 0 con ausencia, permanecen iguales con justificación pendiente, vuelven a 100 con aprobación. Se elige una fecha posterior a las justificaciones existentes para poder repetir sin borrar historia.
 Alta adicional íntegra por HTTP: Director crea alumno QA en carrera/plan QA existente, crea cuenta vinculada, alumno cambia clave inicial, Director inscribe, profesor registra presente y alumno lo relee. Se conserva como accounts.httpStudent y httpScenario en el manifest. Cada ejecución deja un alumno HTTP nuevo para inspección.
+
+## QA de padrón y auditoría sensible — 2026-10-30
+
+`npm run test:integration` también confirma el padrón institucional para PRECEPTOR, consulta de datos sensibles con evento `SENSITIVE_DATA_READ`, y respuestas 403 para Docente al leer datos sensibles y para Preceptoría al escribirlos o vincular cuentas. El registro no contiene los valores de domicilio/salud. Las migraciones se aplicaron a `127.0.0.1:5452/qa_i26`, nunca a Neon.
 
 API manual: npx tsx backend/test/local-api.ts (desde raíz). No carga dotenv; elimina variables heredadas salvo las necesarias de Windows y configura únicamente PostgreSQL 127.0.0.1:5452/qa_i26, API 127.0.0.1:4052, NODE_ENV=test. Sin migraciones en este comando.
 Roles para revisión del padre: accounts.director, teacher1, student1, preceptor, staff, centro (seis perfiles disponibles); accounts.httpStudent corresponde al alta HTTP más reciente. Correos y contraseñas exclusivamente en backend/.local-test/manifest.json. Para UI usar proxy /api hacia http://127.0.0.1:4052, sin modificar apps en esta tarea.
@@ -94,3 +98,23 @@ No se admite URL pública ni redirecciones. También se admite 127.0.0.1:4053. L
 Verificación local posterior al cambio: fixtures OK, cinco porcentajes 100 → 0 → 100, cinco recorridos y cinco CRUD OK, alta HTTP completa OK, typecheck OK. Porcentaje y alta HTTP están terminados, no pendientes. Sigue pendiente exclusivamente ejecutar esta batería en modo configurado y revisar interfaces (padre).
 
 Corrección dashboard alumno: fixtures incluyen institutionSettings id1 igual que seed, con update {}. No sobrescribe configuración existente. Verificación inicial GET /records/settings como alumno incluida y aprobada en local. Volver a cargar fixtures locales corrige el error de configuración institucional sin reiniciar la API. Este cambio no se ejecutó contra la base configurada/remota.
+
+## Paneles Alumno/Preceptoría/Auxiliares — 2026-11-01
+
+`backend/test/paneles-flow.mjs` prueba lo agregado por la migración `20261101182015_paneles_alumno_preceptoria_auxiliares`: comunicados leídos por usuario, justificación pedida por el alumno, pedidos de corrección de ficha, asistencia por QR y turnos/cambios de turno de Auxiliares, con sus permisos y errores (400, 403, 404, 409). Usa la misma API QA local y el mismo manifest:
+
+```powershell
+$env:API_TEST_URL='http://127.0.0.1:4052/api/v1'
+$env:TEST_FIXTURE_MANIFEST=(Resolve-Path backend/.local-test/manifest.json).Path
+node backend/test/paneles-flow.mjs
+```
+
+Se puede repetir: elige fechas posteriores a las justificaciones del alumno 1. Deja en la base, para inspección, un comunicado, una justificación, un pedido de corrección y una clase con registro QR por corrida. Crea una cuenta auxiliar QA (`qa-i26-staff2-…@example.invalid`) que queda INACTIVE; los turnos de prueba se borran.
+
+Evidencia 2026-11-01: migración aplicada solo en `127.0.0.1:5452/qa_i26` y `127.0.0.1:5440/i26_dev`; `paneles-flow.mjs` OK en dos corridas seguidas; `integration-flow.mjs` OK completa después del cambio; typecheck OK. Neon sin consultar.
+
+Actualización 2026-11-01 (tarde): la migración `20261101184446_turnos_sin_superposicion` reemplaza el único `(userId, date)` de `staff_shifts` por un control de superposición en la API. `paneles-flow.mjs` ahora prueba también el cambio mañana↔tarde del mismo día, las altas superpuestas (409) y un horario inválido (400). OK contra `qa_i26`; `integration-flow.mjs` también OK.
+
+## Ecosistema (Centro, Auxiliares y Preceptoría) — 2026-11-01
+
+`backend/test/ecosistema-flow.mjs` prueba la migración `20261101200000_ecosistema_centro_auxiliares_preceptoria`. Se corre igual que `paneles-flow.mjs` (misma API QA y mismo manifest). Deja datos `QA-I26` para inspección: un sector, un reclamo, un tema oculto, una ausencia aprobada, una clase con una corrección y una justificación por materia. Evidencia 2026-11-01: OK, y las otras dos baterías también OK.

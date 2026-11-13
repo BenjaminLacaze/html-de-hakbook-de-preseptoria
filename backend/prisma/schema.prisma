@@ -152,6 +152,7 @@ enum AuditAction {
   EXPORT
   LOGIN
   SESSION_REOPEN
+  SENSITIVE_DATA_READ
 }
 
 // ============================================================================
@@ -194,6 +195,12 @@ model User {
   forumThreads     ForumThread[]    @relation("ForumAuthor")
   forumReplies     ForumReply[]     @relation("ForumReplyAuthor")
   notifications    Notification[]
+
+  noticeReads           NoticeRead[]
+  staffShifts           StaffShift[]
+  shiftChangesRequested ShiftChangeRequest[] @relation("ShiftChangeRequester")
+  shiftChangesReceived  ShiftChangeRequest[] @relation("ShiftChangeColleague")
+  staffAbsences         StaffAbsence[]
 
   @@map("users")
 }
@@ -251,20 +258,21 @@ model StudyPlan {
 }
 
 model Subject {
-  id            String         @id @default(uuid()) @db.Uuid
-  planId        String         @db.Uuid
-  plan          StudyPlan      @relation(fields: [planId], references: [id])
-  code          String
-  name          String
-  year          Int
-  period        AcademicPeriod
-  weeklyHours   Int?
+  id             String          @id @default(uuid()) @db.Uuid
+  planId         String          @db.Uuid
+  plan           StudyPlan       @relation(fields: [planId], references: [id])
+  code           String
+  name           String
+  year           Int
+  period         AcademicPeriod
+  weeklyHours    Int?
   /// Correlativas: materias que hay que tener antes.
-  prerequisites Subject[]      @relation("Prerequisites")
-  requiredBy    Subject[]      @relation("Prerequisites")
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-  commissions   Commission[]
+  prerequisites  Subject[]       @relation("Prerequisites")
+  requiredBy     Subject[]       @relation("Prerequisites")
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  commissions    Commission[]
+  justifications Justification[]
 
   @@unique([planId, code])
   @@map("subjects")
@@ -328,29 +336,30 @@ model CommissionTeacher {
 // ============================================================================
 
 model Student {
-  id             String                @id @default(uuid()) @db.Uuid
-  userId         String?               @unique @db.Uuid
-  user           User?                 @relation(fields: [userId], references: [id])
-  fileNumber     String                @unique
-  dni            String                @unique
+  id             String                  @id @default(uuid()) @db.Uuid
+  userId         String?                 @unique @db.Uuid
+  user           User?                   @relation(fields: [userId], references: [id])
+  fileNumber     String                  @unique
+  dni            String                  @unique
   firstName      String
   lastName       String
   email          String
   phone          String?
-  careerId       String                @db.Uuid
-  career         Career                @relation(fields: [careerId], references: [id])
-  planId         String                @db.Uuid
-  plan           StudyPlan             @relation(fields: [planId], references: [id])
-  admissionDate  DateTime              @db.Date
-  status         StudentStatus         @default(ACTIVE)
-  demo           Boolean               @default(false)
-  createdAt      DateTime              @default(now())
-  updatedAt      DateTime              @updatedAt
+  careerId       String                  @db.Uuid
+  career         Career                  @relation(fields: [careerId], references: [id])
+  planId         String                  @db.Uuid
+  plan           StudyPlan               @relation(fields: [planId], references: [id])
+  admissionDate  DateTime                @db.Date
+  status         StudentStatus           @default(ACTIVE)
+  demo           Boolean                 @default(false)
+  createdAt      DateTime                @default(now())
+  updatedAt      DateTime                @updatedAt
   sensitive      StudentSensitiveData?
   enrollments    Enrollment[]
   attendance     AttendanceRecord[]
   justifications Justification[]
   observations   Observation[]
+  corrections    DataCorrectionRequest[]
 
   @@map("students")
 }
@@ -423,6 +432,7 @@ model ClassSession {
   createdAt    DateTime           @default(now())
   updatedAt    DateTime           @updatedAt
   records      AttendanceRecord[]
+  qrCodes      AttendanceQrCode[]
 
   @@index([commissionId, date])
   @@map("class_sessions")
@@ -447,20 +457,25 @@ model AttendanceRecord {
 }
 
 model Justification {
-  id          String              @id @default(uuid()) @db.Uuid
-  studentId   String              @db.Uuid
-  student     Student             @relation(fields: [studentId], references: [id])
-  fromDate    DateTime            @db.Date
-  toDate      DateTime            @db.Date
-  reason      String
-  documentUrl String?
-  status      JustificationStatus @default(PENDING)
-  createdBy   String              @db.Uuid
-  reviewedBy  String?             @db.Uuid
-  reviewedAt  DateTime?
-  reviewNotes String?
-  createdAt   DateTime            @default(now())
-  updatedAt   DateTime            @updatedAt
+  id           String                     @id @default(uuid()) @db.Uuid
+  studentId    String                     @db.Uuid
+  student      Student                    @relation(fields: [studentId], references: [id])
+  fromDate     DateTime                   @db.Date
+  toDate       DateTime                   @db.Date
+  reason       String
+  /// Materia a la que se limita (sin valor = todas las materias de esas fechas).
+  subjectId    String?                    @db.Uuid
+  subject      Subject?                   @relation(fields: [subjectId], references: [id])
+  documentType JustificationDocumentType?
+  documentName String?
+  documentUrl  String?
+  status       JustificationStatus        @default(PENDING)
+  createdBy    String                     @db.Uuid
+  reviewedBy   String?                    @db.Uuid
+  reviewedAt   DateTime?
+  reviewNotes  String?
+  createdAt    DateTime                   @default(now())
+  updatedAt    DateTime                   @updatedAt
 
   @@index([studentId, fromDate, toDate])
   @@map("justifications")
@@ -521,6 +536,7 @@ model Notice {
   createdBy   String         @db.Uuid
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
+  reads       NoticeRead[]
 
   @@map("notices")
 }
@@ -614,21 +630,24 @@ enum IncidentStatus {
 }
 
 model StaffTask {
-  id               String          @id @default(uuid()) @db.Uuid
-  date             DateTime        @db.Date
+  id               String            @id @default(uuid()) @db.Uuid
+  date             DateTime          @db.Date
   startTime        String
   title            String
   type             StaffTaskType
-  status           StaffTaskStatus @default(PENDING)
+  priority         IncidentPriority?
+  installationId   String?           @db.Uuid
+  installation     Installation?     @relation(fields: [installationId], references: [id], onDelete: SetNull)
+  status           StaffTaskStatus   @default(PENDING)
   location         String
   details          String?
-  assignedToUserId String?         @db.Uuid
+  assignedToUserId String?           @db.Uuid
   completedAt      DateTime?
-  completedBy      String?         @db.Uuid
-  createdBy        String          @db.Uuid
-  demo             Boolean         @default(false)
-  createdAt        DateTime        @default(now())
-  updatedAt        DateTime        @updatedAt
+  completedBy      String?           @db.Uuid
+  createdBy        String            @db.Uuid
+  demo             Boolean           @default(false)
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
 
   @@index([date])
   @@map("staff_tasks")
@@ -637,10 +656,15 @@ model StaffTask {
 model Installation {
   id              String             @id @default(uuid()) @db.Uuid
   name            String             @unique
+  /// Código corto del sector (ej. "AU-12").
+  code            String?
+  /// Planta (ej. "PB", "P1").
+  floor           String?
   status          InstallationStatus @default(OK)
   /// { col, row, colSpan, rowSpan } en el plano del edificio
   layout          Json
   lastCleanedAt   DateTime?
+  lastCleanedBy   String?            @db.Uuid
   nextTask        String?
   notes           String?
   demo            Boolean            @default(false)
@@ -648,6 +672,7 @@ model Installation {
   updatedAt       DateTime           @updatedAt
   incidents       Incident[]
   maintenanceLogs MaintenanceLog[]
+  tasks           StaffTask[]
 
   @@map("installations")
 }
@@ -660,6 +685,7 @@ model Incident {
   installationId String?          @db.Uuid
   installation   Installation?    @relation(fields: [installationId], references: [id])
   imageUrl       String?
+  notes          String?
   status         IncidentStatus   @default(OPEN)
   reportedBy     String           @db.Uuid
   resolvedAt     DateTime?
@@ -713,8 +739,18 @@ enum RepClaimCategory {
 enum RepClaimStatus {
   PENDING
   IN_REVIEW
+  /// Derivado a otra área (forwardedTo). Desde 2026-11-01.
+  FORWARDED
   RESOLVED
   ARCHIVED
+}
+
+/// Área a la que el Centro deriva un reclamo.
+enum RepClaimDestination {
+  BEDELIA
+  DIRECTION
+  PRECEPTORSHIP
+  STAFF
 }
 
 model RepEvent {
@@ -722,10 +758,15 @@ model RepEvent {
   title        String
   date         DateTime              @db.Date
   time         String?
+  /// Hora de fin (HH:mm).
+  endTime      String?
   location     String?
   description  String
   type         RepEventType
   organizer    String
+  /// Cupo máximo de inscriptos (sin valor = sin cupo).
+  capacity     Int?
+  coverUrl     String?
   createdBy    String                @db.Uuid
   demo         Boolean               @default(false)
   createdAt    DateTime              @default(now())
@@ -748,17 +789,23 @@ model RepEventParticipant {
 }
 
 model RepThread {
-  id        String           @id @default(uuid()) @db.Uuid
-  authorId  String           @db.Uuid
-  author    User             @relation(fields: [authorId], references: [id])
-  title     String
-  content   String
-  category  RepForumCategory
-  pinned    Boolean          @default(false)
-  demo      Boolean          @default(false)
-  createdAt DateTime         @default(now())
-  updatedAt DateTime         @updatedAt
-  replies   RepReply[]
+  id           String           @id @default(uuid()) @db.Uuid
+  authorId     String           @db.Uuid
+  author       User             @relation(fields: [authorId], references: [id])
+  title        String
+  content      String
+  category     RepForumCategory
+  pinned       Boolean          @default(false)
+  /// Oculto por el Centro (moderación): no se muestra a quien no gestiona.
+  hidden       Boolean          @default(false)
+  hiddenReason String?
+  /// Denunciado por alguien de la comunidad, pendiente de revisión del Centro.
+  reported     Boolean          @default(false)
+  reportReason String?
+  demo         Boolean          @default(false)
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  replies      RepReply[]
 
   @@map("rep_threads")
 }
@@ -783,6 +830,13 @@ model RepAnnouncement {
   author      User      @relation(fields: [authorId], references: [id])
   pinned      Boolean   @default(false)
   publishDate DateTime? @db.Date
+  /// Resumen corto para la tarjeta.
+  summary     String?
+  coverUrl    String?
+  /// Borrador: solo lo ve el Centro.
+  draft       Boolean   @default(false)
+  /// [{ name, url, kind: "image" | "pdf" | "document", sizeBytes? }] — solo enlaces, no archivos.
+  attachments Json      @default("[]")
   demo        Boolean   @default(false)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
@@ -791,17 +845,27 @@ model RepAnnouncement {
 }
 
 model RepClaim {
-  id          String           @id @default(uuid()) @db.Uuid
-  authorId    String           @db.Uuid
-  author      User             @relation("ClaimAuthor", fields: [authorId], references: [id])
-  category    RepClaimCategory
-  description String
-  status      RepClaimStatus   @default(PENDING)
-  response    String?
-  responderId String?          @db.Uuid
-  demo        Boolean          @default(false)
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
+  id            String               @id @default(uuid()) @db.Uuid
+  authorId      String               @db.Uuid
+  author        User                 @relation("ClaimAuthor", fields: [authorId], references: [id])
+  /// Número visible "REC-AAAA-NNN" (lo genera el backend).
+  code          String?              @unique
+  category      RepClaimCategory
+  title         String?
+  description   String
+  /// El autor pidió no mostrar su nombre: el Centro tampoco lo ve.
+  anonymous     Boolean              @default(false)
+  status        RepClaimStatus       @default(PENDING)
+  response      String?
+  responderId   String?              @db.Uuid
+  forwardedTo   RepClaimDestination?
+  forwardNote   String?
+  archiveReason String?
+  /// Línea de tiempo: [{ at, type, title, note?, actorName }]. La completa el backend.
+  history       Json                 @default("[]")
+  demo          Boolean              @default(false)
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
 
   @@index([status])
   @@map("rep_claims")
@@ -877,6 +941,7 @@ model ForumThread {
   author          User              @relation("ForumAuthor", fields: [authorId], references: [id], onDelete: Cascade)
   title           String
   content         String
+  channel         ForumChannel      @default(GENERAL)
   careerId        String?           @db.Uuid
   year            Int?
   commissionId    String?           @db.Uuid
@@ -933,4 +998,188 @@ model Notification {
 
   @@index([userId, readAt])
   @@map("notifications")
+}
+
+// ============================================================================
+// Paneles de Alumno, Preceptoría y Auxiliares (2026-11-01)
+// Trámites del alumno, asistencia por QR, lectura de comunicados y turnos de Auxiliares.
+// ============================================================================
+
+/// Lectura de un comunicado institucional por un usuario (reemplaza el "leído" guardado en el navegador).
+model NoticeRead {
+  noticeId String   @db.Uuid
+  notice   Notice   @relation(fields: [noticeId], references: [id], onDelete: Cascade)
+  userId   String   @db.Uuid
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  readAt   DateTime @default(now())
+
+  @@id([noticeId, userId])
+  @@index([userId])
+  @@map("notice_reads")
+}
+
+/// Código QR de una clase. El alumno lo escanea y queda PRESENT con origen QR.
+/// Se guarda solo el hash del código (SHA-256); el código en claro se muestra una vez al generarlo.
+model AttendanceQrCode {
+  id        String       @id @default(uuid()) @db.Uuid
+  sessionId String       @db.Uuid
+  session   ClassSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  codeHash  String       @unique
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdBy String       @db.Uuid
+  createdAt DateTime     @default(now())
+
+  @@index([sessionId])
+  @@map("attendance_qr_codes")
+}
+
+enum CorrectionField {
+  FIRST_NAME
+  LAST_NAME
+  DNI
+  EMAIL
+  PHONE
+  ADMISSION_DATE
+  OTHER
+}
+
+enum CorrectionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+/// Pedido del alumno para corregir un dato de su ficha. Aprobarlo NO cambia la ficha:
+/// Preceptoría o Administración la edita aparte (queda auditado en esa edición).
+model DataCorrectionRequest {
+  id            String           @id @default(uuid()) @db.Uuid
+  studentId     String           @db.Uuid
+  student       Student          @relation(fields: [studentId], references: [id])
+  field         CorrectionField
+  currentValue  String?
+  proposedValue String
+  reason        String
+  documentUrl   String?
+  status        CorrectionStatus @default(PENDING)
+  createdBy     String           @db.Uuid
+  reviewedBy    String?          @db.Uuid
+  reviewedAt    DateTime?
+  reviewNotes   String?
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  @@index([studentId, status])
+  @@map("data_correction_requests")
+}
+
+enum StaffShiftType {
+  REGULAR
+  SWAP
+  OFF
+  HOLIDAY
+}
+
+enum ShiftChangeStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  CANCELLED
+}
+
+/// Turno de un auxiliar en un día. Lo cargan Directivos/Administración.
+/// Una persona puede tener más de un turno el mismo día, siempre que los horarios no se superpongan
+/// (lo controla la API). Sin horario = todo el día.
+model StaffShift {
+  id        String         @id @default(uuid()) @db.Uuid
+  userId    String         @db.Uuid
+  user      User           @relation(fields: [userId], references: [id])
+  date      DateTime       @db.Date
+  startTime String?
+  endTime   String?
+  type      StaffShiftType @default(REGULAR)
+  notes     String?
+  createdBy String         @db.Uuid
+  demo      Boolean        @default(false)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  requestedChanges ShiftChangeRequest[] @relation("RequesterShift")
+  offeredChanges   ShiftChangeRequest[] @relation("ColleagueShift")
+
+  @@index([userId, date])
+  @@index([date])
+  @@map("staff_shifts")
+}
+
+/// Pedido de intercambio de turno entre dos auxiliares. Al aceptarlo se intercambian los titulares.
+model ShiftChangeRequest {
+  id               String            @id @default(uuid()) @db.Uuid
+  requesterId      String            @db.Uuid
+  requester        User              @relation("ShiftChangeRequester", fields: [requesterId], references: [id])
+  colleagueId      String            @db.Uuid
+  colleague        User              @relation("ShiftChangeColleague", fields: [colleagueId], references: [id])
+  requesterShiftId String            @db.Uuid
+  requesterShift   StaffShift        @relation("RequesterShift", fields: [requesterShiftId], references: [id], onDelete: Cascade)
+  colleagueShiftId String            @db.Uuid
+  colleagueShift   StaffShift        @relation("ColleagueShift", fields: [colleagueShiftId], references: [id], onDelete: Cascade)
+  reason           String?
+  status           ShiftChangeStatus @default(PENDING)
+  respondedAt      DateTime?
+  respondedBy      String?           @db.Uuid
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  @@index([colleagueId, status])
+  @@index([requesterId, status])
+  @@map("shift_change_requests")
+}
+
+// ============================================================================
+// Ecosistema de Julián: Centro, Auxiliares y Preceptoría (2026-11-01)
+// ============================================================================
+
+/// Tipo de comprobante de una justificación.
+enum JustificationDocumentType {
+  MEDICAL
+  WORK
+  FORCE_MAJEURE
+}
+
+/// Canal del foro académico (/social/forum).
+enum ForumChannel {
+  GENERAL
+  QUESTIONS
+  PROPOSALS
+}
+
+enum StaffAbsenceReason {
+  SICK_LEAVE
+  FAMILY_CARE
+  OFFICIAL_PROCEDURE
+  FORCE_MAJEURE
+  EXAM_TRAINING
+}
+
+/// Ausencia o licencia de un auxiliar. La pide el propio auxiliar; la resuelve Dirección/Administración.
+/// (No confundir con Justification, que es de alumnos.)
+model StaffAbsence {
+  id           String              @id @default(uuid()) @db.Uuid
+  userId       String              @db.Uuid
+  user         User                @relation(fields: [userId], references: [id])
+  fromDate     DateTime            @db.Date
+  toDate       DateTime            @db.Date
+  reason       StaffAbsenceReason
+  notes        String
+  documentName String?
+  documentUrl  String?
+  status       JustificationStatus @default(PENDING)
+  reviewedBy   String?             @db.Uuid
+  reviewedAt   DateTime?
+  reviewNotes  String?
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+
+  @@index([userId, status])
+  @@map("staff_absences")
 }

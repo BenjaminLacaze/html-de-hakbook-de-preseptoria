@@ -19,9 +19,11 @@ desarrollo) o un PostgreSQL instalado en tu máquina.
 
 ```bash
 npm install
-cp .env.example .env        # completar DATABASE_URL y SEED_ADMIN_*
+cp .env.example .env        # valores seguros apuntan a PostgreSQL local; completar clave local
 npm run db:deploy           # crea las tablas
 npm run db:seed             # crea la primera cuenta (superadministrador)
+npm run db:test-users       # cuentas ficticias, solo para desarrollo local
+npm run db:demo-data        # datos ficticios de los cuatro módulos
 npm run dev:api             # API en http://localhost:4000/api/v1
 ```
 
@@ -42,12 +44,33 @@ Probar: `http://localhost:4000/api/v1/health` tiene que responder `{"ok":true,�
 | `npm run db:demo-data` | Carga los datos de ejemplo (carreras, alumnos, asistencias, Auxiliares, Centro) |
 | `npm run db:demo-data:off` | Borra los datos de ejemplo (todo lo marcado `demo`) |
 
+### PostgreSQL local preparado en este equipo
+
+La base de desarrollo local es `i26_dev` en `127.0.0.1:5440`; el clúster queda en
+`backend/.local-dev/pgdata/` (ignorado por Git). Iniciar el servidor desde la raíz:
+
+```powershell
+& "C:\Program Files\PostgreSQL\17\bin\pg_ctl.exe" -D "backend/.local-dev/pgdata" -l "backend/.local-dev/postgres.log" -o "-p 5440 -h 127.0.0.1" start
+```
+
+Apagarlo:
+
+```powershell
+& "C:\Program Files\PostgreSQL\17\bin\pg_ctl.exe" -D "backend/.local-dev/pgdata" stop -m fast
+```
+
+El clúster escucha solo en loopback y usa autenticación local de desarrollo. Cargar únicamente
+datos ficticios o de prueba. La base PostgreSQL no se sube a GitHub: allí se publican
+`schema.prisma`, las migraciones y el código que puede reconstruirla. No cargar `.env`, respaldos
+ni archivos `pgdata` al repositorio.
+
 ## Base en Neon
 
-**Ya está creada (2026-10-24):** proyecto Neon, base `neondb`, región us-east-1, migración `init`
-aplicada, institución cargada, cuenta `direccion@isfdyt26.edu.ar` y usuarios de prueba
-(`npm run db:test-users`). Para trabajar en local: pedirle las cadenas de conexión a Mauricio.
-Los pasos de abajo son por si hay que crearla de nuevo (por ejemplo, una base de pruebas).
+**Registro histórico del repo (2026-10-24):** documenta un proyecto Neon `neondb`, región
+us-east-1, migraciones y cuentas de prueba. El usuario informa que actualmente no dispone de un
+proyecto Neon para este entorno. Hasta volver a verificar titularidad/estado, tratar esos datos
+como históricos y no conectarse ni migrar a Neon. La base local de desarrollo de arriba es la
+única base habilitada en este paso.
 
 ### Crear la base desde cero
 

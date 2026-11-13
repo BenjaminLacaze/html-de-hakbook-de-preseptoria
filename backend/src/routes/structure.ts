@@ -9,10 +9,12 @@
 //   GET/POST/PATCH /structure/students[/:id]   GET/PUT /structure/students/:id/sensitive
 //   GET/POST/PATCH /structure/teachers[/:id]
 //   GET /structure/enrollments?commissionId|studentId   POST /structure/enrollments   PATCH|DELETE /structure/enrollments/:id
+//   GET /structure/corrections?status&studentId   PATCH /structure/corrections/:id   (pedidos de corrección del alumno)
 import { Hono } from 'hono';
 import { z } from 'zod';
 import {
   ACADEMIC_PERIODS,
+  CORRECTION_STATUSES,
   CYCLE_STATUSES,
   ENROLLMENT_CONDITIONS,
   SHIFTS,
@@ -24,9 +26,10 @@ import {
 import { audit } from '../audit.js';
 import { requireAuth, requireRoles, type AppEnv } from '../auth/middleware.js';
 import { prisma } from '../db.js';
-import { commissionInclude, commissionView, studentDTO, teacherDTO } from '../dto.js';
+import { commissionInclude, commissionView, correctionDTO, studentDTO, teacherDTO } from '../dto.js';
 import { AppError, forbidden, notFound } from '../errors.js';
 import type { Prisma } from '../generated/prisma/client.js';
+import { notify } from '../notify.js';
 import { activeCycle, commissionScope, hasRole, isManagement, parseDate, toISO, toISODate } from '../scope.js';
 import { parseBody } from '../validation.js';
 
@@ -361,6 +364,12 @@ export const structureRoutes = new Hono<AppEnv>()
       if (!ok) throw notFound();
     }
     const s = await prisma.studentSensitiveData.findUnique({ where: { studentId: id } });
+    await audit(c, user, {
+      action: 'SENSITIVE_DATA_READ',
+      entity: 'StudentSensitiveData',
+      entityId: id,
+      summary: 'Datos sensibles consultados',
+    });
     const out: StudentSensitiveData = {
       studentId: id,
       birthDate: s?.birthDate ? toISODate(s.birthDate) : undefined,
@@ -502,4 +511,47 @@ export const structureRoutes = new Hono<AppEnv>()
     await prisma.enrollment.delete({ where: { id: e.id } });
     await audit(c, c.get('user'), { action: 'DELETE', entity: 'Enrollment', entityId: e.id, summary: 'Inscripción eliminada' });
     return c.body(null, 204);
+  })
+
+  // ------------------------------------------- pedidos de corrección de ficha
+  // Los pide el alumno (POST /me/corrections). Aprobar no cambia la ficha: se edita aparte.
+  .get('/corrections', requireRoles(...STUDENT_MANAGERS), async (c) => {
+    const q = c.req.query();
+    const rows = await prisma.dataCorrectionRequest.findMany({
+      where: {
+        ...(q.status && (CORRECTION_STATUSES as readonly string[]).includes(q.status) ? { status: q.status as never } : {}),
+        ...(q.studentId ? { studentId: q.studentId } : {}),
+      },
+      include: { student: true },
+      orderBy: { createdAt: 'desc' },
+      take: 500,
+    });
+    return c.json(rows.map(correctionDTO));
+  })
+  .patch('/corrections/:id', requireRoles(...STUDENT_MANAGERS), async (c) => {
+    const user = c.get('user');
+    const b = await parseBody(c, z.object({ status: z.enum(['APPROVED', 'REJECTED']), reviewNotes: z.string().max(1000).optional() }));
+    const r = await prisma.dataCorrectionRequest.findUnique({ where: { id: c.req.param('id') }, include: { student: true } });
+    if (!r) throw notFound('No existe el pedido.');
+    if (r.status !== 'PENDING') throw new AppError('CONFLICT', 'Este pedido ya fue resuelto.');
+    const u = await prisma.dataCorrectionRequest.update({
+      where: { id: r.id },
+      data: { status: b.status, reviewNotes: b.reviewNotes, reviewedBy: user.id, reviewedAt: new Date() },
+      include: { student: true },
+    });
+    await notify([r.student.userId], {
+      type: 'GENERAL',
+      text: b.status === 'APPROVED' ? 'Aprobaron tu pedido de corrección de datos' : 'Rechazaron tu pedido de corrección de datos',
+      details: b.reviewNotes,
+      link: '/me/corrections',
+    });
+    await audit(c, user, {
+      action: 'STATUS_CHANGE',
+      entity: 'DataCorrectionRequest',
+      entityId: r.id,
+      summary: `Pedido de corrección ${b.status === 'APPROVED' ? 'aprobado' : 'rechazado'}`,
+      previousValue: { status: r.status },
+      newValue: { status: u.status },
+    });
+    return c.json(correctionDTO(u));
   });

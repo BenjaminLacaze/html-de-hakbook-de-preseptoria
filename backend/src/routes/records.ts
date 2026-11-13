@@ -2,7 +2,7 @@
 //
 //   GET /records/grades?commissionId=           PUT /records/grades (carga o corrige)   POST /records/grades/publish
 //   GET /records/observations?commissionId|studentId   POST /records/observations
-//   GET /records/notices      POST /records/notices      PATCH /records/notices/:id
+//   GET /records/notices?mine=1   POST /records/notices      PATCH /records/notices/:id   POST /records/notices/:id/read
 //   GET /records/events?from&to   POST /records/events   PATCH|DELETE /records/events/:id
 //   GET /records/audit?entity&userId&limit
 //   GET /records/settings     PATCH /records/settings
@@ -227,16 +227,38 @@ export const recordsRoutes = new Hono<AppEnv>()
   .get('/notices', async (c) => {
     const user = c.get('user');
     const all = c.req.query('all') === '1' && hasRole(user, ...MANAGE);
+    // mine=1: los comunicados propios en cualquier estado (vencidos y archivados incluidos).
+    const mine = c.req.query('mine') === '1';
     const rows = await prisma.notice.findMany({
-      where: all ? {} : { status: 'PUBLISHED', OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }] },
+      where: all ? {} : mine ? { createdBy: user.id } : { status: 'PUBLISHED', OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }] },
       orderBy: [{ pinned: 'desc' }, { publishedAt: 'desc' }, { createdAt: 'desc' }],
       take: 300,
     });
+    const reads = await prisma.noticeRead.findMany({ where: { userId: user.id, noticeId: { in: rows.map((n) => n.id) } } });
+    const readAt = new Map(reads.map((r) => [r.noticeId, r.readAt.toISOString()]));
     const visible: Notice[] = [];
     for (const n of rows) {
-      if (all || n.createdBy === user.id || (await audienceMatches((n.audience ?? {}) as NoticeAudience, user))) visible.push(noticeDTO(n));
+      if (all || n.createdBy === user.id || (await audienceMatches((n.audience ?? {}) as NoticeAudience, user))) {
+        visible.push({ ...noticeDTO(n), readAt: readAt.get(n.id) });
+      }
     }
     return c.json(visible);
+  })
+  // Marca como leído un comunicado que el usuario puede ver. Repetirlo no cambia la fecha.
+  .post('/notices/:id/read', async (c) => {
+    const user = c.get('user');
+    const n = await prisma.notice.findUnique({ where: { id: c.req.param('id') } });
+    const canSee =
+      n &&
+      n.status === 'PUBLISHED' &&
+      (n.createdBy === user.id || (await audienceMatches((n.audience ?? {}) as NoticeAudience, user)));
+    if (!n || !canSee) throw notFound('No existe el comunicado.');
+    const r = await prisma.noticeRead.upsert({
+      where: { noticeId_userId: { noticeId: n.id, userId: user.id } },
+      create: { noticeId: n.id, userId: user.id },
+      update: {},
+    });
+    return c.json({ noticeId: n.id, readAt: r.readAt.toISOString() });
   })
   .post('/notices', requireRoles(...MANAGE, 'PRECEPTOR'), async (c) => {
     const user = c.get('user');

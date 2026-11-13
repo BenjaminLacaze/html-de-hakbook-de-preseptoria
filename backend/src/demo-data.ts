@@ -2,6 +2,7 @@
 //
 //   npm run db:demo-data       carga (o recarga) los datos de ejemplo
 //   npm run db:demo-data:off   los borra (todo lo marcado demo = true)
+//   npm run db:demo-data -- --shifts   solo (re)carga los turnos de ejemplo de Auxiliares
 //
 // Salen de la app "julian appcompleta" (consolidacion/app/src/legacy/constants.ts): 2 carreras,
 // sus materias, los alumnos de ejemplo y sus asistencias, más tareas, instalaciones,
@@ -28,8 +29,14 @@ import {
 } from '../../consolidacion/app/src/legacy/constants.js';
 import { AttendanceStatus, Role } from '../../consolidacion/app/src/legacy/types.js';
 
+import { randomBytes } from 'node:crypto';
+import { TEST_USERS_PASSWORD } from '../../shared/testUsers.js';
+import { hashPassword } from './auth/password.js';
+
 const { prisma } = await import('./db.js');
 const off = process.argv.includes('--off');
+/** --shifts: solo (re)carga los turnos de ejemplo de Auxiliares, sin tocar el resto. */
+const onlyShifts = process.argv.includes('--shifts');
 
 /** Código de carrera en la base ↔ id de carrera en las pantallas rescatadas. */
 export const DEMO_CAREER_CODES: Record<string, string> = { dev: 'DEMO-DEV', design: 'DEMO-DIS' };
@@ -37,7 +44,47 @@ export const DEMO_CAREER_CODES: Record<string, string> = { dev: 'DEMO-DEV', desi
 const day = (s: string) => new Date(`${s}T00:00:00Z`);
 const today = () => day(new Date().toISOString().slice(0, 10));
 
+/**
+ * Compañero/a de ejemplo para los cambios de turno. Con una base local entra con la clave de los
+ * usuarios de prueba (para poder aceptar un cambio desde la pantalla); con cualquier otra base,
+ * la clave es al azar y nadie puede iniciar sesión.
+ */
+const DEMO_STAFF2_EMAIL = 'demo.auxiliar2@example.invalid';
+const localDatabase = /@(127\.0\.0\.1|localhost)[:/]/.test(process.env.DATABASE_URL ?? '');
+
+async function removeDemoShifts() {
+  await prisma.staffShift.deleteMany({ where: { demo: true } }); // los pedidos de cambio se borran en cascada
+}
+
+/** Turnos de lunes a viernes de las próximas dos semanas: prueba.auxiliar a la mañana y el ejemplo a la tarde. */
+async function loadDemoShifts() {
+  await removeDemoShifts();
+  const staffId = await userId('prueba.auxiliar@isfdyt26.edu.ar');
+  const access = {
+    passwordHash: await hashPassword(localDatabase ? TEST_USERS_PASSWORD : randomBytes(24).toString('base64url')),
+    mustChangePassword: !localDatabase,
+  };
+  const staff2 = await prisma.user.upsert({
+    where: { email: DEMO_STAFF2_EMAIL },
+    update: { roles: ['STAFF'], status: 'ACTIVE', ...access },
+    create: { email: DEMO_STAFF2_EMAIL, firstName: 'Auxiliar', lastName: 'Ejemplo', roles: ['STAFF'], ...access },
+  });
+  const days: Date[] = [];
+  for (let i = 0; days.length < 10; i++) {
+    const d = new Date(today().getTime() + i * 86400000);
+    if (d.getUTCDay() !== 0 && d.getUTCDay() !== 6) days.push(d);
+  }
+  await prisma.staffShift.createMany({
+    data: days.flatMap((date) => [
+      { userId: staffId, date, startTime: '07:00', endTime: '13:00', createdBy: staffId, demo: true },
+      { userId: staff2.id, date, startTime: '13:00', endTime: '19:00', createdBy: staffId, demo: true },
+    ]),
+  });
+  console.log(`Turnos de ejemplo: ${days.length * 2} (prueba.auxiliar y ${DEMO_STAFF2_EMAIL}).`);
+}
+
 async function removeDemo() {
+  await removeDemoShifts();
   const careers = await prisma.career.findMany({ where: { demo: true }, select: { id: true } });
   const careerIds = careers.map((c) => c.id);
   const students = await prisma.student.findMany({ where: { demo: true }, select: { id: true } });
@@ -319,5 +366,9 @@ async function loadDemo() {
 }
 
 if (off) await removeDemo();
-else await loadDemo();
+else if (onlyShifts) await loadDemoShifts();
+else {
+  await loadDemo();
+  await loadDemoShifts();
+}
 await prisma.$disconnect();

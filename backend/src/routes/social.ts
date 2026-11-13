@@ -6,13 +6,14 @@
 //   GET /social/notes   POST /social/notes   PATCH|DELETE /social/notes/:id         (solo las propias)
 //   GET /social/messages/conversations    GET /social/messages/with/:userId (las marca leídas)
 //   POST /social/messages
-//   GET /social/forum?status=             POST /social/forum
+//   GET /social/forum?status=&channel=    POST /social/forum
 //   PATCH /social/forum/:id               (moderar: Preceptoría/Directivos · editar: el autor)
 //   DELETE /social/forum/:id              GET|POST /social/forum/:id/replies
 //   GET /social/notifications             POST /social/notifications/read  (todas o { ids })
 import { Hono } from 'hono';
 import { z } from 'zod';
 import {
+  FORUM_CHANNELS,
   FORUM_THREAD_STATUSES,
   ROLES,
   type AppNotification,
@@ -73,6 +74,7 @@ const threadDTO = (t: ThreadRow): ForumThread => ({
   authorName: fullName(t.author),
   title: t.title,
   content: t.content,
+  channel: t.channel,
   careerId: t.careerId ?? undefined,
   year: t.year ?? undefined,
   commissionId: t.commissionId ?? undefined,
@@ -229,12 +231,16 @@ export const socialRoutes = new Hono<AppEnv>()
   .get('/forum', async (c) => {
     const me = c.get('user');
     const status = c.req.query('status');
+    const channel = c.req.query('channel');
     // Moderadores ven todo; el resto ve lo aprobado más lo propio.
-    const where: Prisma.ForumThreadWhereInput = isModerator(me)
-      ? status && (FORUM_THREAD_STATUSES as readonly string[]).includes(status)
-        ? { status: status as never }
-        : {}
-      : { OR: [{ status: 'APPROVED' }, { authorId: me.id }] };
+    const where: Prisma.ForumThreadWhereInput = {
+      ...(isModerator(me)
+        ? status && (FORUM_THREAD_STATUSES as readonly string[]).includes(status)
+          ? { status: status as never }
+          : {}
+        : { OR: [{ status: 'APPROVED' }, { authorId: me.id }] }),
+      ...(channel && (FORUM_CHANNELS as readonly string[]).includes(channel) ? { channel: channel as never } : {}),
+    };
     const rows = await prisma.forumThread.findMany({
       where,
       include: { author: true, _count: { select: { replies: true } } },
@@ -250,6 +256,7 @@ export const socialRoutes = new Hono<AppEnv>()
       z.object({
         title: z.string().trim().min(3).max(200),
         content: z.string().trim().min(3).max(10_000),
+        channel: z.enum(FORUM_CHANNELS).optional(),
         careerId: z.string().uuid().optional(),
         year: z.number().int().min(1).max(8).optional(),
         commissionId: z.string().uuid().optional(),

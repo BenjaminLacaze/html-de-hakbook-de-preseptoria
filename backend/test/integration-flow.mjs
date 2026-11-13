@@ -119,3 +119,24 @@ for(let i=1;i<=5;i++){
  await writeFile(process.env.TEST_FIXTURE_MANIFEST,JSON.stringify(m,null,2));
  console.log('OK alta HTTP director: alumno + cuenta vinculada + cambio contraseña + inscripción + profesor asistencia + alumno /me');
 }
+// Alcance institucional de Preceptoría y auditoría de consultas sensibles.
+{
+ const p=await client('preceptor'),d=await client('director'),t=await client('teacher1');
+ const students=await p('/structure/students');
+ for(const scenario of m.scenarios) assert.ok(students.some(s=>s.id===scenario.studentId),`Preceptor no ve ${scenario.studentId}`);
+ const target=m.scenarios[0].studentId;
+ const sensitive={address:'QA-I26 domicilio descartable',healthNotes:'QA-I26 dato ficticio de prueba'};
+ await d(`/structure/students/${target}/sensitive`,'PUT',sensitive);
+ const read=await p(`/structure/students/${target}/sensitive`);
+ assert.equal(read.address,sensitive.address);assert.equal(read.healthNotes,sensitive.healthNotes);
+ await t(`/structure/students/${target}/sensitive`,'GET',undefined,403);
+ await p(`/structure/students/${target}/sensitive`,'PUT',sensitive,403);
+ await p(`/structure/students/${target}`,'PATCH',{userId:null},403);
+ const audit=await d(`/records/audit?entity=StudentSensitiveData&userId=${m.accounts.preceptor.id}`);
+ const readLog=audit.find(a=>a.entityId===target&&a.action==='SENSITIVE_DATA_READ');
+ assert.ok(readLog,'No se registró la lectura sensible de Preceptoría');
+ assert.equal(readLog.summary,'Datos sensibles consultados');
+ assert.ok(!JSON.stringify(readLog).includes(sensitive.address));
+ assert.ok(!JSON.stringify(readLog).includes(sensitive.healthNotes));
+ console.log('OK padrón global PRECEPTOR; lectura sensible con auditoría; TEACHER denegado; escritura/vínculo sensible restringidos');
+}

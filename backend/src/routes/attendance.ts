@@ -10,6 +10,9 @@
 //   POST /attendance/commissions/:id/sessions   (Profesores: abre o reutiliza la clase del día)
 //   GET  /attendance/sessions/:id
 //   PUT  /attendance/sessions/:id               (Profesores: guarda la planilla de la clase)
+//   POST|DELETE /attendance/sessions/:id/qr     (genera o anula el código QR de la clase)
+//   GET  /attendance/summary/bulk?commissionId|subjectId   (resumen de todos los inscriptos)
+//   GET  /attendance/audit?commissionId|subjectId          (correcciones de registros ya cargados)
 //   GET  /attendance/justifications?status&studentId
 //   POST /attendance/justifications
 //   PATCH /attendance/justifications/:id        (aprobar / rechazar)
@@ -17,7 +20,10 @@ import { Hono } from 'hono';
 import { z } from 'zod';
 import {
   ATTENDANCE_STATUSES,
+  JUSTIFICATION_DOCUMENT_TYPES,
   JUSTIFICATION_STATUSES,
+  type AttendanceChange,
+  type AttendanceQrCodeIssued,
   type AttendanceRecordView,
   type AttendanceSummary,
   type JustificationView,
@@ -29,7 +35,8 @@ import { AppError, forbidden, notFound } from '../errors.js';
 import type { Prisma } from '../generated/prisma/client.js';
 import { commissionScope, hasRole, isManagement, parseDate, toISO, toISODate } from '../scope.js';
 import { notify } from '../notify.js';
-import { attendanceSummary } from '../summary.js';
+import { newQrCode } from '../qr.js';
+import { attendanceSummary, covers } from '../summary.js';
 import { parseBody } from '../validation.js';
 
 const READERS = ['SUPER_ADMIN', 'DIRECTOR', 'ADMINISTRATIVE', 'PRECEPTOR', 'TEACHER'] as const;
@@ -59,6 +66,7 @@ async function upsertRecords(
   user: CurrentUser,
 ): Promise<number> {
   const source = sourceFor(user);
+  const before = await prisma.attendanceRecord.findMany({ where: { sessionId, studentId: { in: records.map((r) => r.studentId) } } });
   await prisma.$transaction(
     records.map((r) =>
       prisma.attendanceRecord.upsert({
@@ -83,6 +91,25 @@ async function upsertRecords(
       }),
     ),
   );
+  // Correcciones: registros que ya existían y cambiaron de estado. Quedan en audit_logs.
+  const changed = records.flatMap((r) => {
+    const prev = before.find((b) => b.studentId === r.studentId);
+    return prev && prev.status !== r.status ? [{ prev, r }] : [];
+  });
+  if (changed.length) {
+    await prisma.auditLog.createMany({
+      data: changed.map(({ prev, r }) => ({
+        userId: user.id,
+        userName: `${user.firstName} ${user.lastName}`,
+        action: 'UPDATE' as const,
+        entity: 'AttendanceRecord',
+        entityId: prev.id,
+        summary: `Asistencia corregida: ${prev.status} → ${r.status}`,
+        previousValue: { status: prev.status },
+        newValue: { status: r.status, ...(r.notes ? { notes: r.notes } : {}) },
+      })),
+    });
+  }
   return records.length;
 }
 
@@ -140,7 +167,7 @@ export const attendanceRoutes = new Hono<AppEnv>()
 
     const out: AttendanceRecordView[] = records.map((r) => {
       const d = r.session.date;
-      const covering = justs.find((j) => j.studentId === r.studentId && j.fromDate <= d && j.toDate >= d);
+      const covering = justs.find((j) => j.studentId === r.studentId && covers(j, d, r.session.commission.subjectId));
       return {
         id: r.id,
         sessionId: r.sessionId,
@@ -225,6 +252,59 @@ export const attendanceRoutes = new Hono<AppEnv>()
     return c.json(await attendanceSummary(studentId, commissionId));
   })
 
+  .get('/summary/bulk', requireRoles(...READERS), async (c) => {
+    const user = c.get('user');
+    const { commissionId, subjectId } = c.req.query();
+    if (!commissionId && !subjectId) throw new AppError('VALIDATION_ERROR', 'Indicá commissionId o subjectId.');
+    const commissions = await prisma.commission.findMany({
+      where: { AND: [await commissionScope(user), commissionId ? { id: commissionId } : {}, subjectId ? { subjectId } : {}] },
+      include: { enrollments: { where: { condition: { not: 'DROPPED' } }, select: { studentId: true } } },
+    });
+    const out: AttendanceSummary[] = [];
+    for (const cm of commissions) {
+      for (const e of cm.enrollments) out.push(await attendanceSummary(e.studentId, cm.id));
+    }
+    return c.json(out);
+  })
+
+  .get('/audit', requireRoles(...READERS), async (c) => {
+    const user = c.get('user');
+    const { commissionId, subjectId } = c.req.query();
+    const records = await prisma.attendanceRecord.findMany({
+      where: {
+        session: { commission: { AND: [await commissionScope(user), commissionId ? { id: commissionId } : {}, subjectId ? { subjectId } : {}] } },
+      },
+      include: { student: true, session: { include: { commission: { include: { subject: true } } } } },
+      take: 20_000,
+    });
+    const byId = new Map(records.map((r) => [r.id, r]));
+    const logs = byId.size
+      ? await prisma.auditLog.findMany({
+          where: { entity: 'AttendanceRecord', entityId: { in: [...byId.keys()] } },
+          orderBy: { at: 'desc' },
+          take: 300,
+        })
+      : [];
+    const out: AttendanceChange[] = logs.map((l) => {
+      const r = byId.get(l.entityId)!;
+      const prev = (l.previousValue ?? {}) as { status?: AttendanceChange['previousStatus'] };
+      const next = (l.newValue ?? {}) as { status?: AttendanceChange['newStatus']; notes?: string };
+      return {
+        id: l.id,
+        at: l.at.toISOString(),
+        userName: l.userName,
+        studentId: r.studentId,
+        studentName: `${r.student.lastName}, ${r.student.firstName}`,
+        date: toISODate(r.session.date),
+        subjectName: r.session.commission.subject.name,
+        previousStatus: prev.status ?? r.status,
+        newStatus: next.status ?? r.status,
+        notes: next.notes,
+      };
+    });
+    return c.json(out);
+  })
+
   // ---------------------------------------------- Profesores: comisión + clase
   .get('/commissions/:id/sessions', requireRoles(...READERS), async (c) => {
     const commission = await prisma.commission.findFirst({ where: { AND: [await commissionScope(c.get('user')), { id: c.req.param('id') }] } });
@@ -258,6 +338,33 @@ export const attendanceRoutes = new Hono<AppEnv>()
       status: session.status,
       records: session.records.map((r) => ({ studentId: r.studentId, status: r.status, minutesLate: r.minutesLate ?? undefined, notes: r.notes ?? undefined })),
     });
+  })
+
+  // Código QR de la clase: el alumno lo escanea (o lo tipea) en POST /me/attendance/qr.
+  // Generar uno nuevo anula el anterior de esa clase. El código en claro solo viaja en esta respuesta.
+  .post('/sessions/:id/qr', requireRoles(...WRITERS), async (c) => {
+    const user = c.get('user');
+    const body = await parseBody(c, z.object({ minutes: z.number().int().min(1).max(30).default(10) }));
+    const session = await prisma.classSession.findFirst({ where: { id: c.req.param('id'), commission: await commissionScope(user) } });
+    if (!session) throw notFound('No existe la clase o no la tenés a cargo.');
+    if (session.status === 'CLOSED') throw new AppError('CONFLICT', 'La planilla de esta clase ya está cerrada.');
+    const { code, hash } = newQrCode();
+    const expiresAt = new Date(Date.now() + body.minutes * 60_000);
+    const [, qr] = await prisma.$transaction([
+      prisma.attendanceQrCode.updateMany({ where: { sessionId: session.id, revokedAt: null }, data: { revokedAt: new Date() } }),
+      prisma.attendanceQrCode.create({ data: { sessionId: session.id, codeHash: hash, expiresAt, createdBy: user.id } }),
+    ]);
+    await audit(c, user, { action: 'CREATE', entity: 'AttendanceQrCode', entityId: qr.id, summary: `QR de asistencia por ${body.minutes} min` });
+    const out: AttendanceQrCodeIssued = { id: qr.id, sessionId: session.id, code, expiresAt: expiresAt.toISOString() };
+    return c.json(out, 201);
+  })
+
+  .delete('/sessions/:id/qr', requireRoles(...WRITERS), async (c) => {
+    const user = c.get('user');
+    const session = await prisma.classSession.findFirst({ where: { id: c.req.param('id'), commission: await commissionScope(user) } });
+    if (!session) throw notFound('No existe la clase o no la tenés a cargo.');
+    await prisma.attendanceQrCode.updateMany({ where: { sessionId: session.id, revokedAt: null }, data: { revokedAt: new Date() } });
+    return c.body(null, 204);
   })
 
   .put('/sessions/:id', requireRoles(...WRITERS), async (c) => {
@@ -295,13 +402,17 @@ export const attendanceRoutes = new Hono<AppEnv>()
         ? {}
         : { studentId: q.studentId ? (visible.includes(q.studentId) ? q.studentId : { in: [] }) : { in: visible } }),
     };
-    const rows = await prisma.justification.findMany({ where, include: { student: true }, orderBy: { createdAt: 'desc' }, take: 1000 });
+    const rows = await prisma.justification.findMany({ where, include: { student: true, subject: true }, orderBy: { createdAt: 'desc' }, take: 1000 });
     const out: JustificationView[] = rows.map((j) => ({
       id: j.id,
       studentId: j.studentId,
       fromDate: toISODate(j.fromDate),
       toDate: toISODate(j.toDate),
       reason: j.reason,
+      subjectId: j.subjectId ?? undefined,
+      subjectName: j.subject?.name,
+      documentType: j.documentType ?? undefined,
+      documentName: j.documentName ?? undefined,
       documentUrl: j.documentUrl ?? undefined,
       status: j.status,
       createdBy: j.createdBy,
@@ -325,6 +436,9 @@ export const attendanceRoutes = new Hono<AppEnv>()
         fromDate: z.string(),
         toDate: z.string(),
         reason: z.string().trim().min(3, 'Contá el motivo.').max(1000),
+        subjectId: z.string().uuid().optional(),
+        documentType: z.enum(JUSTIFICATION_DOCUMENT_TYPES).optional(),
+        documentName: z.string().trim().max(200).optional(),
         documentUrl: z.string().url().optional(),
       }),
     );
@@ -334,7 +448,17 @@ export const attendanceRoutes = new Hono<AppEnv>()
     const visible = await visibleStudentIds(user);
     if (visible !== 'all' && !visible.includes(body.studentId)) throw notFound('No existe el alumno o no lo tenés a cargo.');
     const j = await prisma.justification.create({
-      data: { studentId: body.studentId, fromDate: from, toDate: to, reason: body.reason, documentUrl: body.documentUrl, createdBy: user.id },
+      data: {
+        studentId: body.studentId,
+        fromDate: from,
+        toDate: to,
+        reason: body.reason,
+        subjectId: body.subjectId,
+        documentType: body.documentType,
+        documentName: body.documentName,
+        documentUrl: body.documentUrl,
+        createdBy: user.id,
+      },
     });
     await audit(c, user, { action: 'CREATE', entity: 'Justification', entityId: j.id, summary: `Justificación ${body.fromDate} a ${body.toDate}` });
     return c.json({ id: j.id, status: j.status }, 201);
@@ -347,6 +471,7 @@ export const attendanceRoutes = new Hono<AppEnv>()
     if (!j) throw notFound('No existe la justificación.');
     const visible = await visibleStudentIds(user);
     if (visible !== 'all' && !visible.includes(j.studentId)) throw notFound('No existe la justificación.');
+    if (j.status !== 'PENDING') throw new AppError('CONFLICT', 'Esta justificación ya fue resuelta.');
     const updated = await prisma.justification.update({
       where: { id: j.id },
       data: { status: body.status, reviewNotes: body.reviewNotes, reviewedBy: user.id, reviewedAt: new Date() },

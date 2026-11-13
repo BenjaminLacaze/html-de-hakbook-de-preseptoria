@@ -260,6 +260,7 @@ export const AUDIT_ACTIONS = [
   'EXPORT',
   'LOGIN',
   'SESSION_REOPEN',
+  'SENSITIVE_DATA_READ',
 ] as const;
 export type AuditAction = (typeof AUDIT_ACTIONS)[number];
 export const AUDIT_ACTION_LABELS: Record<AuditAction, string> = {
@@ -271,6 +272,7 @@ export const AUDIT_ACTION_LABELS: Record<AuditAction, string> = {
   EXPORT: 'Exportación',
   LOGIN: 'Ingreso',
   SESSION_REOPEN: 'Reapertura de planilla',
+  SENSITIVE_DATA_READ: 'Consulta de datos sensibles',
 };
 
 // ============================================================================
@@ -553,6 +555,12 @@ export interface Justification extends Timestamps {
   fromDate: ISODate;
   toDate: ISODate;
   reason: string;
+  /** Materia a la que se limita. Sin valor: cubre todas las materias de esas fechas. */
+  subjectId?: ID;
+  subjectName?: string;
+  documentType?: JustificationDocumentType;
+  /** Nombre del comprobante (todavía no hay subida de archivos). */
+  documentName?: string;
   /** URL del comprobante, si hay. */
   documentUrl?: string;
   status: JustificationStatus;
@@ -640,6 +648,8 @@ export interface Notice extends Timestamps {
   publishedAt?: ISODateTime;
   expiresAt?: ISODateTime;
   createdBy: ID;
+  /** Cuándo lo leyó el usuario de la sesión (GET /records/notices). Sin valor: no lo leyó. */
+  readAt?: ISODateTime;
 }
 
 export interface SchoolEvent extends Timestamps {
@@ -909,11 +919,14 @@ export interface StaffTask extends Timestamps {
   title: string;
   type: StaffTaskType;
   status: StaffTaskStatus;
+  priority?: IncidentPriority;
   location: string;
+  installationId?: ID;
   details?: string;
   assignedToUserId?: ID;
   completedAt?: ISODateTime;
   completedBy?: ID;
+  completedByName?: string;
 }
 
 export const INSTALLATION_STATUSES = ['OK', 'MAINTENANCE', 'OUT_OF_SERVICE'] as const;
@@ -927,10 +940,14 @@ export const INSTALLATION_STATUS_LABELS: Record<InstallationStatus, string> = {
 export interface Installation extends Timestamps {
   id: ID;
   name: string;
+  code?: string;
+  floor?: string;
   status: InstallationStatus;
   /** Ubicación en el plano del edificio (grilla). */
   layout: { col: number; row: number; colSpan: number; rowSpan: number };
   lastCleanedAt?: ISODateTime;
+  lastCleanedBy?: ID;
+  lastCleanedByName?: string;
   nextTask?: string;
   notes?: string;
 }
@@ -955,10 +972,13 @@ export interface Incident extends Timestamps {
   sector: string;
   installationId?: ID;
   imageUrl?: string;
+  notes?: string;
   status: IncidentStatus;
   reportedBy: ID;
+  reportedByName?: string;
   resolvedAt?: ISODateTime;
   resolvedBy?: ID;
+  resolvedByName?: string;
 }
 
 export interface MaintenanceLog {
@@ -989,10 +1009,14 @@ export interface RepEvent extends Timestamps {
   title: string;
   date: ISODate;
   time?: TimeOfDay;
+  endTime?: TimeOfDay;
   location?: string;
   description: string;
   type: RepEventType;
   organizer: string;
+  /** Cupo máximo (sin valor = sin cupo). */
+  capacity?: number;
+  coverUrl?: string;
   createdBy: ID;
   /** Cantidad de inscriptos (lo calcula el backend). */
   participantCount: number;
@@ -1017,6 +1041,14 @@ export interface RepThread extends Timestamps {
   category: RepForumCategory;
   pinned: boolean;
   replyCount: number;
+  /** Cargo del autor en el Centro (UserProfile.position), si es miembro. */
+  authorPosition?: string;
+  authorIsRep: boolean;
+  /** Moderación del Centro: los ocultos solo los ve quien gestiona. */
+  hidden: boolean;
+  hiddenReason?: string;
+  reported: boolean;
+  reportReason?: string;
 }
 
 export interface RepReply {
@@ -1024,6 +1056,8 @@ export interface RepReply {
   threadId: ID;
   authorId: ID;
   authorName: string;
+  authorPosition?: string;
+  authorIsRep: boolean;
   content: string;
   createdAt: ISODateTime;
 }
@@ -1034,8 +1068,23 @@ export interface RepAnnouncement extends Timestamps {
   content: string;
   authorId: ID;
   authorName: string;
+  authorPosition?: string;
   pinned: boolean;
+  /** Fecha de publicación programada: antes de esa fecha solo la ve el Centro. */
   publishDate?: ISODate;
+  summary?: string;
+  coverUrl?: string;
+  /** Borrador: solo lo ve el Centro. */
+  draft: boolean;
+  attachments: RepAttachment[];
+}
+
+/** Adjunto por enlace (todavía no hay subida de archivos). */
+export interface RepAttachment {
+  name: string;
+  url: string;
+  kind: 'image' | 'pdf' | 'document';
+  sizeBytes?: number;
 }
 
 export const REP_CLAIM_CATEGORIES = ['ACADEMIC', 'INFRASTRUCTURE', 'ADMINISTRATIVE', 'SUGGESTION'] as const;
@@ -1047,11 +1096,12 @@ export const REP_CLAIM_CATEGORY_LABELS: Record<RepClaimCategory, string> = {
   SUGGESTION: 'Sugerencia',
 };
 
-export const REP_CLAIM_STATUSES = ['PENDING', 'IN_REVIEW', 'RESOLVED', 'ARCHIVED'] as const;
+export const REP_CLAIM_STATUSES = ['PENDING', 'IN_REVIEW', 'FORWARDED', 'RESOLVED', 'ARCHIVED'] as const;
 export type RepClaimStatus = (typeof REP_CLAIM_STATUSES)[number];
 export const REP_CLAIM_STATUS_LABELS: Record<RepClaimStatus, string> = {
   PENDING: 'Pendiente',
   IN_REVIEW: 'En revisión',
+  FORWARDED: 'Derivado',
   RESOLVED: 'Resuelto',
   ARCHIVED: 'Archivado',
 };
@@ -1059,13 +1109,40 @@ export const REP_CLAIM_STATUS_LABELS: Record<RepClaimStatus, string> = {
 export interface RepClaim extends Timestamps {
   id: ID;
   authorId: ID;
-  /** El Centro ve el nombre; cada alumno ve solo sus propios reclamos. */
-  authorName: string;
+  /** El Centro ve el nombre; cada alumno ve solo sus propios reclamos. Vacío si es anónimo. */
+  authorName?: string;
+  authorEmail?: string;
+  authorCareer?: string;
+  /** "REC-AAAA-NNN" */
+  code?: string;
   category: RepClaimCategory;
+  title?: string;
   description: string;
+  anonymous: boolean;
   status: RepClaimStatus;
   response?: string;
   responderId?: ID;
+  forwardedTo?: RepClaimDestination;
+  forwardNote?: string;
+  archiveReason?: string;
+  history: RepClaimHistoryItem[];
+}
+
+export const REP_CLAIM_DESTINATIONS = ['BEDELIA', 'DIRECTION', 'PRECEPTORSHIP', 'STAFF'] as const;
+export type RepClaimDestination = (typeof REP_CLAIM_DESTINATIONS)[number];
+export const REP_CLAIM_DESTINATION_LABELS: Record<RepClaimDestination, string> = {
+  BEDELIA: 'Bedelía',
+  DIRECTION: 'Dirección',
+  PRECEPTORSHIP: 'Preceptoría',
+  STAFF: 'Auxiliares',
+};
+
+export interface RepClaimHistoryItem {
+  at: ISODateTime;
+  type: 'CREATED' | 'STATUS' | 'FORWARDED' | 'RESPONSE' | 'ARCHIVED';
+  title: string;
+  note?: string;
+  actorName: string;
 }
 
 // ============================================================================
@@ -1140,6 +1217,7 @@ export interface ForumThread extends Timestamps {
   authorName: string;
   title: string;
   content: string;
+  channel: ForumChannel;
   careerId?: ID;
   year?: number;
   commissionId?: ID;
@@ -1254,3 +1332,207 @@ export type UpdateSettingsRequest = Partial<
     'name' | 'shortName' | 'cue' | 'city' | 'district' | 'minAttendancePercent' | 'lateArrivalAbsenceWeight' | 'attendanceRiskThresholdPercent'
   >
 >;
+
+// ============================================================================
+// Paneles de Alumno, Preceptoría y Auxiliares (2026-11-01)
+// ============================================================================
+
+/** Dato de la ficha que el alumno pide corregir. */
+export const CORRECTION_FIELDS = ['FIRST_NAME', 'LAST_NAME', 'DNI', 'EMAIL', 'PHONE', 'ADMISSION_DATE', 'OTHER'] as const;
+export type CorrectionField = (typeof CORRECTION_FIELDS)[number];
+export const CORRECTION_FIELD_LABELS: Record<CorrectionField, string> = {
+  FIRST_NAME: 'Nombre',
+  LAST_NAME: 'Apellido',
+  DNI: 'DNI',
+  EMAIL: 'Email',
+  PHONE: 'Teléfono',
+  ADMISSION_DATE: 'Fecha de ingreso',
+  OTHER: 'Otro dato',
+};
+
+export const CORRECTION_STATUSES = ['PENDING', 'APPROVED', 'REJECTED'] as const;
+export type CorrectionStatus = (typeof CORRECTION_STATUSES)[number];
+export const CORRECTION_STATUS_LABELS: Record<CorrectionStatus, string> = {
+  PENDING: 'En revisión',
+  APPROVED: 'Aprobada',
+  REJECTED: 'Rechazada',
+};
+
+/**
+ * Pedido de corrección de la ficha. Aprobarlo NO modifica la ficha:
+ * Preceptoría o Administración la edita aparte.
+ */
+export interface DataCorrectionRequest extends Timestamps {
+  id: ID;
+  studentId: ID;
+  field: CorrectionField;
+  currentValue?: string;
+  proposedValue: string;
+  reason: string;
+  documentUrl?: string;
+  status: CorrectionStatus;
+  createdBy: ID;
+  reviewedBy?: ID;
+  reviewedAt?: ISODateTime;
+  reviewNotes?: string;
+  /** Solo en las vistas de Preceptoría/Administración. */
+  studentName?: string;
+  studentFileNumber?: string;
+}
+
+export interface CreateCorrectionRequest {
+  field: CorrectionField;
+  proposedValue: string;
+  reason: string;
+  documentUrl?: string;
+}
+
+/** Pedido de justificación hecho por el propio alumno (POST /me/justifications). */
+export interface CreateMyJustificationRequest {
+  fromDate: ISODate;
+  toDate: ISODate;
+  reason: string;
+  documentUrl?: string;
+}
+
+/** Código QR de una clase (POST /attendance/sessions/:id/qr). El código solo se devuelve al crearlo. */
+export interface AttendanceQrCodeIssued {
+  id: ID;
+  sessionId: ID;
+  code: string;
+  expiresAt: ISODateTime;
+}
+
+/** Resultado de POST /me/attendance/qr. */
+export interface QrCheckInResult {
+  sessionId: ID;
+  commissionId: ID;
+  subjectName: string;
+  date: ISODate;
+  status: AttendanceStatus;
+  /** true si el alumno ya tenía registro en esa clase (no se modifica). */
+  alreadyRegistered: boolean;
+}
+
+/** Turnos de Auxiliares. */
+export const STAFF_SHIFT_TYPES = ['REGULAR', 'SWAP', 'OFF', 'HOLIDAY'] as const;
+export type StaffShiftType = (typeof STAFF_SHIFT_TYPES)[number];
+export const STAFF_SHIFT_TYPE_LABELS: Record<StaffShiftType, string> = {
+  REGULAR: 'Normal',
+  SWAP: 'Cambio',
+  OFF: 'Libre',
+  HOLIDAY: 'Feriado',
+};
+
+export interface StaffShift extends Timestamps {
+  id: ID;
+  userId: ID;
+  userName: string;
+  date: ISODate;
+  startTime?: TimeOfDay;
+  endTime?: TimeOfDay;
+  type: StaffShiftType;
+  notes?: string;
+}
+
+export const SHIFT_CHANGE_STATUSES = ['PENDING', 'ACCEPTED', 'REJECTED', 'CANCELLED'] as const;
+export type ShiftChangeStatus = (typeof SHIFT_CHANGE_STATUSES)[number];
+export const SHIFT_CHANGE_STATUS_LABELS: Record<ShiftChangeStatus, string> = {
+  PENDING: 'Pendiente',
+  ACCEPTED: 'Aceptado',
+  REJECTED: 'Rechazado',
+  CANCELLED: 'Cancelado',
+};
+
+export interface ShiftChangeRequest extends Timestamps {
+  id: ID;
+  requesterId: ID;
+  requesterName: string;
+  colleagueId: ID;
+  colleagueName: string;
+  requesterShift: StaffShift;
+  colleagueShift: StaffShift;
+  reason?: string;
+  status: ShiftChangeStatus;
+  respondedAt?: ISODateTime;
+  respondedBy?: ID;
+}
+
+/** Persona del equipo de Auxiliares (para elegir con quién cambiar un turno). */
+export interface StaffMember {
+  id: ID;
+  firstName: string;
+  lastName: string;
+}
+
+// ============================================================================
+// Ecosistema de Julián: Centro, Auxiliares y Preceptoría (2026-11-01)
+// ============================================================================
+
+export const JUSTIFICATION_DOCUMENT_TYPES = ['MEDICAL', 'WORK', 'FORCE_MAJEURE'] as const;
+export type JustificationDocumentType = (typeof JUSTIFICATION_DOCUMENT_TYPES)[number];
+export const JUSTIFICATION_DOCUMENT_TYPE_LABELS: Record<JustificationDocumentType, string> = {
+  MEDICAL: 'Certificado médico',
+  WORK: 'Certificado laboral',
+  FORCE_MAJEURE: 'Fuerza mayor',
+};
+
+export const FORUM_CHANNELS = ['GENERAL', 'QUESTIONS', 'PROPOSALS'] as const;
+export type ForumChannel = (typeof FORUM_CHANNELS)[number];
+export const FORUM_CHANNEL_LABELS: Record<ForumChannel, string> = {
+  GENERAL: 'General',
+  QUESTIONS: 'Consultas',
+  PROPOSALS: 'Propuestas',
+};
+
+export const STAFF_ABSENCE_REASONS = ['SICK_LEAVE', 'FAMILY_CARE', 'OFFICIAL_PROCEDURE', 'FORCE_MAJEURE', 'EXAM_TRAINING'] as const;
+export type StaffAbsenceReason = (typeof STAFF_ABSENCE_REASONS)[number];
+export const STAFF_ABSENCE_REASON_LABELS: Record<StaffAbsenceReason, string> = {
+  SICK_LEAVE: 'Licencia por enfermedad',
+  FAMILY_CARE: 'Atención de familiar a cargo',
+  OFFICIAL_PROCEDURE: 'Trámite judicial o bancario impostergable',
+  FORCE_MAJEURE: 'Razones de fuerza mayor',
+  EXAM_TRAINING: 'Examen o capacitación',
+};
+
+/** Ausencia o licencia de un auxiliar (/staff/absences). */
+export interface StaffAbsence extends Timestamps {
+  id: ID;
+  userId: ID;
+  userName: string;
+  fromDate: ISODate;
+  toDate: ISODate;
+  reason: StaffAbsenceReason;
+  notes: string;
+  documentName?: string;
+  documentUrl?: string;
+  status: JustificationStatus;
+  reviewedBy?: ID;
+  reviewedAt?: ISODateTime;
+  reviewNotes?: string;
+}
+
+/** Inscripto a un evento del Centro (GET /centro/events/:id/participants). */
+export interface RepEventParticipantView {
+  id: ID;
+  firstName: string;
+  lastName: string;
+  email: string;
+  roles: Role[];
+  careerName?: string;
+  joinedAt: ISODateTime;
+}
+
+/** Corrección de asistencia (GET /attendance/audit). */
+export interface AttendanceChange {
+  id: ID;
+  at: ISODateTime;
+  userName: string;
+  studentId: ID;
+  studentName: string;
+  date: ISODate;
+  subjectName: string;
+  previousStatus: AttendanceStatus;
+  newStatus: AttendanceStatus;
+  notes?: string;
+}
