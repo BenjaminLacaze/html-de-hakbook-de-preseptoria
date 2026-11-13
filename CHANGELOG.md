@@ -28,8 +28,10 @@
   P-PROF-04 (lectura de observaciones por Preceptoría). Ninguna está implementada.
 - **Verificación:** `npm run build` de la app (tsc + Vite, 2353 módulos) OK; `npm run lint` con
   0 errores y 14 advertencias no bloqueantes de React Hooks/pureza. No se probó login
-  ni escrituras con una cuenta real y no se publicó en Vercel. Sin cambios en `shared/`,
-  `backend/` ni Neon; sin cambios en otros módulos.
+  ni escrituras con una cuenta real. Sin cambios en `shared/`, `backend/` ni Neon; sin cambios
+  en otros módulos.
+- **Publicación:** commit `17e4b4c` subido a `BenjaminLacaze/html-de-hakbook-de-preseptoria`
+  (`main`). No se copió al repo de deploy `mjsis20052/sistema-gestion-i26` ni se publicó en Vercel.
 
 ## 2026-11-06 — Nota de integración para Directivos (App perfil directivo neon)
 

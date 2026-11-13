@@ -43,7 +43,8 @@ La matriz `docs/ESTADO_VALIDACION.md` distingue implementado, probado en local, 
   - Verificado: `npm run build` (tsc + Vite) y `npm run lint` (0 errores, advertencias no
     bloqueantes de hooks). Pendiente: QA con cuenta `TEACHER`, prueba de escrituras y publicación en Vercel.
     No hubo cambios en Neon, `shared/`, `backend/` ni otros módulos.
-  - Este checkout no tiene `.git`; no se hizo commit ni push.
+  - Commit `17e4b4c` subido a `BenjaminLacaze/html-de-hakbook-de-preseptoria` (`main`) el 13/11.
+    No se publicó en el repo de deploy ni en Vercel.
 
 - 2026-11-06 — Antigravity / Nicolas — Módulo Docente / Profesor:
   - Creación del backend autónomo para `profesores-nicolas` en `profesores-nicolas/backend/` (Node.js ESM, `server.js`, `store.js`, persistencia local `db.json` y batería de pruebas `test.js` con 9/9 tests superados).
