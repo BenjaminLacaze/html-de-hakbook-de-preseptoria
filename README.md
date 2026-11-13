@@ -6,7 +6,7 @@ Repositorio del equipo con los módulos de gestión y asistencia. Sitio publicad
 
 | Carpeta | Responsable | App de desarrollo | Documentación |
 |---|---|---|---|
-| ecosistema-julian-lucia/ | Julián y Lucía | Cuatro paneles conectados a la API: Alumnos (`alumnos/app v2`), Preceptoría (`preceptoria/`), Centro de Estudiantes (`centro/`) y Auxiliares (`auxiliares/`). Online aparte, en Vercel + Neon (ver abajo). | ecosistema-julian-lucia/README.md y ecosistema-julian-lucia/backend/README.md (base de datos y API) |
+| ecosistema-julian-lucia/ | Julián y Lucía | Cuatro paneles conectados a la API: Alumnos (`alumnos/app v2`), Preceptoría (`preceptoria/`), Centro de Estudiantes (`centro/`), Auxiliares (`auxiliares/`) y Familias (`familias/`, solo en la versión online aparte). Online aparte, en Vercel + Neon (ver abajo). | ecosistema-julian-lucia/README.md y ecosistema-julian-lucia/backend/README.md (base de datos y API) |
 | alumnos-lucia/ | Lucía | alumnos-lucia/app/ | documentacion/ |
 | directivos-jesica-agustin/ | Jesica y Agustín | directivos-jesica-agustin/app/ | index.html y Handbook/ |
 | preceptoria-benjamin/ | Benjamín | Sin app React independiente | handbook.html |
@@ -29,6 +29,7 @@ Cuatro paneles, hechos con Google AI Studio, conectados a la API común (`/api/v
 | Panel | Online |
 |---|---|
 | Alumnos | [alumnos-julian-v2.vercel.app](https://alumnos-julian-v2.vercel.app) |
+| Familias | [i26-familias.vercel.app](https://i26-familias.vercel.app) |
 | Preceptoría | [i26-preceptoria.vercel.app](https://i26-preceptoria.vercel.app) |
 | Centro de Estudiantes | [i26-centro-estudiantes.vercel.app](https://i26-centro-estudiantes.vercel.app) |
 | Auxiliares | [i26-auxiliares.vercel.app](https://i26-auxiliares.vercel.app) |

@@ -1,9 +1,9 @@
-# Ecosistema de Julián y Lucía — Alumnos, Preceptoría, Centro de Estudiantes y Auxiliares
+# Ecosistema de Julián y Lucía — Alumnos, Preceptoría, Centro de Estudiantes, Auxiliares y Familias
 
 > **Responsables:** Julián y Lucía · Asistencia Terciario — ISFDyT N° 26
 > Antes esta carpeta se llamaba `alumnos-julian/` y tenía solo el módulo de Alumnos. Desde el 01/11/2026 reúne los cuatro paneles. Las URL viejas `/alumnos-julian/...` redirigen a `/ecosistema-julian-lucia/alumnos/...` (ver `vercel.json`).
 
-Los cuatro paneles comparten la misma base de datos y la misma API (`/api/v1`, en `backend/`). Cada uno ve y escribe solo lo que le permite su rol. Cómo se relacionan: [`backend/README.md`](backend/README.md) y [`backend/DETALLE_TECNICO.md`](backend/DETALLE_TECNICO.md).
+Los cinco paneles comparten la misma base de datos y la misma API (`/api/v1`, en `backend/`). Cada uno ve y escribe solo lo que le permite su rol. Cómo se relacionan: [`backend/README.md`](backend/README.md) y [`backend/DETALLE_TECNICO.md`](backend/DETALLE_TECNICO.md).
 
 | Carpeta | Panel | Rol | Puerto local | Origen |
 |---|---|---|---|---|
@@ -11,6 +11,7 @@ Los cuatro paneles comparten la misma base de datos y la misma API (`/api/v1`, e
 | `centro/` | Centro de Estudiantes | `STUDENT_REP` | 3001 | Google AI Studio |
 | `auxiliares/` | Auxiliares (maestranza y mantenimiento) | `STAFF` | 3002 | Google AI Studio |
 | `preceptoria/` | Preceptoría | `PRECEPTOR` | 3003 | Google AI Studio |
+| [`familias/`](familias/README.md) | Familias (madres, padres y tutores) | `GUARDIAN` | 3004 | Google AI Studio |
 | [`backend/`](backend/README.md) | **Base de datos y API**: cómo está construida, a qué se conecta, endpoints y datos | — | 4000 | Documentación (el código está en `/backend`) |
 
 ## Cómo levantarlo en local
@@ -24,11 +25,12 @@ npm --prefix "ecosistema-julian-lucia/alumnos/app v2" run dev
 npm --prefix ecosistema-julian-lucia/centro run dev
 npm --prefix ecosistema-julian-lucia/auxiliares run dev
 npm --prefix ecosistema-julian-lucia/preceptoria run dev
+npm --prefix ecosistema-julian-lucia/familias run dev
 ```
 
 Las apps mandan `/api` a la API local (`localhost:4000`), que usa la base `i26_dev`. Las cuentas de prueba están en `shared/testUsers.ts`.
 
-**Sesiones:** todas las apps usan la misma cookie. Si abrís dos paneles con roles distintos en `localhost`, entrar en uno cierra la sesión del otro. Abrí cada uno con su propio nombre `.localhost`: `alumno.localhost:3000`, `centro.localhost:3001`, `aux.localhost:3002` y `preceptoria.localhost:3003`.
+**Sesiones:** todas las apps usan la misma cookie. Si abrís dos paneles con roles distintos en `localhost`, entrar en uno cierra la sesión del otro. Abrí cada uno con su propio nombre `.localhost`: `alumno.localhost:3000`, `centro.localhost:3001`, `aux.localhost:3002`, `preceptoria.localhost:3003` y `familias.localhost:3004`.
 
 ## Online
 
@@ -38,6 +40,7 @@ Las apps mandan `/api` a la API local (`localhost:4000`), que usa la base `i26_d
 | Centro de Estudiantes | https://i26-centro-estudiantes.vercel.app |
 | Auxiliares | https://i26-auxiliares.vercel.app |
 | Preceptoría | https://i26-preceptoria.vercel.app |
+| Familias | https://i26-familias.vercel.app |
 | API | https://i26-ecosistema-api.vercel.app |
 
 Base: Neon nueva conectada al proyecto Vercel de la API. Las cuentas online usan una contraseña privada que no está en el repo. Todo el detalle está en [`backend/README.md`](backend/README.md).

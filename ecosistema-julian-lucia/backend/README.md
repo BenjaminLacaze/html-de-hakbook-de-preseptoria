@@ -6,6 +6,7 @@
 > ⚠️ **Estado en el repositorio del equipo:** las tablas y endpoints nuevos que necesitan estos paneles **todavía no están en el backend común** (`/backend` de `main`). Ese backend es de todo el equipo y no se modificó. Los cambios están **propuestos** en esta carpeta, como pide el Contrato de Unificación (sección 12):
 > - [`PROPUESTAS.md`](PROPUESTAS.md): qué se agrega, tabla por tabla y endpoint por endpoint.
 > - [`propuesta/backend.patch`](propuesta/backend.patch): el código listo para aplicar si el equipo lo aprueba (`git apply ecosistema-julian-lucia/backend/propuesta/backend.patch` desde la raíz).
+> - [`propuesta/familias.patch`](propuesta/familias.patch): lo que agrega el Panel de Familias (rol `GUARDIAN`, 5 tablas, rutas `/guardian` y `/families`). Se aplica después de `backend.patch`. Detalle en [`../familias/README.md`](../familias/README.md).
 >
 > La versión **online** (Vercel + Neon) ya corre con esos cambios aplicados.
 

@@ -1,0 +1,230 @@
+@import "tailwindcss";
+
+/* Font imports from Fontsource */
+@import "@fontsource/outfit/700.css";
+@import "@fontsource/outfit/800.css";
+@import "@fontsource/dm-sans/400.css";
+@import "@fontsource/dm-sans/500.css";
+@import "@fontsource/dm-sans/600.css";
+@import "@fontsource/jetbrains-mono/400.css";
+
+:root {
+  /* Institutional Brand Palette */
+  --brand-navy: #14214F;
+  --brand-gold: #89743A;
+  --brand-blue: #3F78B6;
+  --brand-gold-sand: #AF9B63;
+  --brand-white: #FFFFFF;
+  --brand-black: #000000;
+
+  /* Theme: Institucional (Predeterminado - Luz) */
+  --surface: #F8FAFC;
+  --surface-card: #FFFFFF;
+  --surface-subtle: #EEF2F6;
+  --surface-elevated: #FFFFFF;
+  --text: #14214F;
+  --text-muted: #475569;
+  --text-inverse: #FFFFFF;
+  --border: #DCE3EC;
+  --accent: #14214F;
+  --accent-gold: #89743A;
+  --focus: #3F78B6;
+  --success: #166534;
+  --warning: #9A3412;
+  --danger: #991B1B;
+  
+  --badge-ok-bg: #DCFCE7;
+  --badge-ok-text: #14532D;
+  --badge-risk-bg: #FEF3C7;
+  --badge-risk-text: #78350F;
+  --badge-below-bg: #FEE2E2;
+  --badge-below-text: #7F1D1D;
+}
+
+/* 1. Institucional */
+html[data-theme="institucional"] {
+  --surface: #F8FAFC;
+  --surface-card: #FFFFFF;
+  --surface-subtle: #EEF2F6;
+  --surface-elevated: #FFFFFF;
+  --text: #14214F;
+  --text-muted: #475569;
+  --text-inverse: #FFFFFF;
+  --border: #DCE3EC;
+  --accent: #14214F;
+  --accent-gold: #89743A;
+  --focus: #3F78B6;
+  --success: #166534;
+  --warning: #9A3412;
+  --danger: #991B1B;
+  --badge-ok-bg: #DCFCE7;
+  --badge-ok-text: #14532D;
+  --badge-risk-bg: #FEF3C7;
+  --badge-risk-text: #78350F;
+  --badge-below-bg: #FEE2E2;
+  --badge-below-text: #7F1D1D;
+}
+
+/* 2. Noche Institucional */
+html[data-theme="noche-institucional"] {
+  --surface: #0B1229;
+  --surface-card: #14214F;
+  --surface-subtle: #1D2D63;
+  --surface-elevated: #1B295B;
+  --text: #F8FAFC;
+  --text-muted: #94A3B8;
+  --text-inverse: #0B1229;
+  --border: #2A3B75;
+  --accent: #E2C374;
+  --accent-gold: #AF9B63;
+  --focus: #60A5FA;
+  --success: #4ADE80;
+  --warning: #FBBF24;
+  --danger: #F87171;
+  --badge-ok-bg: #064E3B;
+  --badge-ok-text: #A7F3D0;
+  --badge-risk-bg: #78350F;
+  --badge-risk-text: #FDE68A;
+  --badge-below-bg: #7F1D1D;
+  --badge-below-text: #FECACA;
+}
+
+/* 3. Cálido Arena */
+html[data-theme="calido-arena"] {
+  --surface: #F9F7F2;
+  --surface-card: #FFFFFF;
+  --surface-subtle: #F1EDE4;
+  --surface-elevated: #FFFFFF;
+  --text: #231C10;
+  --text-muted: #5C5243;
+  --text-inverse: #FFFFFF;
+  --border: #DFD8CC;
+  --accent: #6D5C2C;
+  --accent-gold: #89743A;
+  --focus: #3F78B6;
+  --success: #166534;
+  --warning: #9A3412;
+  --danger: #991B1B;
+  --badge-ok-bg: #E8F5E9;
+  --badge-ok-text: #1B5E20;
+  --badge-risk-bg: #FFF8E1;
+  --badge-risk-text: #8D6E10;
+  --badge-below-bg: #FFEBEE;
+  --badge-below-text: #B71C1C;
+}
+
+/* 4. Azul Sereno */
+html[data-theme="azul-sereno"] {
+  --surface: #F0F4F8;
+  --surface-card: #FFFFFF;
+  --surface-subtle: #E2EAF1;
+  --surface-elevated: #FFFFFF;
+  --text: #0F172A;
+  --text-muted: #334155;
+  --text-inverse: #FFFFFF;
+  --border: #CBD5E1;
+  --accent: #24568E;
+  --accent-gold: #89743A;
+  --focus: #2563EB;
+  --success: #15803D;
+  --warning: #B45309;
+  --danger: #B91C1C;
+  --badge-ok-bg: #DCFCE7;
+  --badge-ok-text: #14532D;
+  --badge-risk-bg: #FEF3C7;
+  --badge-risk-text: #78350F;
+  --badge-below-bg: #FEE2E2;
+  --badge-below-text: #7F1D1D;
+}
+
+/* 5. Alto Contraste Claro */
+html[data-theme="alto-contraste-claro"] {
+  --surface: #FFFFFF;
+  --surface-card: #FFFFFF;
+  --surface-subtle: #F1F5F9;
+  --surface-elevated: #FFFFFF;
+  --text: #000000;
+  --text-muted: #1E293B;
+  --text-inverse: #FFFFFF;
+  --border: #000000;
+  --accent: #000000;
+  --accent-gold: #59491F;
+  --focus: #0000EE;
+  --success: #006000;
+  --warning: #8A3800;
+  --danger: #B00000;
+  --badge-ok-bg: #FFFFFF;
+  --badge-ok-text: #006000;
+  --badge-risk-bg: #FFFFFF;
+  --badge-risk-text: #8A3800;
+  --badge-below-bg: #FFFFFF;
+  --badge-below-text: #B00000;
+}
+
+/* 6. Alto Contraste Oscuro */
+html[data-theme="alto-contraste-oscuro"] {
+  --surface: #000000;
+  --surface-card: #0A0A0A;
+  --surface-subtle: #171717;
+  --surface-elevated: #111111;
+  --text: #FFFFFF;
+  --text-muted: #E2E8F0;
+  --text-inverse: #000000;
+  --border: #FFFFFF;
+  --accent: #FFE082;
+  --accent-gold: #FFE082;
+  --focus: #93C5FD;
+  --success: #86EFAC;
+  --warning: #FDE047;
+  --danger: #FCA5A5;
+  --badge-ok-bg: #000000;
+  --badge-ok-text: #86EFAC;
+  --badge-risk-bg: #000000;
+  --badge-risk-text: #FDE047;
+  --badge-below-bg: #000000;
+  --badge-below-text: #FCA5A5;
+}
+
+/* Typography styles */
+body {
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: var(--text);
+  background-color: var(--surface);
+  min-height: 100vh;
+}
+
+h1, h2, h3, h4, .font-display {
+  font-family: 'Outfit', sans-serif;
+}
+
+.font-mono, .tabular-nums {
+  font-family: 'JetBrains Mono', monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Accessibility options */
+html[data-text-size="large"] {
+  font-size: 116%;
+}
+
+html[data-reduced-motion="true"] *,
+html[data-reduced-motion="true"] *::before,
+html[data-reduced-motion="true"] *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 9999px;
+}
