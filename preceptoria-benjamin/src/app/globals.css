@@ -1,0 +1,67 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+:root {
+  --background: #0f172a;
+  --foreground: #f8fafc;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  background-image: radial-gradient(circle at top left, rgba(59, 130, 246, 0.2), transparent 40%),
+                    radial-gradient(circle at bottom right, rgba(30, 58, 138, 0.3), transparent 40%);
+  background-attachment: fixed;
+  font-family: Arial, Helvetica, sans-serif;
+  min-height: 100vh;
+}
+
+/* Animaciones y Reflejos Globales */
+
+a, button {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Efecto hover brillante para botones y links interactivos */
+button:hover:not(:disabled), a:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 15px rgba(96, 165, 250, 0.4);
+}
+
+button:active:not(:disabled), a:active {
+  transform: translateY(0);
+}
+
+/* Page Transition Animation */
+main {
+  animation: fadeSlideUp 0.6s ease-out forwards;
+}
+
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Refinar el glassmorphism (opcional) */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+}
+
+select option {
+  background-color: #0f172a;
+  color: #f8fafc;
+}

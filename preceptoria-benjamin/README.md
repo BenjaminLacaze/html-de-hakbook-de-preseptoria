@@ -1,7 +1,16 @@
 # Módulo de Preceptoría
 
-Proyecto de Benjamin para documentar el prototipo de gestión y seguimiento de asistencia escolar desde el área de preceptoría. El handbook presenta sus funciones principales, como el seguimiento de inasistencias, las justificaciones, las llegadas tarde y las alertas.
+Proyecto de Benjamin para la gestión y seguimiento de asistencia escolar desde el área de preceptoría (Next.js + TypeScript + Tailwind CSS + SQLite).
 
-## Archivo principal
+## Documentación
 
 - [Handbook del sistema](handbook.html)
+
+## Ejecución del proyecto
+
+```bash
+npm install
+npm run dev
+```
+
+Abrir [http://localhost:3000](http://localhost:3000) en el navegador.
