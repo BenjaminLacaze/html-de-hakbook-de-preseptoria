@@ -82,6 +82,14 @@ export const TEST_USERS: readonly TestUser[] = [
     firstName: 'Alumno',
     lastName: 'Prueba',
   },
+  {
+    app: 'familias',
+    role: 'GUARDIAN',
+    label: 'Familia (responsable de dos alumnos de ejemplo)',
+    email: 'prueba.familia@isfdyt26.edu.ar',
+    firstName: 'Familia',
+    lastName: 'Prueba',
+  },
 ];
 
 /** Usuarios de prueba que sirven para una app. */

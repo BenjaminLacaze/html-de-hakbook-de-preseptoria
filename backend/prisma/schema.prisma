@@ -33,6 +33,7 @@ enum Role {
   STUDENT
   STAFF
   STUDENT_REP
+  GUARDIAN
 }
 
 enum UserStatus {
@@ -201,6 +202,7 @@ model User {
   shiftChangesRequested ShiftChangeRequest[] @relation("ShiftChangeRequester")
   shiftChangesReceived  ShiftChangeRequest[] @relation("ShiftChangeColleague")
   staffAbsences         StaffAbsence[]
+  guardian              Guardian?
 
   @@map("users")
 }
@@ -360,6 +362,8 @@ model Student {
   justifications Justification[]
   observations   Observation[]
   corrections    DataCorrectionRequest[]
+  guardians      StudentGuardian[]
+  authorizations AuthorizationResponse[]
 
   @@map("students")
 }
@@ -1182,4 +1186,115 @@ model StaffAbsence {
 
   @@index([userId, status])
   @@map("staff_absences")
+}
+
+// ============================================================================
+// Panel de Familias: responsables (madre, padre, tutor/a), vínculo con sus hijos,
+// autorizaciones que pide la institución y pedidos de corrección del responsable.
+// ============================================================================
+
+enum GuardianRelationship {
+  MOTHER
+  FATHER
+  LEGAL_GUARDIAN
+}
+
+/// Ficha del responsable. La cuenta (rol GUARDIAN) la crea Directivos, igual que el resto.
+model Guardian {
+  id          String                      @id @default(uuid()) @db.Uuid
+  userId      String                      @unique @db.Uuid
+  user        User                        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dni         String                      @unique
+  phone       String?
+  address     String?
+  occupation  String?
+  demo        Boolean                     @default(false)
+  createdAt   DateTime                    @default(now())
+  updatedAt   DateTime                    @updatedAt
+  students    StudentGuardian[]
+  corrections GuardianCorrectionRequest[]
+
+  @@map("guardians")
+}
+
+/// Vínculo responsable - alumno. Un responsable solo ve a los alumnos que figuran acá.
+model StudentGuardian {
+  guardianId   String               @db.Uuid
+  guardian     Guardian             @relation(fields: [guardianId], references: [id], onDelete: Cascade)
+  studentId    String               @db.Uuid
+  student      Student              @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  relationship GuardianRelationship
+  createdAt    DateTime             @default(now())
+
+  @@id([guardianId, studentId])
+  @@index([studentId])
+  @@map("student_guardians")
+}
+
+enum AuthorizationType {
+  FIELD_TRIP
+  TRAVEL
+  IMAGE_USE
+  EARLY_DISMISSAL
+}
+
+enum AuthorizationAnswer {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+/// Autorización que pide la institución (Preceptoría o Directivos) a las familias.
+model AuthorizationRequest {
+  id           String                  @id @default(uuid()) @db.Uuid
+  title        String
+  type         AuthorizationType
+  description  String
+  deadlineDate DateTime                @db.Date
+  destination  String?
+  eventDate    DateTime?               @db.Date
+  responsible  String?
+  createdBy    String                  @db.Uuid
+  demo         Boolean                 @default(false)
+  createdAt    DateTime                @default(now())
+  updatedAt    DateTime                @updatedAt
+  responses    AuthorizationResponse[]
+
+  @@map("authorization_requests")
+}
+
+/// Una fila por alumno alcanzado. La responde uno de sus responsables, una sola vez.
+model AuthorizationResponse {
+  id          String               @id @default(uuid()) @db.Uuid
+  requestId   String               @db.Uuid
+  request     AuthorizationRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  studentId   String               @db.Uuid
+  student     Student              @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  answer      AuthorizationAnswer  @default(PENDING)
+  respondedBy String?              @db.Uuid
+  respondedAt DateTime?
+
+  @@unique([requestId, studentId])
+  @@index([studentId])
+  @@map("authorization_responses")
+}
+
+/// Pedido del responsable para corregir sus datos de contacto. Lo resuelve Preceptoría o Secretaría.
+model GuardianCorrectionRequest {
+  id          String           @id @default(uuid()) @db.Uuid
+  guardianId  String           @db.Uuid
+  guardian    Guardian         @relation(fields: [guardianId], references: [id], onDelete: Cascade)
+  phone       String?
+  email       String?
+  address     String?
+  notes       String?
+  status      CorrectionStatus @default(PENDING)
+  reviewedBy  String?          @db.Uuid
+  reviewedAt  DateTime?
+  reviewNotes String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@index([guardianId, status])
+  @@map("guardian_correction_requests")
 }

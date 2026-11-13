@@ -35,6 +35,7 @@ import { AppError, forbidden, notFound } from '../errors.js';
 import type { Prisma } from '../generated/prisma/client.js';
 import { commissionScope, hasRole, isManagement, parseDate, toISO, toISODate } from '../scope.js';
 import { notify } from '../notify.js';
+import { guardianUserIdsOf } from './guardian.js';
 import { newQrCode } from '../qr.js';
 import { attendanceSummary, covers } from '../summary.js';
 import { parseBody } from '../validation.js';
@@ -477,6 +478,12 @@ export const attendanceRoutes = new Hono<AppEnv>()
       data: { status: body.status, reviewNotes: body.reviewNotes, reviewedBy: user.id, reviewedAt: new Date() },
     });
     const st = await prisma.student.findUnique({ where: { id: j.studentId }, select: { userId: true } });
+    await notify(await guardianUserIdsOf([j.studentId]), {
+      type: body.status === 'APPROVED' ? 'JUSTIFICATION_APPROVED' : 'JUSTIFICATION_REJECTED',
+      text: body.status === 'APPROVED' ? 'Aprobaron una justificación de tu hijo/a' : 'Rechazaron una justificación de tu hijo/a',
+      details: body.reviewNotes,
+      link: '/guardian/justifications',
+    });
     await notify([st?.userId], {
       type: body.status === 'APPROVED' ? 'JUSTIFICATION_APPROVED' : 'JUSTIFICATION_REJECTED',
       text: body.status === 'APPROVED' ? 'Te aprobaron una justificación' : 'Te rechazaron una justificación',

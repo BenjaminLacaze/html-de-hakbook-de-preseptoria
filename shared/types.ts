@@ -53,6 +53,7 @@ export const ROLES = [
   'STUDENT',
   'STAFF', // auxiliar / maestranza
   'STUDENT_REP', // Centro de Estudiantes
+  'GUARDIAN', // madre, padre o tutor/a (Panel de Familias)
 ] as const;
 export type Role = (typeof ROLES)[number];
 export const ROLE_LABELS: Record<Role, string> = {
@@ -64,6 +65,7 @@ export const ROLE_LABELS: Record<Role, string> = {
   STUDENT: 'Alumno/a',
   STAFF: 'Auxiliar',
   STUDENT_REP: 'Centro de Estudiantes',
+  GUARDIAN: 'Familia / Responsable',
 };
 
 export const USER_STATUSES = ['ACTIVE', 'INACTIVE'] as const;
@@ -330,7 +332,7 @@ export type UserDTO = User & {
 
 /** Apps del sistema (coinciden con las carpetas del repo). */
 /** 'preceptoria', 'auxiliares' y 'centro' viven en la app consolidacion/ (consolidacion/app). */
-export const APPS = ['directivos', 'profesores', 'alumnos', 'preceptoria', 'auxiliares', 'centro'] as const;
+export const APPS = ['directivos', 'profesores', 'alumnos', 'preceptoria', 'auxiliares', 'centro', 'familias'] as const;
 export type AppId = (typeof APPS)[number];
 
 /**
@@ -345,6 +347,7 @@ export const APP_ACCESS: Record<AppId, readonly Role[]> = {
   preceptoria: ['SUPER_ADMIN', 'PRECEPTOR'],
   auxiliares: ['SUPER_ADMIN', 'STAFF'],
   centro: ['SUPER_ADMIN', 'STUDENT_REP'],
+  familias: ['SUPER_ADMIN', 'GUARDIAN'],
 };
 
 /** true si alguno de los roles del usuario puede entrar a la app. */
@@ -358,8 +361,8 @@ export function canAccessApp(roles: readonly Role[], app: AppId): boolean {
  */
 export const ASSIGNABLE_ROLES: Partial<Record<Role, readonly Role[]>> = {
   SUPER_ADMIN: ROLES,
-  DIRECTOR: ['DIRECTOR', 'ADMINISTRATIVE', 'PRECEPTOR', 'TEACHER', 'STUDENT', 'STAFF', 'STUDENT_REP'],
-  ADMINISTRATIVE: ['PRECEPTOR', 'TEACHER', 'STUDENT', 'STAFF', 'STUDENT_REP'],
+  DIRECTOR: ['DIRECTOR', 'ADMINISTRATIVE', 'PRECEPTOR', 'TEACHER', 'STUDENT', 'STAFF', 'STUDENT_REP', 'GUARDIAN'],
+  ADMINISTRATIVE: ['PRECEPTOR', 'TEACHER', 'STUDENT', 'STAFF', 'STUDENT_REP', 'GUARDIAN'],
 };
 
 // ============================================================================

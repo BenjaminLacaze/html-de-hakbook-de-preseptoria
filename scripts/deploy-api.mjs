@@ -39,6 +39,20 @@ writeFileSync(
   join(out, 'public', 'index.html'),
   '<!doctype html><meta charset="utf-8"><title>API Ecosistema ISFDyT 26</title><p>API del Sistema de Gestión ISFDyT N.° 26. Estado: <a href="/api/v1/health">/api/v1/health</a></p>\n',
 );
+// Pasos de la publicación (en un archivo aparte: Vercel limita el buildCommand a 256 caracteres).
+writeFileSync(
+  join(out, 'build.sh'),
+  [
+    'set -e',
+    'npx prisma generate',
+    'DIRECT_DATABASE_URL="$DATABASE_URL_UNPOOLED" npx prisma migrate deploy',
+    '# ONLINE_SEED=1: cuentas y TODOS los datos de ejemplo (recarga limpia de lo marcado demo).',
+    'if [ "$ONLINE_SEED" = "1" ]; then npx tsx backend/src/online-seed.ts && npx tsx backend/src/demo-data.ts && npx tsx backend/src/online-seed.ts; fi',
+    '# ONLINE_FAMILY_SEED=1: solo agrega la cuenta y los datos de ejemplo del Panel de Familias.',
+    'if [ "$ONLINE_FAMILY_SEED" = "1" ]; then npx tsx backend/src/online-seed.ts && npx tsx backend/src/demo-data.ts --family; fi',
+    '',
+  ].join('\n'),
+);
 writeFileSync(
   join(out, 'vercel.json'),
   JSON.stringify(
@@ -48,9 +62,7 @@ writeFileSync(
       installCommand: 'npm install',
       // Crea o actualiza las tablas en cada publicación (migraciones, sin borrar datos).
       // Con ONLINE_SEED=1 (solo cuando se pide, con --build-env) carga cuentas y datos de ejemplo.
-      buildCommand:
-        'npx prisma generate && DIRECT_DATABASE_URL="$DATABASE_URL_UNPOOLED" npx prisma migrate deploy' +
-        ' && if [ "$ONLINE_SEED" = "1" ]; then npx tsx backend/src/online-seed.ts && npx tsx backend/src/demo-data.ts && npx tsx backend/src/online-seed.ts; fi',
+      buildCommand: 'bash build.sh',
       outputDirectory: 'public',
       rewrites: [{ source: '/api/(.*)', destination: '/api' }],
       functions: { 'api/index.ts': { maxDuration: 15 } },

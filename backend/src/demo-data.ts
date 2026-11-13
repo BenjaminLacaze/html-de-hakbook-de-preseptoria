@@ -3,6 +3,7 @@
 //   npm run db:demo-data       carga (o recarga) los datos de ejemplo
 //   npm run db:demo-data:off   los borra (todo lo marcado demo = true)
 //   npm run db:demo-data -- --shifts   solo (re)carga los turnos de ejemplo de Auxiliares
+//   npm run db:demo-data -- --family   solo (re)carga los datos de ejemplo del Panel de Familias
 //
 // Salen de la app "julian appcompleta" (consolidacion/app/src/legacy/constants.ts): 2 carreras,
 // sus materias, los alumnos de ejemplo y sus asistencias, más tareas, instalaciones,
@@ -37,6 +38,8 @@ const { prisma } = await import('./db.js');
 const off = process.argv.includes('--off');
 /** --shifts: solo (re)carga los turnos de ejemplo de Auxiliares, sin tocar el resto. */
 const onlyShifts = process.argv.includes('--shifts');
+/** --family: solo (re)carga los datos de ejemplo del Panel de Familias, sin tocar el resto. */
+const onlyFamily = process.argv.includes('--family');
 
 /** Código de carrera en la base ↔ id de carrera en las pantallas rescatadas. */
 export const DEMO_CAREER_CODES: Record<string, string> = { dev: 'DEMO-DEV', design: 'DEMO-DIS' };
@@ -83,8 +86,126 @@ async function loadDemoShifts() {
   console.log(`Turnos de ejemplo: ${days.length * 2} (prueba.auxiliar y ${DEMO_STAFF2_EMAIL}).`);
 }
 
+const FAMILY_EMAIL = 'prueba.familia@isfdyt26.edu.ar';
+const FAMILY_MARK = '[Familias · ejemplo]';
+
+async function removeDemoFamily() {
+  await prisma.authorizationRequest.deleteMany({ where: { demo: true } }); // las respuestas se borran en cascada
+  await prisma.guardian.deleteMany({ where: { demo: true } }); // vínculos y pedidos de corrección, en cascada
+  await prisma.notice.deleteMany({ where: { title: { startsWith: FAMILY_MARK } } });
+  await prisma.schoolEvent.deleteMany({ where: { description: { startsWith: FAMILY_MARK } } });
+  const u = await prisma.user.findUnique({ where: { email: FAMILY_EMAIL }, select: { id: true } });
+  if (u) await prisma.privateMessage.deleteMany({ where: { OR: [{ senderId: u.id }, { receiverId: u.id }] } });
+}
+
+/**
+ * Familia de ejemplo: prueba.familia queda como responsable de dos alumnos demo de "dev"
+ * (el de prueba.alumno, de 1.º, y uno de 2.º, que cursa con prueba.profesor). Carga además
+ * autorizaciones, un comunicado, fechas de agenda, notas publicadas y una conversación con Preceptoría.
+ * Necesita los datos de ejemplo generales ya cargados.
+ */
+async function loadDemoFamily() {
+  await removeDemoFamily();
+  const familyId = await userId(FAMILY_EMAIL);
+  const preceptorId = await userId('prueba.preceptor@isfdyt26.edu.ar');
+  const cycle = await prisma.academicCycle.findFirstOrThrow({ where: { status: 'ACTIVE' } });
+  const devStudents = await prisma.student.findMany({
+    where: { demo: true, career: { code: DEMO_CAREER_CODES.dev } },
+    include: { enrollments: { include: { commission: { include: { subject: true } } } } },
+    orderBy: { fileNumber: 'asc' },
+  });
+  const yearOf = (st: (typeof devStudents)[number]) => Math.max(0, ...st.enrollments.map((e) => e.commission.subject.year));
+  const first = devStudents.find((st) => st.userId) ?? devStudents.find((st) => yearOf(st) === 1);
+  const second = devStudents.find((st) => st.id !== first?.id && yearOf(st) === 2);
+  if (!first || !second) throw new Error('Faltan los alumnos de ejemplo: corré antes "npm run db:demo-data".');
+  const children = [first, second];
+
+  const guardian = await prisma.guardian.create({
+    data: {
+      userId: familyId,
+      dni: 'DEMO-FAM-1',
+      phone: '2245 15-400000',
+      address: 'Calle de ejemplo 123, Dolores',
+      occupation: 'Comerciante',
+      demo: true,
+      students: { create: [{ studentId: first.id, relationship: 'MOTHER' }, { studentId: second.id, relationship: 'LEGAL_GUARDIAN' }] },
+    },
+  });
+
+  const inDays = (n: number) => new Date(today().getTime() + n * 86400000);
+  const requests = [
+    { title: 'Salida didáctica al Polo Tecnológico', type: 'FIELD_TRIP' as const, description: 'Visita guiada con docentes de la carrera. Salida y regreso en el horario de cursada.', deadline: 7, event: 12, destination: 'Polo Tecnológico de La Plata', to: children, answer: 'PENDING' as const },
+    { title: 'Uso de imagen en actividades institucionales', type: 'IMAGE_USE' as const, description: 'Autoriza la publicación de fotos y videos de actos y jornadas en los canales del instituto.', deadline: 20, event: null, destination: null, to: [first], answer: 'PENDING' as const },
+    { title: 'Jornada de programación en Mar del Plata', type: 'TRAVEL' as const, description: 'Viaje educativo de un día a la jornada regional de desarrollo de software.', deadline: -5, event: 25, destination: 'Mar del Plata', to: [second], answer: 'APPROVED' as const },
+  ];
+  for (const r of requests) {
+    await prisma.authorizationRequest.create({
+      data: {
+        title: r.title,
+        type: r.type,
+        description: r.description,
+        deadlineDate: inDays(r.deadline),
+        eventDate: r.event === null ? null : inDays(r.event),
+        destination: r.destination,
+        responsible: 'Preceptor Prueba',
+        createdBy: preceptorId,
+        demo: true,
+        responses: {
+          create: r.to.map((st) => ({
+            studentId: st.id,
+            answer: r.answer,
+            ...(r.answer === 'PENDING' ? {} : { respondedBy: familyId, respondedAt: inDays(-6) }),
+          })),
+        },
+      },
+    });
+  }
+
+  await prisma.notice.createMany({
+    data: [
+      { cycleId: cycle.id, title: `${FAMILY_MARK} Reunión informativa para familias`, content: 'Invitamos a las familias a la reunión informativa del segundo cuatrimestre. Se conversará sobre asistencia, mesas de examen y acompañamiento a las trayectorias.', category: 'INSTITUTIONAL', audience: { roles: ['GUARDIAN'] }, status: 'PUBLISHED', publishedAt: inDays(-2), createdBy: preceptorId },
+      { cycleId: cycle.id, title: `${FAMILY_MARK} Recordatorio: asistencia mínima`, content: 'Recordamos que para mantener la regularidad se requiere el porcentaje mínimo de asistencia. Las inasistencias se pueden justificar desde el Panel de Familias o el de Alumnos.', category: 'URGENT', audience: { roles: ['GUARDIAN', 'STUDENT'] }, status: 'PUBLISHED', publishedAt: inDays(-1), createdBy: preceptorId },
+    ],
+  });
+
+  const firstCommission = first.enrollments[0]?.commissionId ?? null;
+  await prisma.schoolEvent.createMany({
+    data: [
+      { cycleId: cycle.id, type: 'EXAM_PERIOD', title: 'Parcial integrador', description: `${FAMILY_MARK} Evaluación escrita del segundo cuatrimestre.`, startDate: inDays(9), commissionId: firstCommission, mandatory: true },
+      { cycleId: cycle.id, type: 'CEREMONY', title: 'Acto de fin de ciclo', description: `${FAMILY_MARK} Acto abierto a las familias en el salón de actos.`, startDate: inDays(18) },
+      { cycleId: cycle.id, type: 'HOLIDAY', title: 'Feriado nacional', description: `${FAMILY_MARK} Sin actividad.`, startDate: inDays(24) },
+    ],
+  });
+
+  // Notas publicadas para que la familia tenga qué ver (solo donde todavía no hay).
+  let grades = 0;
+  for (const st of children) {
+    for (const [i, e] of st.enrollments.slice(0, 3).entries()) {
+      const exists = await prisma.grade.findFirst({ where: { enrollmentId: e.id } });
+      if (exists) continue;
+      await prisma.grade.createMany({
+        data: [
+          { enrollmentId: e.id, type: 'PARTIAL', instance: 1, date: inDays(-40 + i), value: 7 + (i % 3), published: true, publishedAt: inDays(-35), notes: 'Buen desempeño (ejemplo).', recordedBy: preceptorId },
+          { enrollmentId: e.id, type: 'ASSIGNMENT', instance: 1, date: inDays(-20 + i), value: 8, published: true, publishedAt: inDays(-15), recordedBy: preceptorId },
+        ],
+      });
+      grades += 2;
+    }
+  }
+
+  await prisma.privateMessage.createMany({
+    data: [
+      { senderId: preceptorId, receiverId: familyId, text: `Buenas tardes. Le escribo desde Preceptoría por la asistencia de ${first.firstName}. Cualquier consulta, estoy a disposición.`, createdAt: inDays(-3) },
+      { senderId: familyId, receiverId: preceptorId, text: 'Muchas gracias por avisar. Esta semana presento el certificado.', createdAt: inDays(-2), readAt: inDays(-2) },
+    ],
+  });
+
+  console.log(`Familia de ejemplo: ${FAMILY_EMAIL} responsable de ${first.firstName} ${first.lastName} y ${second.firstName} ${second.lastName}; ${requests.length} autorizaciones, 2 comunicados, 3 fechas de agenda, ${grades} notas (ficha ${guardian.id.slice(0, 8)}).`);
+}
+
 async function removeDemo() {
   await removeDemoShifts();
+  await removeDemoFamily();
   const careers = await prisma.career.findMany({ where: { demo: true }, select: { id: true } });
   const careerIds = careers.map((c) => c.id);
   const students = await prisma.student.findMany({ where: { demo: true }, select: { id: true } });
@@ -367,8 +488,10 @@ async function loadDemo() {
 
 if (off) await removeDemo();
 else if (onlyShifts) await loadDemoShifts();
+else if (onlyFamily) await loadDemoFamily();
 else {
   await loadDemo();
   await loadDemoShifts();
+  await loadDemoFamily();
 }
 await prisma.$disconnect();
