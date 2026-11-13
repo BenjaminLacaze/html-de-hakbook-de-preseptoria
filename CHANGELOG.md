@@ -1,5 +1,6 @@
 # CHANGELOG
 
+<<<<<<< HEAD
 ## 2026-11-13 — Rediseño minimalista del módulo Profesor
 
 - **Sistema de diseño:** la app importa `shared/design/tokens.css` y los tokens `--isf-*` pasan a
@@ -64,6 +65,20 @@
 - La nota incluye: pregunta urgente sobre a qué Neon está conectado su Vercel, pantalla por pantalla qué ruta de `/api/v1` usar, traducción de valores, qué archivos sacar, orden de trabajo, propuestas `P-DIR-` y texto para su agente.
 - Pendiente: que Directivos confirme a qué base conectó su proyecto de Vercel. No se pudo revisar Neon desde esta máquina (`P1001: Can't reach database server`).
 - Sin cambios de código, base ni despliegue.
+=======
+## 2026-11-06 — Presentación institucional para autoridades
+
+- Nueva `docs/PRESENTACION_AUTORIDADES_I26.html`: presentación visual del proyecto SRI I26, sus módulos, alcance para primaria, secundaria y terciario, y propuesta de valor institucional. Incluye gráficos conceptuales y utiliza el logotipo institucional local provisto.
+
+## 2026-11-06 — Guía HTML del ecosistema
+
+- Nueva `docs/GUIA_ECOSISTEMA_I26.html`: explicación visual y en lenguaje simple de los portales, datos compartidos, seguridad y estado de integración para estudiantes y equipos.
+
+## 2026-11-06 — Registro de integración de ecosistema
+
+- Nueva guía `docs/INTEGRACION_ECOSISTEMA_2026-11-06.md`: define la API y Neon institucionales como única fuente de datos, separa los módulos locales de producción y enumera las rutas, migraciones, pruebas y condiciones necesarias para publicar los paneles nuevos.
+- Se incorporaron al árbol de integración cuatro migraciones aditivas para QR, lectura de comunicados, correcciones de ficha, turnos/ausencias y extensiones de Centro/Auxiliares. No se aplicaron a Neon ni se publicó una versión nueva mientras falten las rutas centrales y la validación local.
+>>>>>>> origin/codex/i26-unify-ecosystem
 
 ## 2026-11-06 — Backend autónomo, Agenda, Mensajería y Calificaciones en Profesores (Nicolás)
 

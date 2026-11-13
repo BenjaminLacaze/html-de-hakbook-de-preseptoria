@@ -33,6 +33,7 @@ La matriz `docs/ESTADO_VALIDACION.md` distingue implementado, probado en local, 
 
 ## Bitácora
 
+<<<<<<< HEAD
 - 2026-11-13 — Nicolás / asistente — Rediseño minimalista del módulo Profesor:
   - La app usa los tokens compartidos (`--i26-*`), sidebar claro, sin sombras ni bordes
     decorativos; el header de escritorio se reemplazó por el sidebar y una barra mobile.
@@ -57,6 +58,13 @@ La matriz `docs/ESTADO_VALIDACION.md` distingue implementado, probado en local, 
     No hubo cambios en Neon, `shared/`, `backend/` ni otros módulos.
   - Commit `17e4b4c` subido a `BenjaminLacaze/html-de-hakbook-de-preseptoria` (`main`) el 13/11.
     No se publicó en el repo de deploy ni en Vercel.
+=======
+- 2026-11-06 — GPT/Codex — Se creó `docs/PRESENTACION_AUTORIDADES_I26.html`, presentación institucional no técnica para autoridades. Comunica los módulos, el alcance para primaria/secundaria/terciario, beneficios y el rol del proyecto desarrollado por 3.º de Software del I26.
+
+- 2026-11-06 — GPT/Codex — Se creó `docs/GUIA_ECOSISTEMA_I26.html`, guía visual en español para explicar a alumnos y equipos qué hace cada portal, qué datos comparten y cuáles son las condiciones de una publicación segura.
+
+- 2026-11-06 — GPT/Codex — Se documentó la integración pendiente de los paneles nuevos en `docs/INTEGRACION_ECOSISTEMA_2026-11-06.md`. Queda establecido que la API Hono/Prisma y Neon son la única fuente institucional; los backends autónomos y datos JSON de los equipos no se publican. Se agregaron al árbol de integración las migraciones aditivas para revisión, sin aplicarlas a Neon ni publicar código todavía.
+>>>>>>> origin/codex/i26-unify-ecosystem
 
 - 2026-11-06 — Antigravity / Nicolas — Módulo Docente / Profesor:
   - Creación del backend autónomo para `profesores-nicolas` en `profesores-nicolas/backend/` (Node.js ESM, `server.js`, `store.js`, persistencia local `db.json` y batería de pruebas `test.js` con 9/9 tests superados).
