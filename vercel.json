@@ -80,6 +80,10 @@
       "destination": "/ecosistema-julian-lucia/preceptoria/index.html"
     },
     {
+      "source": "/ecosistema-julian-lucia/familias/:path*",
+      "destination": "/ecosistema-julian-lucia/familias/index.html"
+    },
+    {
       "source": "/alumnos-lucia/app/:path*",
       "destination": "/alumnos-lucia/app/index.html"
     },

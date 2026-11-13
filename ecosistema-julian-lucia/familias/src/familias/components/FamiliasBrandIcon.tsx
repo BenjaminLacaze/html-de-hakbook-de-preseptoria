@@ -23,12 +23,16 @@ export const FamiliasBrandIcon: React.FC<FamiliasBrandIconProps> = ({
 
   // icon-dark tiene fondo navy (#14214F), letras blancas y puntos dorados
   // icon-light tiene fondo blanco (#FFFFFF), letras navy y puntos dorados
+  // BASE_URL: el panel se publica en su propio dominio ("/") y también dentro del
+  // sitio del equipo ("/ecosistema-julian-lucia/familias/"). Sin este prefijo, las
+  // imágenes dan 404 en el sitio del equipo.
+  const base = import.meta.env.BASE_URL;
   const imageSrc =
     variant === 'dark'
-      ? '/assets/familias/icon-dark.png'
+      ? `${base}assets/familias/icon-dark.png`
       : variant === 'light'
-      ? '/assets/familias/icon-light.png'
-      : '/assets/familias/icon-dark.png';
+      ? `${base}assets/familias/icon-light.png`
+      : `${base}assets/familias/icon-dark.png`;
 
   const imgElement = (
     <img

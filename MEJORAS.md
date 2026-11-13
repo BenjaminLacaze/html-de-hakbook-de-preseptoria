@@ -33,6 +33,12 @@ La matriz `docs/ESTADO_VALIDACION.md` distingue implementado, probado en local, 
 
 ## Bitácora
 
+- 2026-11-13 — Claude — Unificación de los aportes sueltos en una sola rama:
+  - Se aplicaron los dos parches del ecosistema (`backend.patch` y `familias.patch`: QR, turnos, comunicados leídos, correcciones, Centro ampliado, y el rol `GUARDIAN` con `/guardian` y `/families`) y se fusionó `codex/i26-unify-ecosystem` (tres documentos; conflicto solo en las bitácoras, resuelto conservando ambas).
+  - El Panel de Familias entró al build, a `vercel.json` y a la landing. Se corrigieron sus rutas absolutas `/assets/...`, que rompían el logo y el video al publicarlo en subcarpeta.
+  - Probado en un PostgreSQL 17 descartable (127.0.0.1:5452/qa_i26): 8 migraciones, typecheck, build de las 10 apps y las 4 pruebas de flujo HTTP, todas OK. Revisión en navegador con la API local: 16 enlaces y 8 paneles, y login real en Familias.
+  - **Neon no se tocó** y **no se publicó** en el repo de deploy ni en Vercel. Antes de publicar: aplicar las 5 migraciones nuevas en Neon con respaldo.
+
 - 2026-11-13 — Nicolás / asistente — Rediseño minimalista del módulo Profesor:
   - La app usa los tokens compartidos (`--i26-*`), sidebar claro, sin sombras ni bordes
     decorativos; el header de escritorio se reemplazó por el sidebar y una barra mobile.

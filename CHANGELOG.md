@@ -1,5 +1,28 @@
 # CHANGELOG
 
+## 2026-11-13 — Unificación: backend del ecosistema, Familias y landing
+
+Se integraron en una sola rama los aportes que estaban sueltos (ramas y parches) y se probó todo junto.
+
+- **Backend del ecosistema:** se aplicó `ecosistema-julian-lucia/backend/propuesta/backend.patch` (QR de asistencia, comunicados leídos, pedidos de corrección, turnos y ausencias de Auxiliares, ampliaciones de Centro y resumen masivo de Preceptoría) y `familias.patch` (rol `GUARDIAN`, rutas `/guardian` y `/families`, 5 tablas y la migración `20261113120000_panel_familias`).
+- **Rama `codex/i26-unify-ecosystem`:** fusionada. Aporta `docs/INTEGRACION_ECOSISTEMA_2026-11-06.md`, `docs/GUIA_ECOSISTEMA_I26.html` y `docs/PRESENTACION_AUTORIDADES_I26.html`. Los choques fueron solo en `CHANGELOG.md` y `MEJORAS.md`: se conservaron las entradas de los dos lados.
+- **Landing y publicación:** el Panel de Familias se suma a `scripts/build.mjs`, a los `rewrites` de `vercel.json` y a la tarjeta del ecosistema en `index.html` (ahora cinco paneles).
+- **Corrección en Familias:** `FamiliasBrandIcon.tsx` y `PresentationIntro.tsx` pedían `/assets/...` con ruta absoluta. En el sitio del equipo el panel vive en una subcarpeta, así que el logo y el video daban 404 y la presentación quedaba trabada. Ahora usan `import.meta.env.BASE_URL`, que sirve para los dos destinos (su propio dominio y este sitio).
+
+### Qué se probó (PostgreSQL 17 descartable en 127.0.0.1:5452/qa_i26, nunca Neon)
+
+- Las 8 migraciones se aplican de cero sin errores (`prisma migrate deploy`).
+- `npm run typecheck` del backend: 0 errores. `npm run lint` del panel de Familias: 0 errores.
+- `npm run build` del sitio completo: las 10 apps compilan.
+- Pruebas de flujo HTTP, todas OK: `integration-flow` (5 escenarios, padrón, auditoría, permisos), `ecosistema-flow` (Centro, Auxiliares, Preceptoría), `paneles-flow` (comunicados, justificaciones, correcciones, QR, turnos) y `familias-flow` (20 comprobaciones: hijos vinculados, 404 ante un alumno ajeno, 403 cruzados, acuse de lectura, justificación que ve Preceptoría y el alumno, autorización sin doble respuesta, mensajería y corrección de ficha).
+- Revisión en el navegador del sitio compilado con la API local: los 16 enlaces de la landing responden 200 y los 8 paneles cargan. Se entró al Panel de Familias con la cuenta de prueba y la asistencia mostró los mismos números que la API (62 clases, 44 presentes, 16 ausentes, 73.3%).
+
+### Lo que NO se hizo
+
+- **No se tocó Neon.** Las 5 migraciones nuevas siguen sin aplicarse en la base real; hay que hacerlo con respaldo previo antes de publicar.
+- **No se publicó**: no se copió al repo de deploy `mjsis20052/sistema-gestion-i26` ni se tocó Vercel. Hasta que la API nueva esté publicada, el Panel de Familias en el sitio va a mostrar la pantalla de inicio de sesión pero no va a poder entrar (le faltan las rutas `/guardian`).
+- **Pendiente de Directivos:** la «App perfil directivo neon» sigue con login y datos propios (ver `docs/NOTA_DIRECTIVOS_UNIFICACION.html`) y todavía no respondieron a qué base de Neon la conectaron.
+
 ## 2026-11-13 — Rediseño minimalista del módulo Profesor
 
 - **Sistema de diseño:** la app importa `shared/design/tokens.css` y los tokens `--isf-*` pasan a

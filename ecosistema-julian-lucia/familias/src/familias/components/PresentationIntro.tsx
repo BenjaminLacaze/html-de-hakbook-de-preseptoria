@@ -126,7 +126,9 @@ export const PresentationIntro: React.FC<PresentationIntroProps> = ({ onComplete
         ) : (
           <video
             ref={videoRef}
-            src="/assets/aistudio/2GLmZOcii3RPng9stkYUaw_da1c46b0.mp4"
+            // BASE_URL: ver FamiliasBrandIcon.tsx. El panel también se publica
+            // dentro del sitio del equipo, en una subcarpeta.
+            src={`${import.meta.env.BASE_URL}assets/aistudio/2GLmZOcii3RPng9stkYUaw_da1c46b0.mp4`}
             className="w-full h-full object-contain rounded-2xl shadow-2xl"
             playsInline
             autoPlay
