@@ -1,93 +1,85 @@
 /**
- * ISFDyT N.° 26 - Manual de Identidad Institucional
- * Tokens de Diseño y Variables CSS Oficiales
+ * ISFDyT N.° 26 — Módulo Docente
+ * Tokens de diseño. La paleta sale del sistema unificado (`@shared/design/tokens.css`);
+ * acá se conservan los nombres `--isf-*` que usan las vistas y se define la versión
+ * minimalista de superficies, bordes y sombras.
  */
 
 :root {
-  /* --- PALETA OFICIAL INSTITUCIONAL ISFDyT N.° 26 --- */
-  --isf-blue-primary: #14214F;   /* Azul institucional principal */
-  --isf-blue-dark: #0A122E;      /* Azul profundo para encabezados/sombras */
-  --isf-blue-hover: #1E3172;     /* Estado hover interactivo */
-  --isf-blue-sky: #3F78B6;       /* Azul cielo oficial */
-  --isf-blue-sky-light: #EAF2F9; /* Fondo azul cielo suave */
-  
-  --isf-gold-ochre: #89743A;     /* Dorado ocre oficial */
-  --isf-gold-text: #6B5B2E;      /* Dorado ocre oscuro accesible para texto sobre blanco (Ratio > 7:1, WCAG AAA) */
-  --isf-gold-sand: #AF9B63;      /* Arena dorada oficial (acento para bordes, separadores y detalles heráldicos) */
-  --isf-gold-light: #F9F6EE;     /* Fondo arena claro para avisos y tarjetas */
-  --isf-gold-border: #D8CCA9;    /* Borde dorado sutil */
+  /* --- Marca institucional (alias del sistema unificado) --- */
+  --isf-blue-primary: var(--i26-blue, #14214f);
+  --isf-blue-dark: var(--i26-blue-dark, #0a122e);
+  --isf-blue-hover: var(--i26-blue-hover, #1e3172);
+  --isf-blue-sky: var(--i26-sky, #3f78b6);
+  --isf-blue-sky-light: var(--i26-sky-light, #eaf2f9);
 
-  --isf-white: #FFFFFF;          /* Blanco puro oficial */
-  --isf-black: #000000;          /* Negro oficial */
+  --isf-gold-ochre: var(--i26-gold, #89743a);
+  --isf-gold-text: var(--i26-gold-text, #6b5b2e);
+  --isf-gold-sand: var(--i26-sand, #af9b63);
+  --isf-gold-light: #faf9f6;
+  --isf-gold-border: #e9e5dc;
 
-  /* --- SUPERFICIES Y FONDOS --- */
-  --color-bg-app: #F4F6F9;
-  --color-bg-card: #FFFFFF;
-  --color-bg-card-hover: #F8FAFC;
-  --color-bg-sidebar: #14214F;
-  --color-bg-sidebar-active: #1E3172;
-  --color-bg-sidebar-hover: rgba(255, 255, 255, 0.08);
+  --isf-white: #ffffff;
+  --isf-black: #000000;
 
-  /* --- TEXTO Y CONTRASTE ACCESIBLE --- */
-  --color-text-primary: #0F172A;   /* Contraste 14:1 sobre blanco */
-  --color-text-secondary: #334155; /* Contraste 7:1 sobre blanco */
-  --color-text-muted: #475569;     /* Contraste 4.8:1 sobre blanco (WCAG AA) */
-  --color-text-inverted: #FFFFFF;
-  --color-text-sidebar: #E2E8F0;
-  --color-text-sidebar-muted: #94A3B8;
+  /* --- Superficies y fondos --- */
+  --color-bg-app: #f8fafb;
+  --color-bg-card: #ffffff;
+  --color-bg-card-hover: #fafbfc;
+  --color-bg-sidebar: #ffffff;
+  --color-bg-sidebar-active: #f1f5f9;
+  --color-bg-sidebar-hover: #f8fafc;
 
-  /* --- BORDES Y SEPARADORES --- */
-  --color-border-light: #E2E8F0;
-  --color-border-medium: #CBD5E1;
-  --color-border-focus: #14214F;
+  /* --- Texto --- */
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #334155;
+  --color-text-muted: #5b6779;
+  --color-text-inverted: #ffffff;
+  --color-text-sidebar: #334155;
+  --color-text-sidebar-muted: #64748b;
 
-  /* --- ESTADOS DE ASISTENCIA (Diferenciados por color, forma y contraste) --- */
-  /* PRESENTE */
-  --status-present-bg: #ECFDF5;
-  --status-present-text: #065F46;
-  --status-present-border: #10B981;
+  /* --- Bordes --- */
+  --color-border-light: #e8ecf1;
+  --color-border-medium: #d9e0e8;
+  --color-border-focus: var(--isf-blue-primary);
+
+  /* --- Estados de asistencia --- */
+  --status-present-bg: #f0fdf4;
+  --status-present-text: #065f46;
+  --status-present-border: #10b981;
   --status-present-badge: #047857;
 
-  /* AUSENTE */
-  --status-absent-bg: #FEF2F2;
-  --status-absent-text: #991B1B;
-  --status-absent-border: #EF4444;
-  --status-absent-badge: #B91C1C;
+  --status-absent-bg: #fef2f2;
+  --status-absent-text: #991b1b;
+  --status-absent-border: #ef4444;
+  --status-absent-badge: #b91c1c;
 
-  /* TARDE */
-  --status-late-bg: #FFFBEB;
-  --status-late-text: #92400E;
-  --status-late-border: #F59E0B;
-  --status-late-badge: #B45309;
+  --status-late-bg: #fffbeb;
+  --status-late-text: #92400e;
+  --status-late-border: #f59e0b;
+  --status-late-badge: #b45309;
 
-  /* SIN REGISTRAR */
-  --status-unassigned-bg: #F1F5F9;
-  --status-unassigned-text: #475569;
-  --status-unassigned-border: #94A3B8;
+  --status-unassigned-bg: #f8fafc;
+  --status-unassigned-text: #5b6779;
+  --status-unassigned-border: #cbd5e1;
 
-  /* --- TIPOGRAFÍA INSTITUCIONAL Y SISTEMA DE SUSTITUCIÓN --- */
-  /* Nota: El Manual de Identidad Visual del ISFDyT N.° 26 estipula:
-     - Títulos: 'Cocomat Pro'
-     - Cuerpo de texto: 'Hussar Bold'
-     - Elementos del logotipo: 'Dubai'
-     Dado que son tipografías comerciales propietarias, se establece una pila de sustitución
-     declarada, legible y universal que preserva la personalidad geométrica y humanista. */
-  --font-family-headings: 'Cocomat Pro', 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-family-body: 'Hussar Bold', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  --font-family-logo: 'Dubai', 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+  /* --- Tipografía --- */
+  --font-family-headings: var(--i26-font-heading, 'Outfit', 'Inter', system-ui, sans-serif);
+  --font-family-body: var(--i26-font-body, 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif);
+  --font-family-logo: var(--i26-font-heading, 'Outfit', system-ui, sans-serif);
   --font-family-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
 
-  /* --- SOMBRAS SUAVES Y ELEVACIÓN --- */
-  --shadow-sm: 0 1px 2px 0 rgba(15, 23, 42, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.07), 0 2px 4px -2px rgba(15, 23, 42, 0.05);
-  --shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.08), 0 4px 6px -4px rgba(15, 23, 42, 0.05);
+  /* --- Elevación mínima --- */
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.03);
+  --shadow-md: 0 2px 6px rgba(15, 23, 42, 0.04);
+  --shadow-lg: 0 8px 24px rgba(15, 23, 42, 0.06);
 
-  /* --- RADIOS Y ESPACIOS --- */
-  --radius-sm: 4px;
+  /* --- Forma --- */
+  --radius-sm: 6px;
   --radius-md: 8px;
-  --radius-lg: 12px;
+  --radius-lg: 10px;
   --radius-full: 9999px;
 
-  --focus-ring: 0 0 0 3px rgba(20, 33, 79, 0.35);
-  --focus-ring-gold: 0 0 0 3px rgba(137, 116, 58, 0.45);
+  --focus-ring: 0 0 0 3px rgba(20, 33, 79, 0.28);
+  --focus-ring-gold: 0 0 0 3px rgba(137, 116, 58, 0.3);
 }

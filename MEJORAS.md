@@ -33,6 +33,15 @@ La matriz `docs/ESTADO_VALIDACION.md` distingue implementado, probado en local, 
 
 ## Bitácora
 
+- 2026-11-13 — Nicolás / asistente — Rediseño minimalista del módulo Profesor:
+  - La app usa los tokens compartidos (`--i26-*`), sidebar claro, sin sombras ni bordes
+    decorativos; el header de escritorio se reemplazó por el sidebar y una barra mobile.
+  - Panel, Comisiones, Agenda, Asistencia, Calificaciones, Mensajería, Observaciones y
+    Estudiantes quedaron con encabezados y tarjetas simples; fechas con `Intl`.
+  - Asistencia y actividad del Panel se apilan como tarjetas en mobile.
+  - Verificado: build (tsc + Vite) y lint (0 errores). Capturas desktop/mobile con API simulada.
+    Pendiente: QA con backend/Neon y publicación. Sin cambios en Neon ni en otros módulos.
+
 - 2026-11-13 — Nicolás / asistente — Integración del módulo Profesor con la API común:
   - Agenda, Mensajería y Calificaciones dejaron de usar el contrato del backend autónomo y ahora
     consumen `/records/events`, `/social/*` y `/records/grades`; la agenda quedó de solo lectura.

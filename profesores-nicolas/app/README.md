@@ -2,6 +2,14 @@
 
 Frontend del módulo Profesor del SGA del ISFDyT N.° 26. React 19 + TypeScript + Vite.
 
+## Diseño
+
+- Usa `shared/design/tokens.css`; los tokens `--isf-*` son alias de `--i26-*`.
+- Shell minimalista: sidebar claro, sin header de escritorio, barra de sesión discreta y
+  drawer en mobile. Superficies blancas, bordes de 1 px y sin sombras.
+- Las tablas de Asistencia y de actividad del Panel se apilan como tarjetas en mobile.
+- Fechas con `Intl.DateTimeFormat`; estados de asistencia conservan color + texto + icono.
+
 ## Arquitectura
 
 - **Sin datos de demostración en runtime.** La entrada es

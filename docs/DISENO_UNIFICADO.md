@@ -3,9 +3,10 @@
 Un solo lenguaje visual para todas las apps del sistema, basado en el **manual de marca del
 instituto**. Fuente: [`shared/design/tokens.css`](../shared/design/tokens.css).
 
-**Ya lo usan:** la landing y la app de Consolidación (tema "Institucional").
-**Pendiente:** Directivos, Profesores y los dos portales de Alumno (backlog INT-97), cada equipo
-en su app, sin apuro y sin romper lo que ya tiene.
+**Ya lo usan:** la landing, la app de Consolidación (tema "Institucional") y el módulo Profesor
+(desde el 13/11, con `--isf-*` como alias de `--i26-*` y un shell minimalista).
+**Pendiente:** Directivos y los dos portales de Alumno (backlog INT-97), cada equipo en su app,
+sin apuro y sin romper lo que ya tiene.
 
 ## Cómo se usa
 

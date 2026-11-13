@@ -140,23 +140,20 @@ export function GradesView({ commissions }: GradesViewProps) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
       {/* Encabezado */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
+      <div className="page-header" style={{ marginBottom: 0 }}>
         <div>
-          <h1 style={{ fontSize: '1.75rem', fontWeight: 700, color: 'var(--isf-blue-primary)', margin: 0 }}>
-            Calificaciones: Parciales y Finales
-          </h1>
-          <p style={{ color: 'var(--color-text-muted)', marginTop: '0.25rem' }}>
-            Registro integral de 1.° y 2.° parcial, instancias de recuperatorio, cálculo de promedios, condición de cursada y acreditación final.
-          </p>
+          <span className="eyebrow">Cursada</span>
+          <h1 className="page-title">Calificaciones</h1>
+          <p className="page-subtitle">Parciales, recuperatorios, final y condición de cursada.</p>
         </div>
         <button
-          className="btn btn-secondary"
+          className="btn btn-secondary btn-sm"
           disabled={busy || loading}
           onClick={() => void loadGradesData()}
           style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}
         >
-          <RefreshCw size={16} />
-          Actualizar Notas
+          <RefreshCw size={15} />
+          Actualizar
         </button>
       </div>
 
@@ -190,16 +187,16 @@ export function GradesView({ commissions }: GradesViewProps) {
               onClick={() => setActiveTab('matrix')}
               style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}
             >
-              <FileSpreadsheet size={16} />
-              Planilla General de Cursada
+              <FileSpreadsheet size={15} />
+              Planilla
             </button>
             <button
               className={`btn ${activeTab === 'form' ? 'btn-primary' : 'btn-secondary'}`}
               onClick={() => setActiveTab('form')}
               style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}
             >
-              <Edit3 size={16} />
-              Cargar / Corregir Evaluación
+              <Edit3 size={15} />
+              Cargar nota
             </button>
           </div>
         </div>

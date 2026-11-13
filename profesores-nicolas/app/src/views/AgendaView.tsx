@@ -10,14 +10,20 @@ interface AgendaViewProps {
   commissions: Commission[];
 }
 
-const EVENT_TYPE_COLORS: Record<EventType, { bg: string; text: string; border: string }> = {
-  INSTITUTIONAL_DAY: { bg: 'rgba(124, 58, 237, 0.1)', text: '#6D28D9', border: '#C4B5FD' },
-  CEREMONY: { bg: 'rgba(137, 116, 58, 0.15)', text: '#89743A', border: '#AF9B63' },
-  EXAM_PERIOD: { bg: 'rgba(239, 68, 68, 0.1)', text: '#B91C1C', border: '#FCA5A5' },
-  GRADES_DEADLINE: { bg: 'rgba(245, 158, 11, 0.1)', text: '#B45309', border: '#FCD34D' },
-  HOLIDAY: { bg: 'rgba(16, 185, 129, 0.1)', text: '#047857', border: '#6EE7B7' },
-  CLASS: { bg: 'rgba(59, 130, 246, 0.1)', text: '#1D4ED8', border: '#93C5FD' },
-  OTHER: { bg: '#F3F4F6', text: '#374151', border: '#D1D5DB' },
+const TYPE_DOT: Record<EventType, string> = {
+  INSTITUTIONAL_DAY: '#6D28D9',
+  CEREMONY: '#89743A',
+  EXAM_PERIOD: '#B91C1C',
+  GRADES_DEADLINE: '#B45309',
+  HOLIDAY: '#047857',
+  CLASS: '#1D4ED8',
+  OTHER: '#64748B',
+};
+
+const formatDate = (iso: string): string => {
+  const date = new Date(`${iso}T00:00:00`);
+  if (Number.isNaN(date.getTime())) return iso;
+  return new Intl.DateTimeFormat('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(date);
 };
 
 export const AgendaView: React.FC<AgendaViewProps> = ({ commissions }) => {
@@ -52,60 +58,30 @@ export const AgendaView: React.FC<AgendaViewProps> = ({ commissions }) => {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
+      <div className="page-header" style={{ marginBottom: 0 }}>
         <div>
-          <h1 style={{ fontSize: '1.75rem', fontWeight: 700, color: 'var(--isf-blue-primary)', margin: 0 }}>
-            Agenda Académica y Exámenes
-          </h1>
-          <p style={{ color: 'var(--color-text-muted)', marginTop: '0.25rem' }}>
-            Fechas de exámenes, mesas de final, entregas y jornadas institucionales del ciclo vigente.
-          </p>
+          <span className="eyebrow">Calendario institucional</span>
+          <h1 className="page-title">Agenda</h1>
+          <p className="page-subtitle">Exámenes, entregas y jornadas del ciclo vigente.</p>
         </div>
-        <span
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            fontSize: '0.85rem',
-            fontWeight: 600,
-            color: '#047857',
-            backgroundColor: 'rgba(16, 185, 129, 0.1)',
-            border: '1px solid #6EE7B7',
-            padding: '0.4rem 0.75rem',
-            borderRadius: '6px',
-          }}
-        >
-          <ShieldCheck size={16} aria-hidden="true" />
-          Calendario institucional
+        <span className="tag" aria-label="Agenda de solo lectura">
+          <ShieldCheck size={14} aria-hidden="true" /> Solo lectura
         </span>
       </div>
+
+      <p className="section-hint" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginTop: '-0.75rem' }}>
+        <Info size={15} aria-hidden="true" />
+        Las fechas las carga Dirección o Secretaría. Si necesitás agregar una, pedila a Dirección.
+      </p>
 
       {notification && (
         <AlertNotification type={notification.type} message={notification.message} onClose={() => setNotification(null)} />
       )}
 
-      <div
-        className="card"
-        style={{
-          padding: '1rem 1.25rem',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.75rem',
-          color: 'var(--color-text-muted)',
-          fontSize: '0.9rem',
-        }}
-      >
-        <Info size={18} style={{ color: 'var(--isf-blue-secondary)', flexShrink: 0 }} aria-hidden="true" />
-        <span>
-          Las fechas las carga Dirección o Secretaría. Desde el portal docente se consultan; si necesitás agregar una
-          fecha, pedila a Dirección.
-        </span>
-      </div>
-
-      <div className="card" style={{ padding: '1.25rem', display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'center' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--isf-blue-primary)', fontWeight: 600 }}>
-          <Filter size={18} aria-hidden="true" />
-          <span>Filtrar agenda:</span>
+      <div className="card" style={{ padding: '1rem 1.25rem', display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'center' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>
+          <Filter size={16} aria-hidden="true" />
+          Filtrar
         </div>
 
         <div style={{ flex: '1 1 220px' }}>
@@ -149,81 +125,42 @@ export const AgendaView: React.FC<AgendaViewProps> = ({ commissions }) => {
 
       {loading ? (
         <div className="card" style={{ padding: '3rem', textAlign: 'center', color: 'var(--color-text-muted)' }}>
-          Cargando cronograma académico...
+          Cargando agenda...
         </div>
       ) : events.length === 0 ? (
         <div className="card" style={{ padding: '3rem', textAlign: 'center' }}>
-          <CalendarIcon size={48} style={{ color: 'var(--color-text-muted)', margin: '0 auto 1rem' }} aria-hidden="true" />
-          <h3 style={{ margin: '0 0 0.5rem', color: 'var(--isf-blue-primary)' }}>No hay fechas cargadas</h3>
-          <p style={{ color: 'var(--color-text-muted)', maxWidth: '440px', margin: '0 auto' }}>
-            No se encontraron eventos para los filtros seleccionados. Las fechas del ciclo las publica Dirección.
+          <CalendarIcon size={32} style={{ color: 'var(--color-text-muted)', margin: '0 auto 0.75rem' }} aria-hidden="true" />
+          <h2 className="section-title" style={{ marginBottom: '0.35rem' }}>
+            Sin fechas cargadas
+          </h2>
+          <p className="section-hint" style={{ margin: 0 }}>
+            No hay eventos para los filtros seleccionados.
           </p>
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 340px), 1fr))', gap: '1.25rem' }}>
-          {events.map((ev) => {
-            const colors = EVENT_TYPE_COLORS[ev.type] ?? EVENT_TYPE_COLORS.OTHER;
-            const isToday = ev.date === new Date().toISOString().slice(0, 10);
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 300px), 1fr))', gap: '1rem' }}>
+          {events.map((ev) => (
+            <article key={ev.id} className="card" style={{ padding: '1.15rem', display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.72rem', fontWeight: 600, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  <span style={{ width: 7, height: 7, borderRadius: '50%', backgroundColor: TYPE_DOT[ev.type] }} aria-hidden="true" />
+                  {EVENT_TYPE_LABELS[ev.type]}
+                </span>
+                {ev.mandatory && <span className="tag">Obligatorio</span>}
+              </div>
 
-            return (
-              <article
-                key={ev.id}
-                className="card"
-                style={{
-                  padding: '1.25rem',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-between',
-                  borderLeft: `5px solid ${colors.text}`,
-                  boxShadow: isToday ? '0 0 0 2px var(--isf-blue-secondary)' : undefined,
-                }}
-              >
-                <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem', marginBottom: '0.75rem' }}>
-                    <span
-                      style={{
-                        fontSize: '0.75rem',
-                        fontWeight: 700,
-                        textTransform: 'uppercase',
-                        padding: '0.2rem 0.6rem',
-                        borderRadius: '6px',
-                        backgroundColor: colors.bg,
-                        color: colors.text,
-                        border: `1px solid ${colors.border}`,
-                      }}
-                    >
-                      {EVENT_TYPE_LABELS[ev.type]}
-                    </span>
-                    {ev.mandatory && (
-                      <span style={{ fontSize: '0.7rem', fontWeight: 700, color: '#B91C1C' }}>Obligatorio</span>
-                    )}
-                  </div>
+              <h3 style={{ margin: 0, fontSize: '0.98rem', color: 'var(--isf-blue-primary)' }}>{ev.title}</h3>
+              <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--color-text-muted)' }}>{ev.commissionName}</p>
+              {ev.description && (
+                <p style={{ margin: 0, fontSize: '0.83rem', color: 'var(--color-text-secondary)', lineHeight: 1.5 }}>{ev.description}</p>
+              )}
 
-                  <h3 style={{ fontSize: '1.15rem', fontWeight: 700, color: 'var(--isf-blue-primary)', margin: '0 0 0.5rem' }}>
-                    {ev.title}
-                  </h3>
-
-                  <div style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)', marginBottom: '0.75rem' }}>
-                    <strong>{ev.commissionName}</strong>
-                  </div>
-
-                  {ev.description && (
-                    <p style={{ fontSize: '0.875rem', color: '#4B5563', margin: '0 0 1rem', lineHeight: 1.5 }}>
-                      {ev.description}
-                    </p>
-                  )}
-                </div>
-
-                <div style={{ borderTop: '1px solid #E5E7EB', paddingTop: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: '#374151' }}>
-                  <CalendarIcon size={15} style={{ color: 'var(--isf-blue-secondary)' }} aria-hidden="true" />
-                  <span>
-                    <strong>Fecha:</strong> {ev.date}
-                    {ev.endDate && ev.endDate !== ev.date ? ` al ${ev.endDate}` : ''}
-                  </span>
-                </div>
-              </article>
-            );
-          })}
+              <div style={{ marginTop: 'auto', paddingTop: '0.65rem', borderTop: '1px solid var(--color-border-light)', fontSize: '0.8rem', color: 'var(--color-text-secondary)' }}>
+                {formatDate(ev.date)}
+                {ev.endDate && ev.endDate !== ev.date ? ` — ${formatDate(ev.endDate)}` : ''}
+              </div>
+            </article>
+          ))}
         </div>
       )}
     </div>

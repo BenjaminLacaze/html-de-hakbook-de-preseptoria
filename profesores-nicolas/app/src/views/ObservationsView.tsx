@@ -5,7 +5,6 @@ import { ConfirmModal } from '../components/common/ConfirmModal';
 import { AlertNotification } from '../components/common/AlertNotification';
 import { EmptyState } from '../components/common/EmptyState';
 import {
-  MessageSquare,
   Calendar,
   Clock,
   User,
@@ -34,6 +33,12 @@ const formatTimestamp = (iso: string): string => {
     minute: '2-digit',
     hour12: false,
   }).format(date);
+};
+
+const formatDateOnly = (iso: string): string => {
+  const date = new Date(`${iso}T00:00:00`);
+  if (Number.isNaN(date.getTime())) return iso;
+  return new Intl.DateTimeFormat('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(date);
 };
 
 export const ObservationsView: React.FC<ObservationsViewProps> = ({
@@ -192,30 +197,26 @@ export const ObservationsView: React.FC<ObservationsViewProps> = ({
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
       {/* Encabezado */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
+      <div className="page-header" style={{ marginBottom: 0 }}>
         <div>
           <button
             type="button"
             onClick={() => onNavigate('dashboard')}
             className="btn btn-secondary btn-sm"
-            style={{ marginBottom: '0.5rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
+            style={{ marginBottom: '0.65rem', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
           >
-            <ArrowLeft size={16} aria-hidden="true" />
-            <span>Volver al Panel</span>
+            <ArrowLeft size={15} aria-hidden="true" />
+            <span>Volver</span>
           </button>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <MessageSquare size={24} color="var(--isf-blue-primary)" aria-hidden="true" />
-            <h1 style={{ margin: 0 }}>Observaciones Académicas</h1>
-          </div>
-          <p style={{ fontSize: '0.92rem', color: 'var(--color-text-muted)', margin: '0.25rem 0 0' }}>
-            Registro y seguimiento cualitativo del proceso formativo de los estudiantes.
-          </p>
+          <span className="eyebrow">Seguimiento</span>
+          <h1 className="page-title">Observaciones</h1>
+          <p className="page-subtitle">Registro cualitativo del proceso formativo.</p>
         </div>
 
         <button
           type="button"
           onClick={() => setIsFormVisible(!isFormVisible)}
-          className="btn btn-primary"
+          className="btn btn-primary btn-sm"
         >
           <PlusCircle size={18} aria-hidden="true" />
           <span>{isFormVisible ? 'Ocultar Formulario' : 'Nueva Observación'}</span>
@@ -466,14 +467,7 @@ export const ObservationsView: React.FC<ObservationsViewProps> = ({
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             {observations.map((obs) => (
-              <article
-                key={obs.id}
-                className="card"
-                style={{
-                  padding: '1.25rem 1.5rem',
-                  borderLeft: '4px solid var(--isf-gold-sand)',
-                }}
-              >
+              <article key={obs.id} className="card" style={{ padding: '1.25rem 1.5rem' }}>
                 <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '0.75rem' }}>
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
@@ -481,28 +475,14 @@ export const ObservationsView: React.FC<ObservationsViewProps> = ({
                       <strong style={{ fontSize: '1.05rem', color: 'var(--isf-blue-primary)' }}>
                         {obs.studentName}
                       </strong>
-                      <span style={{ fontFamily: 'var(--font-family-mono)', fontSize: '0.78rem', color: 'var(--color-text-muted)', backgroundColor: '#F1F5F9', padding: '0.1rem 0.4rem', borderRadius: '4px' }}>
-                        {obs.studentLegajo}
-                      </span>
+                      <span className="commission-code">{obs.studentLegajo}</span>
                     </div>
                     <div style={{ fontSize: '0.82rem', color: 'var(--color-text-muted)' }}>
                       {obs.commissionName}
                     </div>
                   </div>
 
-                  <span
-                    style={{
-                      fontSize: '0.75rem',
-                      fontWeight: 600,
-                      backgroundColor: 'var(--isf-gold-light)',
-                      color: 'var(--isf-gold-text)',
-                      padding: '0.2rem 0.6rem',
-                      borderRadius: 'var(--radius-full)',
-                      border: '1px solid var(--isf-gold-border)',
-                    }}
-                  >
-                    {obs.category}
-                  </span>
+                  <span className="tag">{obs.category}</span>
                 </div>
 
                 <p style={{ fontSize: '0.9375rem', color: 'var(--color-text-primary)', lineHeight: 1.5, marginBottom: '1rem' }}>
@@ -524,7 +504,7 @@ export const ObservationsView: React.FC<ObservationsViewProps> = ({
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
                     <Calendar size={14} color="var(--isf-blue-sky)" aria-hidden="true" />
                     <span>
-                      <strong>Fecha del hecho pedagógico:</strong> {obs.pedagogicalDate}
+                      <strong>Fecha del hecho pedagógico:</strong> {formatDateOnly(obs.pedagogicalDate)}
                     </span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>

@@ -9,6 +9,17 @@ interface MessagesViewProps {
   currentUserId: string;
 }
 
+const formatDate = (iso: string, withTime = false): string => {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return iso;
+  return new Intl.DateTimeFormat('es-AR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    ...(withTime ? { hour: '2-digit', minute: '2-digit' } : {}),
+  }).format(date);
+};
+
 export const MessagesView: React.FC<MessagesViewProps> = ({ currentUserId }) => {
   const [conversations, setConversations] = useState<ConversationSummary[]>([]);
   const [contacts, setContacts] = useState<InstitutionalContact[]>([]);
@@ -141,21 +152,18 @@ export const MessagesView: React.FC<MessagesViewProps> = ({ currentUserId }) => 
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
+      <div className="page-header" style={{ marginBottom: 0 }}>
         <div>
-          <h1 style={{ fontSize: '1.75rem', fontWeight: 700, color: 'var(--isf-blue-primary)', margin: 0 }}>
-            Mensajería Institucional
-          </h1>
-          <p style={{ color: 'var(--color-text-muted)', marginTop: '0.25rem' }}>
-            Conversaciones con estudiantes, Preceptoría, docentes y el equipo directivo.
-          </p>
+          <span className="eyebrow">Comunicación</span>
+          <h1 className="page-title">Mensajes</h1>
+          <p className="page-subtitle">Conversaciones con estudiantes, Preceptoría y Dirección.</p>
         </div>
         <button
-          className="btn btn-primary"
+          className="btn btn-primary btn-sm"
           onClick={() => setIsComposeOpen(true)}
           style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}
         >
-          <Plus size={18} />
+          <Plus size={16} />
           Nuevo mensaje
         </button>
       </div>
@@ -215,9 +223,9 @@ export const MessagesView: React.FC<MessagesViewProps> = ({ currentUserId }) => 
                       borderRadius: '8px',
                       border: isSelected ? '2px solid var(--isf-blue-secondary)' : '1px solid #E5E7EB',
                       backgroundColor: isSelected
-                        ? 'rgba(63, 120, 182, 0.08)'
+                        ? 'var(--color-bg-sidebar-active)'
                         : conv.unreadCount > 0
-                          ? 'rgba(20, 33, 79, 0.04)'
+                          ? 'var(--color-bg-card-hover)'
                           : '#FFFFFF',
                       cursor: 'pointer',
                       display: 'flex',
@@ -231,7 +239,7 @@ export const MessagesView: React.FC<MessagesViewProps> = ({ currentUserId }) => 
                         {conv.contact.name}
                       </span>
                       <span style={{ fontSize: '0.75rem', color: '#9CA3AF', whiteSpace: 'nowrap' }}>
-                        {conv.lastMessage.createdAt.slice(0, 10)}
+                        {formatDate(conv.lastMessage.createdAt, false)}
                       </span>
                     </div>
                     <span style={{ fontSize: '0.75rem', color: '#64748B' }}>{conv.contact.role}</span>
@@ -374,7 +382,7 @@ export const MessagesView: React.FC<MessagesViewProps> = ({ currentUserId }) => 
                             alignSelf: isMine ? 'flex-end' : 'flex-start',
                           }}
                         >
-                          {msg.createdAt.slice(0, 16).replace('T', ' ')}
+                          {formatDate(msg.createdAt, true)}
                         </div>
                       </div>
                     );

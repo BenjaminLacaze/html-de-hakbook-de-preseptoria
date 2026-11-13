@@ -119,6 +119,10 @@ const TeacherApp: React.FC<{ me: AuthMe }> = ({ me }) => {
   }
 
   return (
+    <>
+      <a href="#main-content" className="skip-link">
+        Saltar al contenido principal
+      </a>
     <div className="app-container">
       {/* Barra Lateral de Navegación Accesible */}
       <Sidebar
@@ -132,7 +136,6 @@ const TeacherApp: React.FC<{ me: AuthMe }> = ({ me }) => {
       <div className="main-wrapper">
         {/* Encabezado Institucional */}
         <Header
-          teacher={teacher}
           isMobileMenuOpen={isMobileMenuOpen}
           onToggleMobileMenu={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
         />
@@ -213,6 +216,7 @@ const TeacherApp: React.FC<{ me: AuthMe }> = ({ me }) => {
         </main>
       </div>
     </div>
+    </>
   );
 };
 

@@ -2,15 +2,12 @@ import React, { useState, useMemo } from 'react';
 import type { Commission, ActiveScreen } from '../types';
 import { EmptyState } from '../components/common/EmptyState';
 import {
-  BookOpen,
   Search,
   Filter,
   Users,
   Clock,
   MapPin,
-  Calendar,
   AlertCircle,
-  GraduationCap,
 } from 'lucide-react';
 
 interface CommissionsViewProps {
@@ -43,37 +40,18 @@ export const CommissionsView: React.FC<CommissionsViewProps> = ({
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
       {/* Encabezado de la pantalla */}
-      <div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
-          <BookOpen size={24} color="var(--isf-blue-primary)" aria-hidden="true" />
-          <h1 style={{ margin: 0 }}>Comisiones y Materias Asignadas</h1>
+      <div className="page-header" style={{ marginBottom: 0 }}>
+        <div>
+          <span className="eyebrow">Ciclo lectivo 2026</span>
+          <h1 className="page-title">Comisiones</h1>
+          <p className="page-subtitle">Materias y comisiones asignadas a tu legajo.</p>
         </div>
-        <p style={{ fontSize: '0.92rem', color: 'var(--color-text-muted)', margin: 0 }}>
-          Consultá las comisiones y materias asignadas a tu cargo para el presente ciclo lectivo en el ISFDyT N.° 26.
-        </p>
       </div>
 
-      {/* Aclaración institucional de alcance y permisos */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'flex-start',
-          gap: '0.75rem',
-          padding: '0.875rem 1.25rem',
-          backgroundColor: '#F8FAFC',
-          borderRadius: 'var(--radius-md)',
-          borderLeft: '4px solid var(--isf-blue-sky)',
-          border: '1px solid var(--color-border-light)',
-          borderLeftWidth: '4px',
-          fontSize: '0.85rem',
-          color: 'var(--color-text-secondary)',
-        }}
-      >
-        <AlertCircle size={18} color="var(--isf-blue-sky)" style={{ flexShrink: 0, marginTop: '2px' }} aria-hidden="true" />
-        <div>
-          <strong>Información sobre permisos docentes:</strong> Las asignaciones de cátedras y comisiones son administradas institucionalmente por la Secretaría Académica y la Dirección del ISFDyT N.° 26. El módulo docente permite la consulta de información académica, gestión de estudiantes a cargo y toma de asistencia.
-        </div>
-      </div>
+      <p className="section-hint" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginTop: '-0.75rem' }}>
+        <AlertCircle size={15} aria-hidden="true" />
+        Las asignaciones las administra Secretaría Académica. El módulo docente solo consulta.
+      </p>
 
       {/* Barra de Filtros y Búsqueda */}
       <div
@@ -146,111 +124,69 @@ export const CommissionsView: React.FC<CommissionsViewProps> = ({
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '1.25rem' }}>
           {filteredCommissions.map((comm) => (
-            <div
-              key={comm.id}
-              className="card card-interactive card-primary-top"
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between',
-                padding: '1.5rem',
-              }}
-            >
+            <article key={comm.id} className="card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
               <div>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
-                  <span
-                    style={{
-                      fontFamily: 'var(--font-family-mono)',
-                      fontSize: '0.8rem',
-                      fontWeight: 700,
-                      color: 'var(--isf-gold-text)',
-                      backgroundColor: 'var(--isf-gold-light)',
-                      padding: '0.2rem 0.6rem',
-                      borderRadius: '4px',
-                      border: '1px solid var(--isf-gold-border)',
-                    }}
-                  >
-                    {comm.code}
-                  </span>
-                  <span
-                    style={{
-                      fontSize: '0.8rem',
-                      fontWeight: 600,
-                      color: 'var(--color-text-secondary)',
-                      backgroundColor: '#F1F5F9',
-                      padding: '0.2rem 0.6rem',
-                      borderRadius: '4px',
-                    }}
-                  >
-                    Turno {comm.shift}
-                  </span>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
+                  <span className="commission-code">{comm.code}</span>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>{comm.shift}</span>
                 </div>
 
-                <h2 style={{ fontSize: '1.2rem', color: 'var(--isf-blue-primary)', marginBottom: '0.35rem' }}>
+                <h2 style={{ fontSize: '1.05rem', color: 'var(--isf-blue-primary)', margin: '0.35rem 0 0.25rem' }}>
                   {comm.subjectName}
                 </h2>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--isf-gold-text)', fontWeight: 600, fontSize: '0.875rem', marginBottom: '0.5rem' }}>
-                  <GraduationCap size={16} color="var(--isf-gold-ochre)" aria-hidden="true" />
-                  <span>{comm.careerName}</span>
-                </div>
-
-                <div style={{ display: 'inline-block', backgroundColor: '#F8FAFC', padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.8rem', color: 'var(--color-text-muted)', marginBottom: '1rem' }}>
-                  Comisión: <strong>{comm.name}</strong> • {comm.academicYear}
-                </div>
+                <p style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', margin: '0 0 0.35rem' }}>{comm.careerName}</p>
+                <p style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)', margin: '0 0 1rem' }}>
+                  {comm.name} · {comm.academicYear}
+                </p>
 
                 <div
                   style={{
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: '0.45rem',
-                    fontSize: '0.875rem',
+                    gap: '0.4rem',
+                    fontSize: '0.82rem',
                     color: 'var(--color-text-secondary)',
-                    backgroundColor: '#FAFCFE',
-                    padding: '0.875rem',
+                    backgroundColor: 'var(--color-bg-card-hover)',
+                    padding: '0.85rem',
                     borderRadius: 'var(--radius-md)',
-                    border: '1px solid var(--color-border-light)',
                     marginBottom: '1.25rem',
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <Clock size={16} color="var(--isf-blue-sky)" aria-hidden="true" />
-                    <span><strong>Horario:</strong> {comm.schedule}</span>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <MapPin size={16} color="var(--isf-blue-sky)" aria-hidden="true" />
-                    <span><strong>Espacio:</strong> {comm.classroom}</span>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <Users size={16} color="var(--isf-blue-sky)" aria-hidden="true" />
-                    <span>
-                      <strong>Estudiantes inscritos:</strong> {comm.studentCount} alumnos
-                    </span>
-                  </div>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                    <Clock size={14} color="var(--color-text-muted)" aria-hidden="true" />
+                    {comm.schedule}
+                  </span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                    <MapPin size={14} color="var(--color-text-muted)" aria-hidden="true" />
+                    {comm.classroom || 'Sin aula asignada'}
+                  </span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
+                    <Users size={14} color="var(--color-text-muted)" aria-hidden="true" />
+                    {comm.studentCount} estudiantes
+                  </span>
                 </div>
               </div>
 
-              <div style={{ display: 'flex', gap: '0.75rem', borderTop: '1px solid var(--color-border-light)', paddingTop: '1rem' }}>
+              <div style={{ display: 'flex', gap: '0.5rem', borderTop: '1px solid var(--color-border-light)', paddingTop: '0.85rem' }}>
                 <button
                   type="button"
                   onClick={() => onNavigate('students', { commissionId: comm.id })}
-                  className="btn btn-secondary"
+                  className="btn btn-secondary btn-sm"
                   style={{ flex: 1 }}
                 >
-                  <Users size={16} aria-hidden="true" />
-                  <span>Ver Estudiantes</span>
+                  Estudiantes
                 </button>
                 <button
                   type="button"
                   onClick={() => onNavigate('attendance', { commissionId: comm.id })}
-                  className="btn btn-primary"
+                  className="btn btn-primary btn-sm"
                   style={{ flex: 1 }}
                 >
-                  <Calendar size={16} aria-hidden="true" />
-                  <span>Tomar Asistencia</span>
+                  Asistencia
                 </button>
               </div>
-            </div>
+            </article>
           ))}
         </div>
       )}

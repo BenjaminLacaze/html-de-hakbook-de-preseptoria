@@ -5,7 +5,6 @@ import { ConfirmModal } from '../components/common/ConfirmModal';
 import { AlertNotification } from '../components/common/AlertNotification';
 import { EmptyState } from '../components/common/EmptyState';
 import {
-  ClipboardCheck,
   CheckCircle2,
   XCircle,
   Clock,
@@ -22,6 +21,50 @@ interface AttendanceViewProps {
   initialCommissionId?: string;
   onNavigate: (screen: ActiveScreen, context?: { commissionId?: string }) => void;
 }
+
+const SummaryTile: React.FC<{ label: string; value: number; color: string; icon: React.ReactNode; alert?: boolean }> = ({
+  label,
+  value,
+  color,
+  icon,
+  alert,
+}) => (
+  <div
+    style={{
+      padding: '0.85rem 1rem',
+      borderRadius: 'var(--radius-md)',
+      backgroundColor: 'var(--color-bg-card)',
+      border: `1px solid ${alert ? '#F87171' : 'var(--color-border-light)'}`,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    }}
+  >
+    <div>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.35rem',
+          fontSize: '0.72rem',
+          fontWeight: 600,
+          color: 'var(--color-text-muted)',
+          textTransform: 'uppercase',
+          letterSpacing: '0.04em',
+        }}
+      >
+        <span style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: color }} aria-hidden="true" />
+        {label}
+      </div>
+      <div style={{ marginTop: '0.25rem', fontSize: '1.5rem', fontWeight: 700, color: alert ? '#B91C1C' : 'var(--isf-blue-primary)' }}>
+        {value}
+      </div>
+    </div>
+    <span style={{ color, display: 'inline-flex' }} aria-hidden="true">
+      {icon}
+    </span>
+  </div>
+);
 
 export const AttendanceView: React.FC<AttendanceViewProps> = ({
   commissions,
@@ -282,13 +325,9 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
             <ArrowLeft size={16} aria-hidden="true" />
             <span>Volver a Comisiones</span>
           </button>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <ClipboardCheck size={24} color="var(--isf-blue-primary)" aria-hidden="true" />
-            <h1 style={{ margin: 0 }}>Toma de Asistencia</h1>
-          </div>
-          <p style={{ fontSize: '0.92rem', color: 'var(--color-text-muted)', margin: '0.25rem 0 0' }}>
-            Registrá la asistencia de cada estudiante para la clase seleccionada (Presente, Ausente o Tarde).
-          </p>
+          <span className="eyebrow">Clase</span>
+          <h1 className="page-title">Asistencia</h1>
+          <p className="page-subtitle">Presente, ausente o tarde por estudiante.</p>
         </div>
       </div>
 
@@ -311,8 +350,8 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
 
       {/* Paso 1: Configuración de la Instancia de Clase (Comisión, Fecha, Tema) */}
       <section aria-labelledby="section-session-setup" className="card" style={{ padding: '1.5rem' }}>
-        <h2 id="section-session-setup" style={{ fontSize: '1.15rem', marginBottom: '1rem', color: 'var(--isf-blue-primary)' }}>
-          1. Selección de Comisión y Fecha de Clase
+        <h2 id="section-session-setup" style={{ fontSize: '1rem', marginBottom: '1rem', color: 'var(--isf-blue-primary)' }}>
+          Clase
         </h2>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.25rem' }}>
@@ -399,8 +438,8 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
       <section aria-labelledby="section-attendance-summary" className="card" style={{ padding: '1.25rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem', marginBottom: '1rem' }}>
           <div>
-            <h2 id="section-attendance-summary" style={{ fontSize: '1.1rem', margin: 0, color: 'var(--isf-blue-primary)' }}>
-              2. Resumen de Estados ({summary.total} estudiantes)
+            <h2 id="section-attendance-summary" style={{ fontSize: '1rem', margin: 0, color: 'var(--isf-blue-primary)' }}>
+              Resumen ({summary.total} estudiantes)
             </h2>
             <p style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)', margin: 0 }}>
               La selección inicial es explícita. Cada estudiante debe tener un estado antes de guardar.
@@ -437,114 +476,26 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
             gap: '0.75rem',
           }}
         >
-          {/* Presentes */}
-          <div
-            style={{
-              padding: '0.75rem 1rem',
-              borderRadius: 'var(--radius-md)',
-              backgroundColor: 'var(--status-present-bg)',
-              border: '1px solid var(--status-present-border)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-            }}
-          >
-            <div>
-              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--status-present-text)', textTransform: 'uppercase' }}>
-                Presentes
-              </div>
-              <div style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--status-present-text)' }}>
-                {summary.present}
-              </div>
-            </div>
-            <CheckCircle2 size={24} color="var(--status-present-badge)" aria-hidden="true" />
-          </div>
-
-          {/* Ausentes */}
-          <div
-            style={{
-              padding: '0.75rem 1rem',
-              borderRadius: 'var(--radius-md)',
-              backgroundColor: 'var(--status-absent-bg)',
-              border: '1px solid var(--status-absent-border)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-            }}
-          >
-            <div>
-              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--status-absent-text)', textTransform: 'uppercase' }}>
-                Ausentes
-              </div>
-              <div style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--status-absent-text)' }}>
-                {summary.absent}
-              </div>
-            </div>
-            <XCircle size={24} color="var(--status-absent-badge)" aria-hidden="true" />
-          </div>
-
-          {/* Tarde */}
-          <div
-            style={{
-              padding: '0.75rem 1rem',
-              borderRadius: 'var(--radius-md)',
-              backgroundColor: 'var(--status-late-bg)',
-              border: '1px solid var(--status-late-border)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-            }}
-          >
-            <div>
-              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--status-late-text)', textTransform: 'uppercase' }}>
-                Tarde
-              </div>
-              <div style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--status-late-text)' }}>
-                {summary.late}
-              </div>
-            </div>
-            <Clock size={24} color="var(--status-late-badge)" aria-hidden="true" />
-          </div>
-
-          {/* Sin Asignar */}
-          <div
-            style={{
-              padding: '0.75rem 1rem',
-              borderRadius: 'var(--radius-md)',
-              backgroundColor: summary.unassigned > 0 ? '#FEE2E2' : 'var(--status-unassigned-bg)',
-              border: summary.unassigned > 0 ? '1px solid #F87171' : '1px solid var(--status-unassigned-border)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-            }}
-          >
-            <div>
-              <div
-                style={{
-                  fontSize: '0.75rem',
-                  fontWeight: 700,
-                  color: summary.unassigned > 0 ? '#991B1B' : 'var(--status-unassigned-text)',
-                  textTransform: 'uppercase',
-                }}
-              >
-                Sin Registrar
-              </div>
-              <div
-                style={{
-                  fontSize: '1.5rem',
-                  fontWeight: 800,
-                  color: summary.unassigned > 0 ? '#991B1B' : 'var(--status-unassigned-text)',
-                }}
-              >
-                {summary.unassigned}
-              </div>
-            </div>
-            <HelpCircle
-              size={24}
-              color={summary.unassigned > 0 ? '#DC2626' : 'var(--status-unassigned-text)'}
-              aria-hidden="true"
-            />
-          </div>
+          <SummaryTile
+            label="Presentes"
+            value={summary.present}
+            color="var(--status-present-border)"
+            icon={<CheckCircle2 size={22} />}
+          />
+          <SummaryTile
+            label="Ausentes"
+            value={summary.absent}
+            color="var(--status-absent-border)"
+            icon={<XCircle size={22} />}
+          />
+          <SummaryTile label="Tarde" value={summary.late} color="var(--status-late-border)" icon={<Clock size={22} />} />
+          <SummaryTile
+            label="Sin registrar"
+            value={summary.unassigned}
+            color={summary.unassigned > 0 ? '#DC2626' : 'var(--color-text-muted)'}
+            icon={<HelpCircle size={22} />}
+            alert={summary.unassigned > 0}
+          />
         </div>
       </section>
 
@@ -564,7 +515,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
             description="La comisión seleccionada no registra estudiantes matriculados."
           />
         ) : (
-          <div className="table-container">
+          <div className="table-container attendance-table">
             <table aria-label="Asignación de asistencia de estudiantes">
               <caption>
                 Clase del {date} — {currentCommission?.name} ({currentCommission?.subjectName})
@@ -603,10 +554,13 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                           DNI: {student.dni}
                         </div>
                       </td>
-                      <td style={{ fontFamily: 'var(--font-family-mono)', fontSize: '0.85rem', color: 'var(--isf-blue-primary)' }}>
+                      <td
+                        data-label="Legajo"
+                        style={{ fontFamily: 'var(--font-family-mono)', fontSize: '0.85rem', color: 'var(--isf-blue-primary)' }}
+                      >
                         {student.legajo}
                       </td>
-                      <td style={{ textAlign: 'center' }}>
+                      <td data-label="Estado" style={{ textAlign: 'center' }}>
                         {isUnassigned ? (
                           <span
                             style={{
@@ -679,7 +633,7 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
                           </span>
                         )}
                       </td>
-                      <td style={{ textAlign: 'center' }}>
+                      <td data-label="Asignar" style={{ textAlign: 'center' }}>
                         <div
                           role="group"
                           aria-label={`Asistencia de ${student.lastName}, ${student.firstName}`}
@@ -790,9 +744,8 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
           justifyContent: 'space-between',
           flexWrap: 'wrap',
           gap: '1rem',
-          boxShadow: 'var(--shadow-lg)',
-          backgroundColor: '#FFFFFF',
-          border: '2px solid var(--isf-blue-primary)',
+          backgroundColor: 'var(--color-bg-card)',
+          border: '1px solid var(--color-border-light)',
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>

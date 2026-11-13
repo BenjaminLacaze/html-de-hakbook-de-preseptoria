@@ -1,5 +1,26 @@
 # CHANGELOG
 
+## 2026-11-13 — Rediseño minimalista del módulo Profesor
+
+- **Sistema de diseño:** la app importa `shared/design/tokens.css` y los tokens `--isf-*` pasan a
+  ser alias de `--i26-*`. Superficies blancas, bordes finos, radios de 8–10 px y sin sombras.
+- **Shell:** sidebar claro en lugar del bloque azul; el header de escritorio se retiró (la
+  identidad queda en el sidebar y la barra de sesión); en mobile hay una barra compacta con menú.
+  La barra de sesión compartida se ve clara y discreta. El enlace “Saltar al contenido” pasó a
+  `App`, porque el header ya no se renderiza en escritorio.
+- **Dashboard:** métricas en una franja única, accesos compactos, comisiones en lista y actividad
+  reciente con fechas localizadas. Se eliminaron los bordes de color y las tarjetas con íconos
+  llenos.
+- **Vistas:** Comisiones, Agenda, Asistencia, Calificaciones, Mensajería, Observaciones y
+  Estudiantes usan los mismos encabezados (`eyebrow`, título, subtítulo), tarjetas planas y
+  etiquetas neutras. Se quitaron bordes decorativos y se redujo la densidad de color.
+- **Mobile:** la tabla de Asistencia y la actividad del Panel se apilan como tarjetas con
+  etiquetas; el menú lateral funciona como drawer. El resto de tablas conserva scroll horizontal.
+- **Fechas:** `Intl.DateTimeFormat` en Panel, Agenda, Mensajería y Observaciones.
+- **Verificación:** `npm run build` (tsc + Vite) y `npm run lint` (0 errores, advertencias no
+  bloqueantes). Capturas desktop y mobile con API simulada. Sin cambios en `backend/`, `shared/`
+  (salvo el uso de sus tokens) ni Neon; sin publicación en Vercel.
+
 ## 2026-11-13 — Profesores: Agenda, Mensajería y Calificaciones contra la API común
 
 - **Agenda:** `academicService` dejó de llamar a `/agenda` (ruta del backend autónomo que la API

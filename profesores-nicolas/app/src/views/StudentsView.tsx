@@ -4,7 +4,6 @@ import { academicService } from '../services/academicService';
 import { Badge } from '../components/common/Badge';
 import { EmptyState } from '../components/common/EmptyState';
 import {
-  Users,
   Search,
   Filter,
   ArrowUpDown,
@@ -98,13 +97,9 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
             <ArrowLeft size={16} aria-hidden="true" />
             <span>Volver a Comisiones</span>
           </button>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Users size={24} color="var(--isf-blue-primary)" aria-hidden="true" />
-            <h1 style={{ margin: 0 }}>Listado de Estudiantes</h1>
-          </div>
-          <p style={{ fontSize: '0.92rem', color: 'var(--color-text-muted)', margin: '0.25rem 0 0' }}>
-            Nómina de alumnos matriculados por comisión para seguimiento pedagógico y asistencia.
-          </p>
+          <span className="eyebrow">Nómina</span>
+          <h1 className="page-title">Estudiantes</h1>
+          <p className="page-subtitle">Alumnos matriculados en la comisión seleccionada.</p>
         </div>
 
         {/* Acceso Rápido a Asistencia de la comisión activa */}
@@ -112,23 +107,16 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
           <button
             type="button"
             onClick={() => onNavigate('attendance', { commissionId: currentCommission.id })}
-            className="btn btn-primary"
+            className="btn btn-primary btn-sm"
           >
-            <Calendar size={18} aria-hidden="true" />
-            <span>Tomar Asistencia ({currentCommission.name})</span>
+            <Calendar size={15} aria-hidden="true" />
+            <span>Asistencia</span>
           </button>
         )}
       </div>
 
       {/* Selector de Comisión Activa */}
-      <div
-        className="card"
-        style={{
-          padding: '1.25rem',
-          backgroundColor: '#FFFFFF',
-          borderLeft: '4px solid var(--isf-gold-ochre)',
-        }}
-      >
+      <div className="card" style={{ padding: '1.25rem' }}>
         <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '1rem', justifyContent: 'space-between' }}>
           <div style={{ flex: 1, minWidth: '280px' }}>
             <label htmlFor="commission-select" className="form-label" style={{ marginBottom: '0.25rem' }}>
@@ -178,25 +166,10 @@ export const StudentsView: React.FC<StudentsViewProps> = ({
         </div>
       </div>
 
-      {/* Aclaración de Privacidad y Rol */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.625rem',
-          padding: '0.75rem 1rem',
-          backgroundColor: '#F8FAFC',
-          borderRadius: 'var(--radius-md)',
-          fontSize: '0.83rem',
-          color: 'var(--color-text-secondary)',
-          border: '1px solid var(--color-border-light)',
-        }}
-      >
-        <AlertCircle size={16} color="var(--isf-blue-sky)" aria-hidden="true" style={{ flexShrink: 0 }} />
-        <span>
-          <strong>Nota institucional:</strong> Los datos provienen del registro institucional. La matriculación oficial, altas y bajas son gestionadas por la Preceptoría del instituto.
-        </span>
-      </div>
+      <p className="section-hint" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+        <AlertCircle size={15} aria-hidden="true" />
+        Los datos vienen del registro institucional; altas y bajas las gestiona Preceptoría.
+      </p>
 
       {/* Controles de Búsqueda, Filtro y Orden */}
       <div
