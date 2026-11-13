@@ -790,12 +790,9 @@ export const AttendanceView: React.FC<AttendanceViewProps> = ({
           justifyContent: 'space-between',
           flexWrap: 'wrap',
           gap: '1rem',
-          position: 'sticky',
-          bottom: '1rem',
           boxShadow: 'var(--shadow-lg)',
           backgroundColor: '#FFFFFF',
           border: '2px solid var(--isf-blue-primary)',
-          zIndex: 50,
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>

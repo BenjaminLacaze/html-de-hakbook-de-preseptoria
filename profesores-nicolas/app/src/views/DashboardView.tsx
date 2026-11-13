@@ -69,7 +69,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           Bienvenido, {teacher.name}
         </h1>
         <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.9rem', margin: 0, lineHeight: 1.45 }}>
-          {teacher.title} — {teacher.department}.
+          {[teacher.title, teacher.department].filter(Boolean).join(' — ')}
+          {teacher.title || teacher.department ? '.' : ''}
         </p>
       </section>
 
@@ -506,7 +507,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       <td style={{ fontWeight: 600, color: 'var(--isf-blue-primary)' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                           <Calendar size={14} color="var(--color-text-muted)" aria-hidden="true" />
-                          <span>{ses.date}</span>
+                          <span style={{ whiteSpace: 'nowrap' }}>{ses.date}</span>
                         </div>
                       </td>
                       <td>

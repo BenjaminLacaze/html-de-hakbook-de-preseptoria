@@ -40,6 +40,9 @@ La matriz `docs/ESTADO_VALIDACION.md` distingue implementado, probado en local, 
   - El backend autónomo quedó archivado en `profesores-nicolas/legacy/backend-local/` y fuera del
     build; la documentación histórica quedó señalizada y el duplicado del contrato, reducido a un
     puntero.
+  - Revisión visual con API simulada (Panel, Estudiantes, Asistencia, Calificaciones, Agenda,
+    Mensajería y Observaciones): se corrigieron la leyenda `≥`, el contraste del mensaje propio,
+    la fecha/hora de Observaciones, la barra de confirmación de Asistencia y la fecha del panel.
   - Verificado: `npm run build` (tsc + Vite) y `npm run lint` (0 errores, advertencias no
     bloqueantes de hooks). Pendiente: QA con cuenta `TEACHER`, prueba de escrituras y publicación en Vercel.
     No hubo cambios en Neon, `shared/`, `backend/` ni otros módulos.

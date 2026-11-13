@@ -355,7 +355,15 @@ export const MessagesView: React.FC<MessagesViewProps> = ({ currentUserId }) => 
                             boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
                           }}
                         >
-                          <p style={{ margin: 0, fontSize: '0.9rem', lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>
+                          <p
+                            style={{
+                              margin: 0,
+                              color: 'inherit',
+                              fontSize: '0.9rem',
+                              lineHeight: 1.5,
+                              whiteSpace: 'pre-wrap',
+                            }}
+                          >
                             {msg.body}
                           </p>
                         </div>

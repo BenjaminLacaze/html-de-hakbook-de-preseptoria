@@ -26,6 +26,10 @@
 - **Propuestas:** nuevo `profesores-nicolas/PROPUESTAS.md` con P-PROF-01 (agenda editable),
   P-PROF-02 (asunto/categoría de mensajes), P-PROF-03 (resumen de notas en el backend) y
   P-PROF-04 (lectura de observaciones por Preceptoría). Ninguna está implementada.
+- **Correcciones visuales (revisión con API simulada):** leyenda de Calificaciones con `≥` en
+  lugar del LaTeX crudo, contraste del mensaje propio en Mensajería, fecha y hora localizadas en
+  Observaciones, barra de confirmación de Asistencia sin superponerse a la tabla, fecha del panel
+  sin cortarse y subtítulo sin guion vacío cuando el docente no tiene departamento.
 - **Verificación:** `npm run build` de la app (tsc + Vite, 2353 módulos) OK; `npm run lint` con
   0 errores y 14 advertencias no bloqueantes de React Hooks/pureza. No se probó login
   ni escrituras con una cuenta real. Sin cambios en `shared/`, `backend/` ni Neon; sin cambios

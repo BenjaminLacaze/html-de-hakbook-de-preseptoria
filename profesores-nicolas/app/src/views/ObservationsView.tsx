@@ -23,6 +23,19 @@ interface ObservationsViewProps {
   onNavigate: (screen: ActiveScreen, context?: { commissionId?: string }) => void;
 }
 
+const formatTimestamp = (iso: string): string => {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return iso;
+  return new Intl.DateTimeFormat('es-AR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).format(date);
+};
+
 export const ObservationsView: React.FC<ObservationsViewProps> = ({
   commissions,
   initialCommissionId,
@@ -517,7 +530,7 @@ export const ObservationsView: React.FC<ObservationsViewProps> = ({
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
                     <Clock size={14} color="var(--isf-blue-sky)" aria-hidden="true" />
                     <span>
-                      <strong>Registrado en el SGA:</strong> {obs.createdAt}
+                      <strong>Registrado en el SGA:</strong> {formatTimestamp(obs.createdAt)}
                     </span>
                   </div>
                 </div>

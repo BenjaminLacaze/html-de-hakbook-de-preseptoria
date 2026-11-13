@@ -218,10 +218,10 @@ export function GradesView({ commissions }: GradesViewProps) {
             </h2>
             <div style={{ display: 'flex', gap: '0.75rem', fontSize: '0.8rem' }}>
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', color: '#059669', fontWeight: 600 }}>
-                ● Promoción ($\ge$ 7)
+                ● Promoción (≥ 7)
               </span>
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', color: '#2563EB', fontWeight: 600 }}>
-                ● Regular ($\ge$ 4)
+                ● Regular (≥ 4)
               </span>
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem', color: '#DC2626', fontWeight: 600 }}>
                 ● Desaprobado (&lt; 4)
