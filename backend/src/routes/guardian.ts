@@ -29,7 +29,7 @@ import { requireAuth, requireRoles, type AppEnv, type CurrentUser } from '../aut
 import { prisma } from '../db.js';
 import { AppError, notFound } from '../errors.js';
 import { notify } from '../notify.js';
-import { commissionScope, isManagement, parseDate, toISO, toISODate } from '../scope.js';
+import { commissionScope, hasRole, isManagement, parseDate, toISO, toISODate } from '../scope.js';
 import { attendanceSummary, covers } from '../summary.js';
 import { parseBody } from '../validation.js';
 
@@ -593,9 +593,13 @@ function noticeChildren(a: NoticeAudience, enrollments: Awaited<ReturnType<typeo
 const STAFF = ['SUPER_ADMIN', 'DIRECTOR', 'ADMINISTRATIVE', 'PRECEPTOR'] as const;
 const MANAGE = ['SUPER_ADMIN', 'DIRECTOR', 'ADMINISTRATIVE'] as const;
 
-/** Alumnos que el usuario puede alcanzar: gestión → todos; preceptor → los de sus comisiones. */
+/**
+ * Alumnos que el usuario puede alcanzar: gestión y Preceptoría → todos; el resto → los de sus comisiones.
+ * Preceptoría tiene alcance institucional sobre el padrón (decisión del 30/10/2026), así que también
+ * lo tiene sobre las familias: si no, carga un tutor y después no lo ve en su propia lista.
+ */
 async function reachableStudentIds(user: CurrentUser): Promise<string[] | 'all'> {
-  if (isManagement(user)) return 'all';
+  if (isManagement(user) || hasRole(user, 'PRECEPTOR')) return 'all';
   const rows = await prisma.enrollment.findMany({
     where: { commission: await commissionScope(user), condition: { not: 'DROPPED' } },
     select: { studentId: true },
@@ -718,7 +722,8 @@ export const familiesRoutes = new Hono<AppEnv>()
   })
 
   // Crea o actualiza la ficha del responsable y sus vínculos (la cuenta con rol GUARDIAN ya existe).
-  .put('/guardians/:userId', requireRoles(...MANAGE), async (c) => {
+  // Por decisión del usuario (13/11/2026) Preceptoría también vincula padres y tutores con sus hijos.
+  .put('/guardians/:userId', requireRoles(...STAFF), async (c) => {
     const actor = c.get('user');
     const body = await parseBody(
       c,

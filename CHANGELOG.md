@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## 2026-11-13 (tarde) — Carga de datos reales: Preceptoría habilitada, base limpia y publicación
+
+- **Neon al día.** Respaldo completo antes de tocar nada (`pg_dump` 18 vía Docker; el `pg_dump` 17 local no sirve contra un servidor 18). Después se aplicaron las 5 migraciones pendientes: auditoría de lecturas sensibles, paneles (QR, comunicados leídos, correcciones), turnos sin superposición, ampliaciones de Centro/Auxiliares y Panel de Familias.
+- **Preceptoría ahora carga la estructura académica** (`backend/src/routes/structure.ts`): carreras, planes, materias, ciclos, comisiones y docentes pasan de `WRITE` al nuevo grupo `ACADEMIC_MANAGERS` (= `WRITE` + `PRECEPTOR`). No cambian los datos sensibles del alumno ni el borrado de inscripciones, que siguen solo en gestión.
+- **Preceptoría carga padres y tutores** (`backend/src/routes/guardian.ts`): `PUT /families/guardians/:userId` pasa de `MANAGE` a `STAFF` (incluye `PRECEPTOR`). Además `reachableStudentIds` le da alcance institucional, igual que el padrón: antes cargaba un tutor y no lo veía en su propia lista.
+- **Datos de prueba borrados de Neon.** Se eliminaron los 5 escenarios QA (prefijo `QA-I26`: 1 carrera, 1 plan, 5 materias, 5 comisiones, 5 alumnos, 5 docentes, 14 cuentas y todo lo que colgaba de ellas) y se desactivaron las 7 cuentas `prueba.*`. La base quedó en 0 carreras, 0 alumnos, 0 docentes, 0 comisiones, 0 asistencias y 0 notas; la única cuenta activa es `direccion@isfdyt26.edu.ar`.
+- **Documento nuevo** `docs/MEJORAS_CARGA_DE_DATOS.html`: quién carga qué, el orden exacto para cargar la institución (carrera → plan → materia → ciclo → docente → curso → alumno → inscripción → cuenta → tutor), el formato del horario, por qué se ve en todos los paneles y qué pantalla le toca a cada equipo.
+- **Prueba nueva** `backend/test/carga-datos-flow.mjs`: recorrido completo, 21 comprobaciones, todas OK contra una base local descartable. Preceptoría crea carrera, plan, materia y docente, activa el ciclo y crea un curso con horario (miércoles 18–20, Aula 3) y docente; crea el alumno y lo inscribe; un docente recibe 403 al intentar crear carrera o curso; el profesor ve la materia, abre la planilla de ese curso y lo tiene entre los suyos; el alumno ve la materia; Dirección crea la cuenta del tutor, Preceptoría carga su ficha y le asigna el alumno, el vínculo queda guardado y el tutor entra y ve al chico a su cargo.
+- **Corregido en el documento gracias a la prueba:** el horario usa `startTime`, `endTime` y `classroom` (no `start`/`end`/`room`), y el ciclo nace en `PLANNED` y se activa con `PATCH /structure/cycles/:id`.
+
 ## 2026-11-13 — Unificación: backend del ecosistema, Familias y landing
 
 Se integraron en una sola rama los aportes que estaban sueltos (ramas y parches) y se probó todo junto.

@@ -33,6 +33,16 @@ La matriz `docs/ESTADO_VALIDACION.md` distingue implementado, probado en local, 
 
 ## Bitácora
 
+- 2026-11-13 (tarde) — Claude — Carga de datos reales y limpieza de la base:
+  - Neon: respaldo previo y las 5 migraciones pendientes aplicadas. La base quedó al día.
+  - Preceptoría pasa a cargar carreras, planes, materias, ciclos, cursos y docentes
+    (`ACADEMIC_MANAGERS`), y a dar de alta padres/tutores con sus hijos asignados, con alcance
+    institucional igual que el padrón. Los datos sensibles del alumno siguen solo en gestión.
+  - Datos de prueba borrados de Neon (5 escenarios `QA-I26` y 7 cuentas `prueba.*` desactivadas).
+    Quedó activa solo `direccion@isfdyt26.edu.ar`. Base en cero para cargar la institución real.
+  - Nuevos `docs/MEJORAS_CARGA_DE_DATOS.html` (orden de carga y qué le toca a cada equipo) y
+    `backend/test/carga-datos-flow.mjs` (21 comprobaciones, todas OK en base local descartable).
+
 - 2026-11-13 — Claude — Unificación de los aportes sueltos en una sola rama:
   - Se aplicaron los dos parches del ecosistema (`backend.patch` y `familias.patch`: QR, turnos, comunicados leídos, correcciones, Centro ampliado, y el rol `GUARDIAN` con `/guardian` y `/families`) y se fusionó `codex/i26-unify-ecosystem` (tres documentos; conflicto solo en las bitácoras, resuelto conservando ambas).
   - El Panel de Familias entró al build, a `vercel.json` y a la landing. Se corrigieron sus rutas absolutas `/assets/...`, que rompían el logo y el video al publicarlo en subcarpeta.

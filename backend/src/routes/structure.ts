@@ -36,6 +36,13 @@ import { parseBody } from '../validation.js';
 const WRITE = ['SUPER_ADMIN', 'DIRECTOR', 'ADMINISTRATIVE'] as const;
 const READ = [...WRITE, 'PRECEPTOR', 'TEACHER'] as const;
 const STUDENT_MANAGERS = [...WRITE, 'PRECEPTOR'] as const;
+/**
+ * Estructura académica: carreras, planes, materias, ciclos, comisiones y docentes.
+ * Por decisión del usuario (13/11/2026) Preceptoría también la carga: tiene que poder
+ * dar de alta una materia con su horario y su profesor sin esperar a Administración.
+ * Los datos sensibles del alumno siguen restringidos a WRITE.
+ */
+const ACADEMIC_MANAGERS = [...WRITE, 'PRECEPTOR'] as const;
 /** Quién ve datos sensibles del alumno (domicilio, contacto de emergencia, salud). */
 const SENSITIVE_READ = ['SUPER_ADMIN', 'DIRECTOR', 'ADMINISTRATIVE', 'PRECEPTOR'] as const;
 
@@ -71,13 +78,13 @@ export const structureRoutes = new Hono<AppEnv>()
     const rows = await prisma.career.findMany({ orderBy: { name: 'asc' } });
     return c.json(rows.map(({ id, code, name, durationYears, active }) => ({ id, code, name, durationYears, active })));
   })
-  .post('/careers', requireRoles(...WRITE), async (c) => {
+  .post('/careers', requireRoles(...ACADEMIC_MANAGERS), async (c) => {
     const b = await parseBody(c, z.object({ code, name: text(), durationYears: z.number().int().min(1).max(8) }));
     const r = await unique(prisma.career.create({ data: b }), 'una carrera');
     await audit(c, c.get('user'), { action: 'CREATE', entity: 'Career', entityId: r.id, summary: `Carrera ${r.code}` });
     return c.json({ id: r.id }, 201);
   })
-  .patch('/careers/:id', requireRoles(...WRITE), async (c) => {
+  .patch('/careers/:id', requireRoles(...ACADEMIC_MANAGERS), async (c) => {
     const b = await parseBody(c, z.object({ name: text(), durationYears: z.number().int().min(1).max(8), active: z.boolean() }).partial());
     const r = await prisma.career.update({ where: { id: c.req.param('id') }, data: b }).catch(() => null);
     if (!r) throw notFound('No existe la carrera.');
@@ -88,14 +95,14 @@ export const structureRoutes = new Hono<AppEnv>()
     const rows = await prisma.studyPlan.findMany({ where: careerId ? { careerId } : {}, orderBy: { startYear: 'desc' } });
     return c.json(rows.map((p) => ({ id: p.id, careerId: p.careerId, code: p.code, name: p.name, startYear: p.startYear, active: p.active })));
   })
-  .post('/plans', requireRoles(...WRITE), async (c) => {
+  .post('/plans', requireRoles(...ACADEMIC_MANAGERS), async (c) => {
     const b = await parseBody(c, z.object({ careerId: z.string().uuid(), code, name: text(), startYear: z.number().int().min(1990).max(2100) }));
     const r = await unique(prisma.studyPlan.create({ data: b }), 'un plan');
     return c.json({ id: r.id }, 201);
   })
 
   // ---------------------------------------------------------------- materias
-  .post('/subjects', requireRoles(...WRITE), async (c) => {
+  .post('/subjects', requireRoles(...ACADEMIC_MANAGERS), async (c) => {
     const b = await parseBody(
       c,
       z.object({
@@ -117,7 +124,7 @@ export const structureRoutes = new Hono<AppEnv>()
     );
     return c.json({ id: r.id }, 201);
   })
-  .patch('/subjects/:id', requireRoles(...WRITE), async (c) => {
+  .patch('/subjects/:id', requireRoles(...ACADEMIC_MANAGERS), async (c) => {
     const b = await parseBody(
       c,
       z
@@ -155,7 +162,7 @@ export const structureRoutes = new Hono<AppEnv>()
       })),
     );
   })
-  .post('/cycles', requireRoles(...WRITE), async (c) => {
+  .post('/cycles', requireRoles(...ACADEMIC_MANAGERS), async (c) => {
     const b = await parseBody(
       c,
       z.object({ year: z.number().int().min(2000).max(2100), startDate: z.string(), endDate: z.string(), firstTermEndDate: z.string().optional() }),
@@ -173,7 +180,7 @@ export const structureRoutes = new Hono<AppEnv>()
     );
     return c.json({ id: r.id }, 201);
   })
-  .patch('/cycles/:id', requireRoles(...WRITE), async (c) => {
+  .patch('/cycles/:id', requireRoles(...ACADEMIC_MANAGERS), async (c) => {
     const user = c.get('user');
     const b = await parseBody(c, z.object({ status: z.enum(CYCLE_STATUSES) }));
     const cy = await prisma.academicCycle.findUnique({ where: { id: c.req.param('id') } });
@@ -205,7 +212,7 @@ export const structureRoutes = new Hono<AppEnv>()
     });
     return c.json(rows.map(commissionView));
   })
-  .post('/commissions', requireRoles(...WRITE), async (c) => {
+  .post('/commissions', requireRoles(...ACADEMIC_MANAGERS), async (c) => {
     const b = await parseBody(
       c,
       z.object({
@@ -241,7 +248,7 @@ export const structureRoutes = new Hono<AppEnv>()
     await audit(c, c.get('user'), { action: 'CREATE', entity: 'Commission', entityId: r.id, summary: `Comisión ${r.code}` });
     return c.json(commissionView(r), 201);
   })
-  .patch('/commissions/:id', requireRoles(...WRITE), async (c) => {
+  .patch('/commissions/:id', requireRoles(...ACADEMIC_MANAGERS), async (c) => {
     const b = await parseBody(
       c,
       z
@@ -415,7 +422,7 @@ export const structureRoutes = new Hono<AppEnv>()
     });
     return c.json(rows.map(teacherDTO));
   })
-  .post('/teachers', requireRoles(...WRITE), async (c) => {
+  .post('/teachers', requireRoles(...ACADEMIC_MANAGERS), async (c) => {
     const b = await parseBody(
       c,
       z.object({
@@ -432,7 +439,7 @@ export const structureRoutes = new Hono<AppEnv>()
     await audit(c, c.get('user'), { action: 'CREATE', entity: 'Teacher', entityId: r.id, summary: `Docente ${r.lastName}, ${r.firstName}` });
     return c.json(teacherDTO(r), 201);
   })
-  .patch('/teachers/:id', requireRoles(...WRITE), async (c) => {
+  .patch('/teachers/:id', requireRoles(...ACADEMIC_MANAGERS), async (c) => {
     const b = await parseBody(
       c,
       z

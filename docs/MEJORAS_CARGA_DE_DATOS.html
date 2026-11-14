@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Carga de datos reales i26</title>
+<meta name="description" content="Cómo se cargan alumnos, carreras, materias, cursos, docentes y familias en el Sistema de Gestión i26, y cómo esa carga se ve en todos los paneles.">
+<style>
+:root{
+  --blue:#14214f; --blue-2:#22336e; --gold:#89743a; --gold-text:#6b5b2e; --sand:#af9b63;
+  --bg:#f4f6f9; --card:#fff; --ink:#1b2333; --muted:#5b6476; --line:#dde2ea;
+  --ok:#1f7a4a; --ok-bg:#e6f4ec; --warn:#8a5a00; --warn-bg:#fff4dc; --bad:#a3262a; --bad-bg:#fde8e8; --code-bg:#f0f2f6;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{background:var(--blue);color:#fff;padding:30px 16px 26px}
+header .wrap,main{max-width:1000px;margin:0 auto}
+header .k{color:var(--sand);font-weight:600;letter-spacing:.06em;text-transform:uppercase;font-size:12px}
+header h1{font-family:Outfit,Inter,system-ui,sans-serif;font-size:28px;line-height:1.2;margin:6px 0 8px}
+header p{margin:0;color:#d7dcea;max-width:760px}
+main{padding:22px 16px 56px}
+section{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:20px 22px;margin-bottom:16px}
+h2{font-family:Outfit,Inter,system-ui,sans-serif;color:var(--blue);font-size:20px;margin:0 0 6px}
+h2 .n{color:var(--gold);margin-right:6px}
+h3{color:var(--blue-2);font-size:15.5px;margin:18px 0 4px}
+.lead{color:var(--muted);margin:0 0 12px}
+code{font-family:"JetBrains Mono",Consolas,monospace;font-size:12.8px;background:var(--code-bg);padding:1px 5px;border-radius:4px}
+pre{font-family:"JetBrains Mono",Consolas,monospace;font-size:12.6px;line-height:1.55;background:#0f1733;color:#e6e9f2;padding:14px 16px;border-radius:8px;overflow-x:auto}
+pre code{background:none;padding:0;color:inherit}
+.tbl{overflow-x:auto;margin:10px 0}
+table{border-collapse:collapse;width:100%;font-size:13.6px}
+th,td{text-align:left;vertical-align:top;padding:7px 10px;border-bottom:1px solid var(--line)}
+th{background:#f7f8fb;color:var(--blue);font-weight:600;white-space:nowrap}
+.callout{border-left:4px solid var(--gold);background:#faf7ef;padding:10px 14px;border-radius:0 8px 8px 0;margin:12px 0}
+.callout.bad{border-color:var(--bad);background:var(--bad-bg)}
+.callout.ok{border-color:var(--ok);background:var(--ok-bg)}
+.callout.warn{border-color:#c98a00;background:var(--warn-bg)}
+.badge{display:inline-block;font-size:11.5px;font-weight:600;padding:1px 8px;border-radius:999px;white-space:nowrap}
+.b-ok{background:var(--ok-bg);color:var(--ok)} .b-no{background:var(--bad-bg);color:var(--bad)} .b-todo{background:var(--warn-bg);color:var(--warn)}
+ol li,ul li{margin:6px 0}
+.pasos{counter-reset:p;list-style:none;padding:0}
+.pasos li{position:relative;padding:10px 0 10px 44px;border-bottom:1px solid var(--line)}
+.pasos li:last-child{border-bottom:none}
+.pasos li:before{counter-increment:p;content:counter(p);position:absolute;left:0;top:10px;width:28px;height:28px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+.pasos b{color:var(--blue)}
+footer{color:var(--muted);font-size:12.5px;text-align:center;padding:0 16px 30px}
+@media (max-width:640px){section{padding:16px 14px} header h1{font-size:23px}}
+@media print{body{background:#fff} section{border:none;padding:6px 0;break-inside:avoid-page} header{background:#fff;color:var(--ink);border-bottom:2px solid var(--blue)} header p{color:var(--ink)} pre{background:#f4f4f4;color:#111}}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <div class="k">Sistema de Gestión i26 · ISFDyT N.° 26 Dolores · 13/11/2026</div>
+  <h1>Carga de datos reales: alumnos, materias, cursos y familias</h1>
+  <p>Qué se habilitó para que Preceptoría y Administración puedan cargar la institución de verdad,
+  cómo esa carga se ve sola en el resto de los paneles, y qué le toca construir a cada equipo en su pantalla.</p>
+</div></header>
+
+<main>
+
+<section>
+  <h2><span class="n">1.</span>Lo que se pidió, en una línea</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>Pedido</th><th>Estado</th></tr></thead>
+    <tbody>
+      <tr><td>Que Preceptoría y Administración puedan <b>cargar alumnos</b></td><td><span class="badge b-ok">listo en la API</span> ya estaba para los dos</td></tr>
+      <tr><td>Que puedan <b>agregar materias y cursos</b> (con horario y profesor)</td><td><span class="badge b-ok">listo en la API</span> Preceptoría se habilitó el 13/11</td></tr>
+      <tr><td>Que lo cargado <b>se vea en el resto de las apps</b></td><td><span class="badge b-ok">listo</span> una sola base, una sola API</td></tr>
+      <tr><td>Que la <b>base quede unificada</b></td><td><span class="badge b-ok">listo</span> PostgreSQL en Neon, 44 tablas</td></tr>
+      <tr><td>Que se <b>borren los datos de prueba</b></td><td><span class="badge b-ok">hecho</span> ver sección 6</td></tr>
+      <tr><td>Que se puedan <b>agregar padres o tutores</b> y asignarles un alumno</td><td><span class="badge b-ok">listo en la API</span> Preceptoría también, desde el 13/11</td></tr>
+      <tr><td>Las <b>pantallas</b> en cada panel</td><td><span class="badge b-todo">cada equipo</span> ver sección 5</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section>
+  <h2><span class="n">2.</span>Quién carga qué</h2>
+  <p class="lead">Cambió lo marcado como <b>nuevo</b>. El resto ya era así.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Dato</th><th>Dirección y Administración</th><th>Preceptoría</th><th>Ruta</th></tr></thead>
+    <tbody>
+      <tr><td>Carreras</td><td>Sí</td><td><b>Sí (nuevo)</b></td><td><code>POST|PATCH /structure/careers</code></td></tr>
+      <tr><td>Planes de estudio</td><td>Sí</td><td><b>Sí (nuevo)</b></td><td><code>POST /structure/plans</code></td></tr>
+      <tr><td>Materias</td><td>Sí</td><td><b>Sí (nuevo)</b></td><td><code>POST|PATCH /structure/subjects</code></td></tr>
+      <tr><td>Ciclo lectivo</td><td>Sí</td><td><b>Sí (nuevo)</b></td><td><code>POST|PATCH /structure/cycles</code></td></tr>
+      <tr><td>Cursos (comisiones) con horario y docente</td><td>Sí</td><td><b>Sí (nuevo)</b></td><td><code>POST|PATCH /structure/commissions</code></td></tr>
+      <tr><td>Docentes</td><td>Sí</td><td><b>Sí (nuevo)</b></td><td><code>POST|PATCH /structure/teachers</code></td></tr>
+      <tr><td>Alumnos (ficha y padrón)</td><td>Sí</td><td>Sí</td><td><code>POST|PATCH /structure/students</code></td></tr>
+      <tr><td>Inscripción del alumno a un curso</td><td>Sí</td><td>Sí</td><td><code>POST /structure/enrollments</code></td></tr>
+      <tr><td>Padres o tutores, y qué alumnos tienen a cargo</td><td>Sí</td><td><b>Sí (nuevo)</b></td><td><code>PUT /families/guardians/:userId</code></td></tr>
+      <tr><td>Cuentas de acceso de cualquier persona</td><td>Sí</td><td>No</td><td><code>POST /users</code></td></tr>
+      <tr><td>Datos sensibles del alumno (salud, domicilio, contacto de emergencia)</td><td>Escribe</td><td>Solo lee (queda auditado)</td><td><code>GET|PUT /structure/students/:id/sensitive</code></td></tr>
+      <tr><td>Borrar una inscripción</td><td>Sí</td><td>No</td><td><code>DELETE /structure/enrollments/:id</code></td></tr>
+    </tbody>
+  </table></div>
+  <div class="callout"><b>Por qué las cuentas siguen solo en Administración.</b> Crear una cuenta es dar acceso al sistema. Preceptoría carga la <i>ficha</i> del alumno o del tutor; el acceso lo habilita Dirección o Administración. Así una sola área es responsable de quién entra.</div>
+</section>
+
+<section>
+  <h2><span class="n">3.</span>En qué orden se carga la institución</h2>
+  <p class="lead">Cada paso necesita el anterior. Es el orden que tiene que seguir la pantalla.</p>
+  <ol class="pasos">
+    <li><b>Carrera.</b> <code>POST /structure/careers</code> → <code>{ code, name, durationYears }</code></li>
+    <li><b>Plan de estudios</b> de esa carrera. <code>POST /structure/plans</code> → <code>{ careerId, code, name, startYear }</code></li>
+    <li><b>Materias</b> del plan, con su año y su cuatrimestre. <code>POST /structure/subjects</code> → <code>{ planId, code, name, year, period, weeklyHours }</code>. <code>period</code> es <code>FIRST_TERM</code>, <code>SECOND_TERM</code> o <code>ANNUAL</code>.</li>
+    <li><b>Ciclo lectivo</b> (una vez al año). <code>POST /structure/cycles</code> → <code>{ year, startDate, endDate, firstTermEndDate }</code>. Nace en <code>PLANNED</code>: se activa aparte con <code>PATCH /structure/cycles/:id</code> → <code>{ "status": "ACTIVE" }</code>, y eso cierra el ciclo que estaba activo (queda uno solo).</li>
+    <li><b>Docentes.</b> <code>POST /structure/teachers</code> → <code>{ fileNumber, dni, firstName, lastName, email, phone, title }</code></li>
+    <li><b>Curso (comisión):</b> es la materia dictada este año, en un turno, con su horario y sus docentes. <code>POST /structure/commissions</code> → <code>{ code, cycleId, subjectId, period, shift, teacherIds, preceptorUserId, schedule, capacity }</code></li>
+    <li><b>Alumno.</b> <code>POST /structure/students</code> → <code>{ fileNumber, dni, firstName, lastName, email, phone, careerId, planId, admissionDate }</code></li>
+    <li><b>Inscripción</b> del alumno al curso. <code>POST /structure/enrollments</code> → <code>{ studentId, commissionId }</code>. Sin esto, el alumno no figura en la planilla de asistencia.</li>
+    <li><b>Cuentas</b> (Administración): del alumno, del docente y del tutor. <code>POST /users</code> → <code>{ email, firstName, lastName, roles }</code>. Devuelve una clave temporal y obliga a cambiarla al entrar.</li>
+    <li><b>Padre o tutor:</b> con la cuenta ya creada (rol <code>GUARDIAN</code>), se carga su ficha y se le asignan los hijos. <code>PUT /families/guardians/:userId</code> → <code>{ dni, phone, address, occupation, children: [{ studentId, relationship }] }</code>. <code>relationship</code> es <code>MOTHER</code>, <code>FATHER</code> o <code>LEGAL_GUARDIAN</code>.</li>
+  </ol>
+  <h3>El horario del curso</h3>
+  <p>Va en <code>schedule</code>, una lista de franjas. <code>weekday</code> es 1 = lunes … 6 = sábado.</p>
+<pre><code>{
+  "code": "PROG1-A",
+  "cycleId": "…",            <span style="color:#8f9bbd">// ciclo 2026</span>
+  "subjectId": "…",          <span style="color:#8f9bbd">// Programación I</span>
+  "period": "FIRST_TERM",
+  "shift": "EVENING",
+  "teacherIds": ["…"],       <span style="color:#8f9bbd">// uno o más docentes</span>
+  "preceptorUserId": "…",    <span style="color:#8f9bbd">// preceptor a cargo (opcional)</span>
+  "capacity": 35,
+  "schedule": [
+    { "weekday": 1, "startTime": "18:00", "endTime": "20:00", "classroom": "Aula 3" },
+    { "weekday": 3, "startTime": "18:00", "endTime": "20:00", "classroom": "Aula 3" }
+  ]
+}</code></pre>
+</section>
+
+<section>
+  <h2><span class="n">4.</span>Por qué se ve en todos los paneles</h2>
+  <p class="lead">No hay copias ni sincronización: hay una sola base y una sola API. Cada panel pregunta lo mismo.</p>
+<pre><code>Preceptoría ─┐
+Dirección ───┤                 ┌─ Profesores: sus cursos y su planilla
+Profesores ──┼→ API /api/v1 ──→│─ Alumnos: sus materias, su asistencia, sus notas
+Alumnos ─────┤   (una sola)    │─ Familias: lo de sus hijos
+Familias ────┤       │         └─ Centro y Auxiliares: lo suyo
+Centro ──────┘       ▼
+              PostgreSQL (Neon)</code></pre>
+  <p><b>Ejemplo real.</b> Preceptoría carga la carrera, la materia, el curso del miércoles de 18 a 20 con su profesor, el alumno y su inscripción. Sin que nadie copie nada:</p>
+  <ul>
+    <li>el <b>profesor</b> ve ese curso y al alumno en su planilla (<code>/academic/scope</code>, <code>/attendance/...</code>);</li>
+    <li>el <b>alumno</b> ve la materia y su horario en su panel (<code>/me/subjects</code>);</li>
+    <li>el <b>tutor</b> ve a ese chico y su asistencia (<code>/guardian/children</code>);</li>
+    <li>la <b>dirección</b> lo ve en estructura y en los informes.</li>
+  </ul>
+  <div class="callout ok"><b>Un solo cálculo de asistencia.</b> El porcentaje lo hace la API con los parámetros de la institución (mínimo 75 %). Preceptoría, el profesor, el alumno y la familia ven el mismo número porque ninguno lo calcula por su cuenta.</div>
+</section>
+
+<section>
+  <h2><span class="n">5.</span>Qué le toca a cada equipo</h2>
+  <p class="lead">La API ya responde. Falta la pantalla en cada panel. Nadie tiene que inventar tablas ni rutas: están todas arriba.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Panel</th><th>Pantallas a construir</th></tr></thead>
+    <tbody>
+      <tr><td><b>Preceptoría</b><br>(Julián y Lucía · consolidación)</td><td>Ya tiene el padrón de alumnos. Falta: alta de carrera, plan y materias; alta de curso con horario, turno y docente; inscribir alumnos a un curso; alta de tutor y asignación de hijos.</td></tr>
+      <tr><td><b>Administración y Dirección</b><br>(Jesica y Agustín)</td><td>Las mismas de arriba, más la creación de cuentas (<code>POST /users</code>) y el reseteo de contraseña. <b>Antes hay que conectar la app a la API común</b>: ver <code>docs/NOTA_DIRECTIVOS_UNIFICACION.html</code>.</td></tr>
+      <tr><td><b>Profesores</b> (Nicolás)</td><td>Nada nuevo: los cursos le aparecen solos. Solo revisar que el horario (<code>schedule</code>) se muestre bien.</td></tr>
+      <tr><td><b>Alumnos</b></td><td>Nada nuevo: la materia y el horario llegan por <code>/me/subjects</code>.</td></tr>
+      <tr><td><b>Familias</b></td><td>Nada nuevo: los hijos vinculados llegan por <code>/guardian/children</code>.</td></tr>
+    </tbody>
+  </table></div>
+  <div class="callout warn"><b>Para los agentes de IA de cada equipo:</b> las reglas comunes (nombres, códigos, formatos y cómo proponer algo nuevo) están en <code>docs/CONTRATO_UNIFICACION.html</code>. Este documento es la parte de carga de datos. Lo que no exista acá se propone en <code>PROPUESTAS.md</code>; no se crean rutas ni tablas por las suyas.</div>
+</section>
+
+<section>
+  <h2><span class="n">6.</span>Datos de prueba</h2>
+  <p class="lead">La base quedó limpia para empezar a cargar la institución de verdad.</p>
+  <ul>
+    <li>Se dieron de baja los <b>datos de ejemplo</b> (carreras, alumnos, comisiones, asistencias y justificaciones de demostración) y las <b>cuentas de prueba</b>.</li>
+    <li>Quedan solo las cuentas institucionales reales y la configuración de la institución.</li>
+    <li>Los datos de ejemplo se pueden volver a cargar en cualquier momento para una demostración, pero <b>no en la base real</b>: para eso está la base de prueba local.</li>
+  </ul>
+  <div class="callout bad"><b>Importante antes de cargar datos reales.</b> Una vez que entren alumnos de verdad, la base tiene datos personales de menores y de familias. Desde ese momento: respaldo antes de cada cambio de base, y nada de copiar la base a una computadora personal ni a un Drive.</div>
+</section>
+
+<section>
+  <h2><span class="n">7.</span>Qué se verificó</h2>
+  <ul>
+    <li>Respaldo completo de la base antes de tocarla.</li>
+    <li>Las 5 migraciones pendientes se aplicaron; la base quedó al día.</li>
+    <li>El backend compila sin errores con los permisos nuevos.</li>
+    <li>Pruebas de permisos: Preceptoría puede crear carrera, materia, curso y tutor; un docente sigue sin poder (403).</li>
+    <li>Recorrido completo: cargar carrera → materia → curso → alumno → inscripción, y verlo desde el panel del docente, del alumno y de la familia.</li>
+  </ul>
+  <p>El detalle, con la salida de cada prueba, está en <code>CHANGELOG.md</code>.</p>
+</section>
+
+</main>
+<footer>Sistema de Gestión i26 · Carga de datos reales · 13/11/2026</footer>
+</body>
+</html>
